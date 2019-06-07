@@ -9,8 +9,20 @@ int main() {
 
 	instance = new VulkanInstance(vulkan_config);
 
+	glfwInit();
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	GLFWwindow* window = glfwCreateWindow(800, 600, "Test window", nullptr, nullptr);
+
 	std::cout << "Hello world!" << std::endl;
-	system("pause");
+
+	while (!glfwWindowShouldClose(window)) {
+		glfwPollEvents();
+	}
+
+	glfwDestroyWindow(window);
+	glfwTerminate();
 
 	delete instance;
 
