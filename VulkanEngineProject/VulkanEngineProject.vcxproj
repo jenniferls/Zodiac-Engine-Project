@@ -152,7 +152,6 @@
     <ClCompile Include="VulkanPhysicalDevice.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BUILD_ORDER.h" />
     <ClInclude Include="Initializers.h" />
     <ClInclude Include="QueueFamilyIndices.h" />
     <ClInclude Include="Renderer.h" />

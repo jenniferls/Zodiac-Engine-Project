@@ -37,9 +37,6 @@
     <ClInclude Include="Initializers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BUILD_ORDER.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="VulkanConfiguration.h">
       <Filter>Header Files</Filter>
     </ClInclude>
