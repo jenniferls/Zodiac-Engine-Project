@@ -147,6 +147,7 @@
     <ClCompile Include="Initializers.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Validation.cpp" />
+    <ClCompile Include="VulkanDevice.cpp" />
     <ClCompile Include="VulkanInstance.cpp" />
     <ClCompile Include="VulkanPhysicalDevice.cpp" />
   </ItemGroup>
@@ -157,6 +158,7 @@
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Validation.h" />
     <ClInclude Include="VulkanConfiguration.h" />
+    <ClInclude Include="VulkanDevice.h" />
     <ClInclude Include="VulkanInstance.h" />
     <ClInclude Include="VulkanPhysicalDevice.h" />
   </ItemGroup>

@@ -15,10 +15,30 @@ VkInstanceCreateInfo Initializers::InstanceCreateInfo(VkApplicationInfo& appInfo
 	VkInstanceCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	info.pApplicationInfo = &appInfo;
-	info.enabledLayerCount = layers.size();
+	info.enabledLayerCount = (uint32_t)layers.size();
 	info.ppEnabledLayerNames = layers.data();
-	info.enabledExtensionCount = extensions.size();
+	info.enabledExtensionCount = (uint32_t)extensions.size();
 	info.ppEnabledExtensionNames = extensions.data();
+
+	return info;
+}
+
+VkDeviceCreateInfo Initializers::DeviceCreateInfo(std::vector<VkDeviceQueueCreateInfo>& queue_create_info, VkPhysicalDeviceFeatures& physical_device_features) {
+	VkDeviceCreateInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	info.pQueueCreateInfos = queue_create_info.data();
+	info.queueCreateInfoCount = (uint32_t)queue_create_info.size();
+	info.pEnabledFeatures = &physical_device_features;
+
+	return info;
+}
+
+VkDeviceQueueCreateInfo Initializers::DeviceQueueCreate(uint32_t queue_family_index, float& priority) {
+	VkDeviceQueueCreateInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+	info.queueFamilyIndex = queue_family_index;
+	info.queueCount = 1;
+	info.pQueuePriorities = &priority;
 
 	return info;
 }

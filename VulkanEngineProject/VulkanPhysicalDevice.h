@@ -1,6 +1,8 @@
 #pragma once
-#include <BUILD_ORDER.h>
-#include <QueueFamilyIndices.h>
+#include <vulkan/vulkan.h>
+
+#include "VulkanInstance.h"
+#include "QueueFamilyIndices.h"
 
 class VulkanPhysicalDevice {
 public:

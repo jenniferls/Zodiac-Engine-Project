@@ -1,8 +1,20 @@
-#include "BUILD_ORDER.h"
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO
+#include <glm/vec4.hpp>
+#include <glm/mat4x4.hpp>
+
+#include <iostream>
+
+#include "VulkanInstance.h"
 #include "VulkanPhysicalDevice.h"
+#include "VulkanDevice.h"
 
 VulkanInstance* g_instance;
 VulkanPhysicalDevice* g_physical_device;
+VulkanDevice* g_device;
 
 int main() {
 	VulkanConfiguration vulkan_config;
@@ -11,6 +23,7 @@ int main() {
 
 	g_instance = new VulkanInstance(vulkan_config);
 	g_physical_device = VulkanPhysicalDevice::GetPhysicalDevice(g_instance);
+	g_device = new VulkanDevice(g_instance, g_physical_device);
 
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -27,6 +40,7 @@ int main() {
 	glfwDestroyWindow(window);
 	glfwTerminate();
 
+	delete g_device;
 	delete g_physical_device;
 	delete g_instance;
 

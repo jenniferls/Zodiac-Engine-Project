@@ -1,5 +1,8 @@
 #pragma once
-#include "BUILD_ORDER.h"
+#include <vector>
+
+#include "Initializers.h"
+#include "VulkanConfiguration.h"
 
 class VulkanInstance {
 public:

@@ -1,5 +1,4 @@
 #pragma once
-#include "BUILD_ORDER.h"
 
 struct VulkanConfiguration {
 	const char* app_name = "";

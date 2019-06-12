@@ -1,4 +1,7 @@
 #pragma once
-#include "BUILD_ORDER.h"
+#include <iostream>
+#include <assert.h>
+
+#include <vulkan/vulkan.h>
 
 void ErrorCheck(VkResult result);
