@@ -25,6 +25,10 @@ int main() {
 	g_physical_device = VulkanPhysicalDevice::GetPhysicalDevice(g_instance);
 	g_device = new VulkanDevice(g_instance, g_physical_device);
 
+	VkCommandBuffer* commands = new VkCommandBuffer[3]; //Command buffers test
+	g_device->GetComputeCommand(commands, 3);
+	g_device->FreeComputeCommand(commands, 3);
+
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
