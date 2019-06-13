@@ -15,6 +15,7 @@ public:
 	VkDevice* GetDevice();
 	VkQueue* GetComputeQueue();
 	VkCommandPool& GetComputeCommandPool();
+	VulkanPhysicalDevice* GetPhysicalDevice();
 
 	void GetComputeCommand(VkCommandBuffer* buffers, uint32_t count);
 	void FreeComputeCommand(VkCommandBuffer* buffers, uint32_t count);

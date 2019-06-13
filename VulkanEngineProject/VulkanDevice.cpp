@@ -33,6 +33,10 @@ VkCommandPool& VulkanDevice::GetComputeCommandPool() {
 	return m_compute_command_pool;
 }
 
+VulkanPhysicalDevice* VulkanDevice::GetPhysicalDevice() {
+	return m_physical_device;
+}
+
 void VulkanDevice::GetComputeCommand(VkCommandBuffer* buffers, uint32_t count) {
 	VkCommandBufferAllocateInfo command_buffer_alloc_info = Initializers::CommandBufferAllocateInfo(m_compute_command_pool, count);
 	ErrorCheck(vkAllocateCommandBuffers(m_device, &command_buffer_alloc_info, buffers));

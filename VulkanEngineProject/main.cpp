@@ -11,10 +11,12 @@
 #include "VulkanInstance.h"
 #include "VulkanPhysicalDevice.h"
 #include "VulkanDevice.h"
+#include "VulkanBuffer.h"
 
 VulkanInstance* g_instance;
 VulkanPhysicalDevice* g_physical_device;
 VulkanDevice* g_device;
+VulkanBuffer* g_buffer;
 
 int main() {
 	VulkanConfiguration vulkan_config;
@@ -27,6 +29,15 @@ int main() {
 
 	VkCommandBuffer* commands = new VkCommandBuffer[3]; //Command buffers test
 	g_device->GetComputeCommand(commands, 3);
+
+	float* arr = new float[3];
+	for (int i = 0; i < 3; i++) { //Test
+		arr[i] = i;
+	}
+
+	g_buffer = new VulkanBuffer(g_device, arr, sizeof(float), 3);
+	g_buffer->SetData();
+
 	g_device->FreeComputeCommand(commands, 3);
 
 	glfwInit();
@@ -44,9 +55,12 @@ int main() {
 	glfwDestroyWindow(window);
 	glfwTerminate();
 
+	delete g_buffer;
+	delete arr;
 	delete g_device;
 	delete g_physical_device;
 	delete g_instance;
 
+	system("pause");
 	return 0;
 }
