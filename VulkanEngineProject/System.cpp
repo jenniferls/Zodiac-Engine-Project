@@ -15,7 +15,7 @@ Zodiac::System::~System() {
 	system("pause"); //Debug
 }
 
-bool Zodiac::System::init() {
+bool Zodiac::System::Init() {
 	m_instance = new Zodiac::VulkanInstance(m_vulkanConfig);
 	m_physical_device = Zodiac::VulkanPhysicalDevice::GetPhysicalDevice(m_instance);
 	m_device = new Zodiac::VulkanDevice(m_instance, m_physical_device);
@@ -37,23 +37,38 @@ bool Zodiac::System::init() {
 	delete[] arr;
 	//////////////////
 
-	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	m_window = glfwCreateWindow(800, 600, m_vulkanConfig.app_name, nullptr, nullptr);
+	InitWindow();
 
 	return true;
 }
 
-void Zodiac::System::run() {
+void Zodiac::System::Run() {
 	while (!glfwWindowShouldClose(m_window)) {
 		glfwPollEvents();
 	}
-	shutdown();
+	Shutdown();
 }
 
-void Zodiac::System::shutdown() {
+void Zodiac::System::Shutdown() {
+	ShutdownWindow();
+}
+
+void Zodiac::System::InitWindow() {
+	std::cout << ">>>> Initializing GLFW <<<<" << std::endl;
+	glfwInit();
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	if (!glfwVulkanSupported())
+	{
+		throw std::runtime_error("GLFW ERROR: VULKAN IS NOT SUPPORTED!");
+	}
+	m_window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, m_vulkanConfig.app_name, nullptr, nullptr);
+	std::cout << "GLFW initialization successful!" << std::endl;
+}
+
+void Zodiac::System::ShutdownWindow() {
 	glfwDestroyWindow(m_window);
 	glfwTerminate();
 }
