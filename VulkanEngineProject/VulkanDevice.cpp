@@ -19,6 +19,8 @@ Zodiac::VulkanDevice::VulkanDevice(VulkanInstance* instance, VulkanPhysicalDevic
 Zodiac::VulkanDevice::~VulkanDevice() {
 	vkDestroyCommandPool(m_device, m_compute_command_pool, nullptr);
 	vkDestroyDevice(m_device, nullptr);
+	m_compute_command_pool = nullptr;
+	m_device = nullptr;
 }
 
 VkDevice* Zodiac::VulkanDevice::GetDevice() {

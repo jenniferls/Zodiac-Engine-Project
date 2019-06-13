@@ -146,6 +146,7 @@
   <ItemGroup>
     <ClCompile Include="Initializers.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="System.cpp" />
     <ClCompile Include="Validation.cpp" />
     <ClCompile Include="VulkanBuffer.cpp" />
     <ClCompile Include="VulkanDevice.cpp" />
