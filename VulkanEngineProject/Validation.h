@@ -4,4 +4,6 @@
 
 #include <vulkan/vulkan.h>
 
-void ErrorCheck(VkResult result);
+namespace Zodiac {
+	void ErrorCheck(VkResult result);
+ }

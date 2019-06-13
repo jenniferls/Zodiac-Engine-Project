@@ -1,6 +1,6 @@
 #include "Initializers.h"
 
-VkApplicationInfo Initializers::ApplicationInfo(VulkanConfiguration& config) {
+VkApplicationInfo Zodiac::Initializers::ApplicationInfo(VulkanConfiguration& config) {
 	VkApplicationInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
 	info.pApplicationName = config.app_name;
@@ -11,7 +11,7 @@ VkApplicationInfo Initializers::ApplicationInfo(VulkanConfiguration& config) {
 	return info;
 }
 
-VkInstanceCreateInfo Initializers::InstanceCreateInfo(VkApplicationInfo& appInfo, std::vector<const char*>& layers, std::vector<const char*>& extensions) {
+VkInstanceCreateInfo Zodiac::Initializers::InstanceCreateInfo(VkApplicationInfo& appInfo, std::vector<const char*>& layers, std::vector<const char*>& extensions) {
 	VkInstanceCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	info.pApplicationInfo = &appInfo;
@@ -23,7 +23,7 @@ VkInstanceCreateInfo Initializers::InstanceCreateInfo(VkApplicationInfo& appInfo
 	return info;
 }
 
-VkDeviceCreateInfo Initializers::DeviceCreateInfo(std::vector<VkDeviceQueueCreateInfo>& queue_create_info, VkPhysicalDeviceFeatures& physical_device_features) {
+VkDeviceCreateInfo Zodiac::Initializers::DeviceCreateInfo(std::vector<VkDeviceQueueCreateInfo>& queue_create_info, VkPhysicalDeviceFeatures& physical_device_features) {
 	VkDeviceCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	info.pQueueCreateInfos = queue_create_info.data();
@@ -33,7 +33,7 @@ VkDeviceCreateInfo Initializers::DeviceCreateInfo(std::vector<VkDeviceQueueCreat
 	return info;
 }
 
-VkDeviceQueueCreateInfo Initializers::DeviceQueueCreate(uint32_t queue_family_index, float& priority) {
+VkDeviceQueueCreateInfo Zodiac::Initializers::DeviceQueueCreate(uint32_t queue_family_index, float& priority) {
 	VkDeviceQueueCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 	info.queueFamilyIndex = queue_family_index;
@@ -43,7 +43,7 @@ VkDeviceQueueCreateInfo Initializers::DeviceQueueCreate(uint32_t queue_family_in
 	return info;
 }
 
-VkCommandPoolCreateInfo Initializers::CommandPoolCreateinfo(uint32_t queue_family_index, VkCommandPoolCreateFlags flags) {
+VkCommandPoolCreateInfo Zodiac::Initializers::CommandPoolCreateinfo(uint32_t queue_family_index, VkCommandPoolCreateFlags flags) {
 	VkCommandPoolCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	info.queueFamilyIndex = queue_family_index;
@@ -52,7 +52,7 @@ VkCommandPoolCreateInfo Initializers::CommandPoolCreateinfo(uint32_t queue_famil
 	return info;
 }
 
-VkCommandBufferAllocateInfo Initializers::CommandBufferAllocateInfo(VkCommandPool pool, uint32_t count) {
+VkCommandBufferAllocateInfo Zodiac::Initializers::CommandBufferAllocateInfo(VkCommandPool pool, uint32_t count) {
 	VkCommandBufferAllocateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	info.commandPool = pool;
@@ -62,7 +62,7 @@ VkCommandBufferAllocateInfo Initializers::CommandBufferAllocateInfo(VkCommandPoo
 	return info;
 }
 
-VkBufferCreateInfo Initializers::BufferCreateInfo(VkDeviceSize size, VkBufferUsageFlags usage_flags) {
+VkBufferCreateInfo Zodiac::Initializers::BufferCreateInfo(VkDeviceSize size, VkBufferUsageFlags usage_flags) {
 	VkBufferCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 	info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -72,7 +72,7 @@ VkBufferCreateInfo Initializers::BufferCreateInfo(VkDeviceSize size, VkBufferUsa
 	return info;
 }
 
-VkMemoryAllocateInfo Initializers::MemoryAllocateInfo(VkDeviceSize size, uint32_t memory_type_index) {
+VkMemoryAllocateInfo Zodiac::Initializers::MemoryAllocateInfo(VkDeviceSize size, uint32_t memory_type_index) {
 	VkMemoryAllocateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	info.allocationSize = size;

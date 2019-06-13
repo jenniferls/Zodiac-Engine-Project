@@ -1,6 +1,6 @@
 #include "VulkanPhysicalDevice.h"
 
-VulkanPhysicalDevice::VulkanPhysicalDevice(VulkanInstance* instance, VkPhysicalDevice device, QueueFamilyIndices indices) {
+Zodiac::VulkanPhysicalDevice::VulkanPhysicalDevice(VulkanInstance* instance, VkPhysicalDevice device, QueueFamilyIndices indices) {
 	m_instance = instance;
 	m_device = device;
 	m_family_indices = indices;
@@ -10,7 +10,7 @@ VulkanPhysicalDevice::VulkanPhysicalDevice(VulkanInstance* instance, VkPhysicalD
 	vkGetPhysicalDeviceMemoryProperties(device, &m_device_memory_properties);
 }
 
-std::vector<VkPhysicalDevice> VulkanPhysicalDevice::GetAvailablePhysicalDevices(VulkanInstance* instance) {
+std::vector<VkPhysicalDevice> Zodiac::VulkanPhysicalDevice::GetAvailablePhysicalDevices(VulkanInstance* instance) {
 	uint32_t device_count = 0;
 
 	vkEnumeratePhysicalDevices(instance->GetInstance(), &device_count, nullptr);
@@ -20,13 +20,13 @@ std::vector<VkPhysicalDevice> VulkanPhysicalDevice::GetAvailablePhysicalDevices(
 	return devices;
 }
 
-bool VulkanPhysicalDevice::PhysicalDeviceSupported(VkPhysicalDevice& device, QueueFamilyIndices& family_indices) {
+bool Zodiac::VulkanPhysicalDevice::PhysicalDeviceSupported(VkPhysicalDevice& device, QueueFamilyIndices& family_indices) {
 	bool supported = QueueFamilySupported(device, family_indices);
 
 	return supported;
 }
 
-bool VulkanPhysicalDevice::QueueFamilySupported(VkPhysicalDevice& device, QueueFamilyIndices& family_indices) {
+bool Zodiac::VulkanPhysicalDevice::QueueFamilySupported(VkPhysicalDevice& device, QueueFamilyIndices& family_indices) {
 	uint32_t queue_family_count = 0;
 
 	vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, nullptr);
@@ -50,31 +50,31 @@ bool VulkanPhysicalDevice::QueueFamilySupported(VkPhysicalDevice& device, QueueF
 	return false;
 }
 
-VulkanPhysicalDevice::~VulkanPhysicalDevice() {
+Zodiac::VulkanPhysicalDevice::~VulkanPhysicalDevice() {
 
 }
 
-VkPhysicalDevice& VulkanPhysicalDevice::GetPhysicalDevice() {
+VkPhysicalDevice& Zodiac::VulkanPhysicalDevice::GetPhysicalDevice() {
 	return m_device;
 }
 
-QueueFamilyIndices& VulkanPhysicalDevice::GetFamilyIndices() {
+Zodiac::QueueFamilyIndices& Zodiac::VulkanPhysicalDevice::GetFamilyIndices() {
 	return m_family_indices;
 }
 
-VkPhysicalDeviceProperties& VulkanPhysicalDevice::GetDevicePropteries() {
+VkPhysicalDeviceProperties& Zodiac::VulkanPhysicalDevice::GetDevicePropteries() {
 	return m_device_properties;
 }
 
-VkPhysicalDeviceFeatures& VulkanPhysicalDevice::GetDeviceFeatures() {
+VkPhysicalDeviceFeatures& Zodiac::VulkanPhysicalDevice::GetDeviceFeatures() {
 	return m_device_features;
 }
 
-VkPhysicalDeviceMemoryProperties& VulkanPhysicalDevice::GetDeviceMemoryProperties() {
+VkPhysicalDeviceMemoryProperties& Zodiac::VulkanPhysicalDevice::GetDeviceMemoryProperties() {
 	return m_device_memory_properties;
 }
 
-VulkanPhysicalDevice* VulkanPhysicalDevice::GetPhysicalDevice(VulkanInstance* instance) {
+Zodiac::VulkanPhysicalDevice* Zodiac::VulkanPhysicalDevice::GetPhysicalDevice(VulkanInstance* instance) {
 	std::vector <VkPhysicalDevice> devices = GetAvailablePhysicalDevices(instance);
 	VkPhysicalDevice secondary_device = VK_NULL_HANDLE;
 	QueueFamilyIndices secondary_queue;

@@ -1,6 +1,6 @@
 #include "VulkanDevice.h"
 
-VulkanDevice::VulkanDevice(VulkanInstance* instance, VulkanPhysicalDevice* physical_device) {
+Zodiac::VulkanDevice::VulkanDevice(VulkanInstance* instance, VulkanPhysicalDevice* physical_device) {
 	m_instance = instance;
 	m_physical_device = physical_device;
 	m_priority = 1.0f;
@@ -16,32 +16,32 @@ VulkanDevice::VulkanDevice(VulkanInstance* instance, VulkanPhysicalDevice* physi
 	ErrorCheck(vkCreateCommandPool(m_device, &compute_pool_info, nullptr, &m_compute_command_pool));
 }
 
-VulkanDevice::~VulkanDevice() {
+Zodiac::VulkanDevice::~VulkanDevice() {
 	vkDestroyCommandPool(m_device, m_compute_command_pool, nullptr);
 	vkDestroyDevice(m_device, nullptr);
 }
 
-VkDevice* VulkanDevice::GetDevice() {
+VkDevice* Zodiac::VulkanDevice::GetDevice() {
 	return &m_device;
 }
 
-VkQueue* VulkanDevice::GetComputeQueue() {
+VkQueue* Zodiac::VulkanDevice::GetComputeQueue() {
 	return &m_compute_queue;
 }
 
-VkCommandPool& VulkanDevice::GetComputeCommandPool() {
+VkCommandPool& Zodiac::VulkanDevice::GetComputeCommandPool() {
 	return m_compute_command_pool;
 }
 
-VulkanPhysicalDevice* VulkanDevice::GetPhysicalDevice() {
+Zodiac::VulkanPhysicalDevice* Zodiac::VulkanDevice::GetPhysicalDevice() {
 	return m_physical_device;
 }
 
-void VulkanDevice::GetComputeCommand(VkCommandBuffer* buffers, uint32_t count) {
+void Zodiac::VulkanDevice::GetComputeCommand(VkCommandBuffer* buffers, uint32_t count) {
 	VkCommandBufferAllocateInfo command_buffer_alloc_info = Initializers::CommandBufferAllocateInfo(m_compute_command_pool, count);
 	ErrorCheck(vkAllocateCommandBuffers(m_device, &command_buffer_alloc_info, buffers));
 }
 
-void VulkanDevice::FreeComputeCommand(VkCommandBuffer* buffers, uint32_t count) {
+void Zodiac::VulkanDevice::FreeComputeCommand(VkCommandBuffer* buffers, uint32_t count) {
 	vkFreeCommandBuffers(m_device, m_compute_command_pool, count, buffers);
 }

@@ -13,19 +13,19 @@
 #include "VulkanDevice.h"
 #include "VulkanBuffer.h"
 
-VulkanInstance* g_instance;
-VulkanPhysicalDevice* g_physical_device;
-VulkanDevice* g_device;
-VulkanBuffer* g_buffer;
+Zodiac::VulkanInstance* g_instance;
+Zodiac::VulkanPhysicalDevice* g_physical_device;
+Zodiac::VulkanDevice* g_device;
+Zodiac::VulkanBuffer* g_buffer;
 
 int main() {
-	VulkanConfiguration vulkan_config;
+	Zodiac::VulkanConfiguration vulkan_config;
 	vulkan_config.app_name = "Sandbox";
 	vulkan_config.app_version = VK_MAKE_VERSION(0, 1, 0);
 
-	g_instance = new VulkanInstance(vulkan_config);
-	g_physical_device = VulkanPhysicalDevice::GetPhysicalDevice(g_instance);
-	g_device = new VulkanDevice(g_instance, g_physical_device);
+	g_instance = new Zodiac::VulkanInstance(vulkan_config);
+	g_physical_device = Zodiac::VulkanPhysicalDevice::GetPhysicalDevice(g_instance);
+	g_device = new Zodiac::VulkanDevice(g_instance, g_physical_device);
 
 	VkCommandBuffer* commands = new VkCommandBuffer[3]; //Command buffers test
 	g_device->GetComputeCommand(commands, 3);
@@ -35,7 +35,7 @@ int main() {
 		arr[i] = i;
 	}
 
-	g_buffer = new VulkanBuffer(g_device, arr, sizeof(float), 3);
+	g_buffer = new Zodiac::VulkanBuffer(g_device, arr, sizeof(float), 3);
 	g_buffer->SetData();
 
 	g_device->FreeComputeCommand(commands, 3);

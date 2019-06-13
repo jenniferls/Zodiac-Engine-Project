@@ -156,6 +156,7 @@
     <ClInclude Include="Initializers.h" />
     <ClInclude Include="QueueFamilyIndices.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="System.h" />
     <ClInclude Include="Validation.h" />
     <ClInclude Include="VulkanBuffer.h" />
     <ClInclude Include="VulkanConfiguration.h" />
