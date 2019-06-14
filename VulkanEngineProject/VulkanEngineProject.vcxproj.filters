@@ -7,74 +7,84 @@
     <Filter Include="Engine">
       <UniqueIdentifier>{908e0707-3d4b-4f78-b9a9-4dfebed94c05}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Engine\Vulkan">
-      <UniqueIdentifier>{d2274ba2-b0e1-4004-9220-c155dd091a9a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Engine\Vulkan\Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
-    <Filter Include="Engine\Vulkan\Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
     <Filter Include="Engine\Header Files">
       <UniqueIdentifier>{df1960fc-fadd-4d2f-9ef6-45c4c682bbc6}</UniqueIdentifier>
     </Filter>
     <Filter Include="Engine\Source Files">
       <UniqueIdentifier>{fb0f9787-9936-4bc4-add7-44da7379dd0e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Input">
+      <UniqueIdentifier>{e2a5d36e-4d00-47d5-b4bd-4ad7fe492a3e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vulkan">
+      <UniqueIdentifier>{d2274ba2-b0e1-4004-9220-c155dd091a9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Vulkan\Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Vulkan\Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="UI">
+      <UniqueIdentifier>{1ce37d68-8da7-458e-9577-2f92bc11f8dd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Sound">
+      <UniqueIdentifier>{69a8cb02-8e5e-47b4-af5b-212f1b7f63b5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Initializers.cpp">
-      <Filter>Engine\Vulkan\Source Files</Filter>
+      <Filter>Vulkan\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Validation.cpp">
-      <Filter>Engine\Vulkan\Source Files</Filter>
+      <Filter>Vulkan\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VulkanInstance.cpp">
-      <Filter>Engine\Vulkan\Source Files</Filter>
+      <Filter>Vulkan\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VulkanPhysicalDevice.cpp">
-      <Filter>Engine\Vulkan\Source Files</Filter>
+      <Filter>Vulkan\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VulkanDevice.cpp">
-      <Filter>Engine\Vulkan\Source Files</Filter>
+      <Filter>Vulkan\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VulkanBuffer.cpp">
-      <Filter>Engine\Vulkan\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>Engine\Source Files</Filter>
+      <Filter>Vulkan\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="System.cpp">
       <Filter>Engine\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Application.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Initializers.h">
-      <Filter>Engine\Vulkan\Header Files</Filter>
+      <Filter>Vulkan\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VulkanConfiguration.h">
-      <Filter>Engine\Vulkan\Header Files</Filter>
+      <Filter>Vulkan\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Validation.h">
-      <Filter>Engine\Vulkan\Header Files</Filter>
+      <Filter>Vulkan\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VulkanInstance.h">
-      <Filter>Engine\Vulkan\Header Files</Filter>
+      <Filter>Vulkan\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VulkanPhysicalDevice.h">
-      <Filter>Engine\Vulkan\Header Files</Filter>
+      <Filter>Vulkan\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="QueueFamilyIndices.h">
-      <Filter>Engine\Vulkan\Header Files</Filter>
+      <Filter>Vulkan\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VulkanDevice.h">
-      <Filter>Engine\Vulkan\Header Files</Filter>
+      <Filter>Vulkan\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VulkanBuffer.h">
-      <Filter>Engine\Vulkan\Header Files</Filter>
+      <Filter>Vulkan\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Clock.h">
       <Filter>Engine\Header Files</Filter>
@@ -83,6 +93,21 @@
       <Filter>Engine\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="System.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Application.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="EntryPoint.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Settings.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>Input</Filter>
+    </ClInclude>
+    <ClInclude Include="Zodiac.h">
       <Filter>Engine\Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -13,6 +13,8 @@
 #include "VulkanDevice.h"
 #include "VulkanBuffer.h"
 
+#include "Settings.h"
+
 namespace Zodiac {
 	class System {
 	public:
