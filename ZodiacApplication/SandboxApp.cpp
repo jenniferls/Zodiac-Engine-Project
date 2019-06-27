@@ -1,4 +1,4 @@
-#include "Zodiac.h"
+#include "Zodiac/Zodiac.h"
 
 class Sandbox : public Zodiac::Application {
 public:
@@ -8,6 +8,14 @@ public:
 private:
 
 };
+
+Sandbox::Sandbox() {
+
+}
+
+Sandbox::~Sandbox() {
+
+}
 
 Zodiac::Application* Zodiac::CreateApplication() {
 	return new Sandbox();

@@ -20,11 +20,11 @@ void Zodiac::VulkanBuffer::SetData() {
 	memcpy(m_mappedMemory, m_ptr, (unsigned int)m_totalSize);
 }
 
-void Zodiac::VulkanBuffer::SetData(unsigned int count) {
+void Zodiac::VulkanBuffer::SetData(unsigned int count) { //Should not be set to more data than originally allocated
 	memcpy(m_mappedMemory, m_ptr, m_elementSize * count);
 }
 
-void Zodiac::VulkanBuffer::SetData(unsigned int startIndex, unsigned int count) {
+void Zodiac::VulkanBuffer::SetData(unsigned int startIndex, unsigned int count) { //Should not be set to more data than originally allocated
 	memcpy(((char*)m_mappedMemory) + (startIndex * m_elementSize), ((char*)m_ptr) + (startIndex * m_elementSize), m_elementSize * count);
 }
 
