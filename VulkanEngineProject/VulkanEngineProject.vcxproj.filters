@@ -60,6 +60,9 @@
       <Filter>Engine\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Zodiacpch.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Initializers.h">
@@ -108,6 +111,9 @@
       <Filter>Input</Filter>
     </ClInclude>
     <ClInclude Include="Zodiac.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Zodiacpch.h">
       <Filter>Engine\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
