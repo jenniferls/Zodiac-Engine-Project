@@ -21,18 +21,29 @@ void* Zodiac::Window::GetNativeWindow() const {
 	return m_window;
 }
 
+const char** Zodiac::Window::GetGLFWExtensions() const {
+	return glfwExtensions;
+}
+
+uint32_t Zodiac::Window::GetGLFWExtCount() const {
+	return glfwExtensionCount;
+}
+
 void Zodiac::Window::Init(const WindowProperties& props) {
 	std::cout << ">>>> Initializing GLFW <<<<" << std::endl;
 	glfwInit();
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); //Not a resizable window
 	if (!glfwVulkanSupported())
 	{
 		throw std::runtime_error("GLFW ERROR: VULKAN IS NOT SUPPORTED!");
 	}
 	m_window = glfwCreateWindow(props.Width, props.Height, props.Title.c_str(), nullptr, nullptr);
+
+	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
 	std::cout << "GLFW initialization successful!" << std::endl;
 }
 

@@ -149,5 +149,8 @@
     <ClInclude Include="Window.h">
       <Filter>Engine\Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="VulkanSwapchain.h">
+      <Filter>Vulkan\Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

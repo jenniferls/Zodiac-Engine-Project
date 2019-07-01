@@ -9,7 +9,7 @@
 namespace Zodiac {
 	class VulkanInstance {
 	public:
-		VulkanInstance(VulkanConfiguration& config);
+		VulkanInstance(VulkanConfiguration& config, const char** glfwExtensions, int glfwExtCount);
 		~VulkanInstance();
 
 		VkInstance& GetInstance();

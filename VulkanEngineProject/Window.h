@@ -27,11 +27,15 @@ namespace Zodiac {
 		void Shutdown();
 
 		void* GetNativeWindow() const;
+		const char** GetGLFWExtensions() const;
+		uint32_t GetGLFWExtCount() const;
 
 	private:
 		void Init(const WindowProperties& props);
 
 		GLFWwindow* m_window = nullptr;
 		bool windowShouldClose = false;
+		uint32_t glfwExtensionCount = 0;
+		const char** glfwExtensions;
 	};
 }

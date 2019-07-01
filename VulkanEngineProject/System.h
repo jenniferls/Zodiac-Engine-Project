@@ -26,6 +26,8 @@ namespace Zodiac {
 		void Run();
 
 	private:
+		bool InitVulkan();
+
 		VulkanConfiguration m_vulkanConfig;
 		VulkanInstance* m_instance;
 		VulkanPhysicalDevice* m_physical_device;

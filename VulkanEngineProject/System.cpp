@@ -18,9 +18,7 @@ Zodiac::System::~System() {
 }
 
 bool Zodiac::System::Init() {
-	m_instance = new Zodiac::VulkanInstance(m_vulkanConfig);
-	m_physical_device = Zodiac::VulkanPhysicalDevice::GetPhysicalDevice(m_instance);
-	m_device = new Zodiac::VulkanDevice(m_instance, m_physical_device);
+	InitVulkan();
 
 	/////// Tests ///////
 	VkCommandBuffer* commands = new VkCommandBuffer[3]; //Command buffers test
@@ -47,4 +45,12 @@ void Zodiac::System::Run() {
 		m_window->PollWindowEvents();
 	}
 	m_window->Shutdown();
+}
+
+bool Zodiac::System::InitVulkan() {
+	m_instance = new Zodiac::VulkanInstance(m_vulkanConfig, m_window->GetGLFWExtensions(), m_window->GetGLFWExtCount());
+	m_physical_device = Zodiac::VulkanPhysicalDevice::GetPhysicalDevice(m_instance);
+	m_device = new Zodiac::VulkanDevice(m_instance, m_physical_device);
+
+	return true;
 }
