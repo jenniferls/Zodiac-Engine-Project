@@ -24,7 +24,6 @@ namespace Zodiac {
 
 		bool Init();
 		void Run();
-		void Shutdown();
 
 	private:
 		VulkanConfiguration m_vulkanConfig;

@@ -12,9 +12,14 @@ void Zodiac::Application::Init() {
 }
 
 void Zodiac::Application::Run() {
-	while (m_running) {
-
+	while (!m_window->WindowShouldClose()) {
+		m_window->PollWindowEvents();
 	}
+	m_window->Shutdown();
+}
+
+Zodiac::Window& Zodiac::Application::GetWindow() {
+	return *m_window;
 }
 
 bool Zodiac::Application::OnWindowClose() {

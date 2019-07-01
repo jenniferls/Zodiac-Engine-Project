@@ -48,7 +48,3 @@ void Zodiac::System::Run() {
 	}
 	m_window->Shutdown();
 }
-
-void Zodiac::System::Shutdown() {
-
-}

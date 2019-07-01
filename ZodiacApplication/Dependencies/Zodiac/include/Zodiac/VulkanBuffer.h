@@ -15,8 +15,13 @@ namespace Zodiac {
 		virtual void SetData(unsigned int count);
 		virtual void SetData(unsigned int startIndex, unsigned int count);
 
+		//virtual void Resize();
+		//virtual void Transfer();
+
 	private:
 		void CreateBuffer();
+		void DestroyBuffer();
+		void Flush();
 		uint32_t FindMemoryType(VkMemoryPropertyFlags flags, uint32_t typeFilter);
 
 		VulkanDevice* m_device;

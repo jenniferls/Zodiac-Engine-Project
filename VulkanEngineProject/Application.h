@@ -11,12 +11,15 @@ namespace Zodiac {
 		void Init();
 		void Run();
 
+		Window& GetWindow();
+
 	private:
 		bool OnWindowClose();
 
 		static Application* s_instance;
 		std::unique_ptr<Window> m_window;
 		bool m_running = true;
+
 	};
 
 	// To be defined in CLIENT
