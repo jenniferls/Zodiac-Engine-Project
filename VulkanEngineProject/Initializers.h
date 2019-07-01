@@ -14,5 +14,8 @@ namespace Zodiac { namespace Initializers {
 		VkCommandBufferAllocateInfo CommandBufferAllocateInfo(VkCommandPool pool, uint32_t count);
 		VkBufferCreateInfo BufferCreateInfo(VkDeviceSize size, VkBufferUsageFlags usage_flags);
 		VkMemoryAllocateInfo MemoryAllocateInfo(VkDeviceSize size, uint32_t memory_type_index);
+
+		VkSubmitInfo SubmitInfo();
+		VkRenderPassBeginInfo RenderPassBeginInfo();
 	}
 }

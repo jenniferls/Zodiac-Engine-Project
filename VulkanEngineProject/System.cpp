@@ -1,9 +1,11 @@
 #include "System.h"
-//#define new new ( _NORMAL_BLOCK , __FILE__ , __LINE__ ) //For detecting memory leaks
+#define new new ( _NORMAL_BLOCK , __FILE__ , __LINE__ ) //For detecting memory leaks
 
 Zodiac::System::System(const char* applicationName) {
 	m_vulkanConfig.app_name = applicationName;
 	m_vulkanConfig.app_version = VK_MAKE_VERSION(0, 1, 0);
+
+	m_window = std::unique_ptr<Window>(Window::Create());
 }
 
 Zodiac::System::~System() {
@@ -37,38 +39,16 @@ bool Zodiac::System::Init() {
 	delete[] arr;
 	//////////////////
 
-	InitWindow();
-
 	return true;
 }
 
 void Zodiac::System::Run() {
-	while (!glfwWindowShouldClose(m_window)) {
-		glfwPollEvents();
+	while (!m_window->WindowShouldClose()) {
+		m_window->PollWindowEvents();
 	}
-	Shutdown();
+	m_window->Shutdown();
 }
 
 void Zodiac::System::Shutdown() {
-	ShutdownWindow();
-}
 
-void Zodiac::System::InitWindow() {
-	std::cout << ">>>> Initializing GLFW <<<<" << std::endl;
-	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
-	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-	if (!glfwVulkanSupported())
-	{
-		throw std::runtime_error("GLFW ERROR: VULKAN IS NOT SUPPORTED!");
-	}
-	m_window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, m_vulkanConfig.app_name, nullptr, nullptr);
-	std::cout << "GLFW initialization successful!" << std::endl;
-}
-
-void Zodiac::System::ShutdownWindow() {
-	glfwDestroyWindow(m_window);
-	glfwTerminate();
 }

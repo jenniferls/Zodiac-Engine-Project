@@ -11,7 +11,7 @@ Zodiac::VulkanDevice::VulkanDevice(VulkanInstance* instance, VulkanPhysicalDevic
 	VkDeviceCreateInfo device_info = Initializers::DeviceCreateInfo(queue_create_info, m_physical_device->GetDeviceFeatures());
 	VkCommandPoolCreateInfo compute_pool_info = Initializers::CommandPoolCreateinfo(m_physical_device->GetFamilyIndices().compute_indices);
 
-	vkCreateDevice(m_physical_device->GetPhysicalDevice(), &device_info, nullptr, &m_device);
+	ErrorCheck(vkCreateDevice(m_physical_device->GetPhysicalDevice(), &device_info, nullptr, &m_device));
 	vkGetDeviceQueue(m_device, m_physical_device->GetFamilyIndices().compute_indices, 0, &m_compute_queue);
 	ErrorCheck(vkCreateCommandPool(m_device, &compute_pool_info, nullptr, &m_compute_command_pool));
 }
