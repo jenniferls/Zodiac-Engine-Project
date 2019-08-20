@@ -81,6 +81,12 @@
     <ClCompile Include="Window.cpp">
       <Filter>Engine\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="OrthographicCamera.cpp">
+      <Filter>Renderer\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PerspectiveCamera.cpp">
+      <Filter>Renderer\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Initializers.h">
@@ -128,9 +134,6 @@
     <ClInclude Include="Zodiacpch.h">
       <Filter>Engine\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>Renderer\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Material.h">
       <Filter>Renderer\Header Files</Filter>
     </ClInclude>
@@ -151,6 +154,15 @@
     </ClInclude>
     <ClInclude Include="VulkanSwapchain.h">
       <Filter>Vulkan\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OrthographicCamera.h">
+      <Filter>Renderer\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PerspectiveCamera.h">
+      <Filter>Renderer\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Renderer\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

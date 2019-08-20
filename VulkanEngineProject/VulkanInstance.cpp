@@ -13,6 +13,7 @@ Zodiac::VulkanInstance::VulkanInstance(VulkanConfiguration& config, const char**
 
 	VkApplicationInfo applicationInfo = Initializers::ApplicationInfo(config);
 	VkInstanceCreateInfo instanceInfo = Initializers::InstanceCreateInfo(applicationInfo, m_layers, m_extensions);
+	VkDebugUtilsMessengerCreateInfoEXT debugUtilsInfo = Initializers::DebugUtilsMessengerCreateInfo();
 	ErrorCheck(vkCreateInstance(&instanceInfo, NULL, &m_instance));
 }
 

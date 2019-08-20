@@ -173,8 +173,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
+    <ClCompile Include="OrthographicCamera.cpp" />
     <ClCompile Include="Initializers.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="PerspectiveCamera.cpp" />
     <ClCompile Include="System.cpp" />
     <ClCompile Include="Validation.cpp" />
     <ClCompile Include="VulkanBuffer.cpp" />
@@ -186,17 +188,19 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
-    <ClInclude Include="Camera.h" />
+    <ClInclude Include="OrthographicCamera.h" />
     <ClInclude Include="Clock.h" />
     <ClInclude Include="EntryPoint.h" />
     <ClInclude Include="Initializers.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Model.h" />
+    <ClInclude Include="PerspectiveCamera.h" />
     <ClInclude Include="QueueFamilyIndices.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="System.h" />
+    <ClInclude Include="Texture.h" />
     <ClInclude Include="Validation.h" />
     <ClInclude Include="Vertex.h" />
     <ClInclude Include="VulkanBuffer.h" />
