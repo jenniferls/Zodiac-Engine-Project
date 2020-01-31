@@ -4,10 +4,16 @@
 #include <iostream>
 #include <glm/glm.hpp>
 
+//#include "vulkan/vulkan.h"
+//#include "VulkanInstance.h"
+//#include "VulkanPhysicalDevice.h"
+//#include "VulkanDevice.h"
+//#include "VulkanSwapchain.h"
+
 namespace Zodiac {
 	class Renderer {
 	public:
-		Renderer();
+		Renderer(/*VulkanInstance* instance, VulkanPhysicalDevice* physicalDevice, VulkanDevice* device*/);
 		~Renderer();
 
 		static void BeginScene();
@@ -21,6 +27,11 @@ namespace Zodiac {
 		void DrawIndexed();
 
 	private:
+		//VulkanInstance* m_instance;
+		//VulkanPhysicalDevice* m_physicalDevice;
+		//VulkanDevice* m_device;
+
+		//VulkanSwapchain m_swapchain;
 
 	};
 }

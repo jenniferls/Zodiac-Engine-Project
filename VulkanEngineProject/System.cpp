@@ -20,6 +20,8 @@ Zodiac::System::~System() {
 bool Zodiac::System::Init() {
 	InitVulkan();
 
+	std::cout << "Selected physical device: " << m_physical_device->GetDeviceProperties().deviceName << std::endl;
+
 	/////// Tests ///////
 	VkCommandBuffer* commands = new VkCommandBuffer[3]; //Command buffers test
 	m_device->GetComputeCommand(commands, 3);

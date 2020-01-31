@@ -23,12 +23,14 @@ VkInstanceCreateInfo Zodiac::Initializers::InstanceCreateInfo(VkApplicationInfo&
 	return info;
 }
 
-VkDeviceCreateInfo Zodiac::Initializers::DeviceCreateInfo(std::vector<VkDeviceQueueCreateInfo>& queue_create_info, VkPhysicalDeviceFeatures& physical_device_features) {
+VkDeviceCreateInfo Zodiac::Initializers::DeviceCreateInfo(std::vector<VkDeviceQueueCreateInfo>& queue_create_info, VkPhysicalDeviceFeatures& physical_device_features, std::vector<const char*>& device_extensions) {
 	VkDeviceCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	info.pQueueCreateInfos = queue_create_info.data();
 	info.queueCreateInfoCount = (uint32_t)queue_create_info.size();
 	info.pEnabledFeatures = &physical_device_features;
+	info.ppEnabledExtensionNames = device_extensions.data();
+	info.enabledExtensionCount = (uint32_t)device_extensions.size();
 
 	return info;
 }
@@ -39,6 +41,18 @@ VkDeviceQueueCreateInfo Zodiac::Initializers::DeviceQueueCreate(uint32_t queue_f
 	info.queueFamilyIndex = queue_family_index;
 	info.queueCount = 1;
 	info.pQueuePriorities = &priority;
+
+	return info;
+}
+
+VkSwapchainCreateInfoKHR Zodiac::Initializers::SwapchainCreateInfo(VkSwapchainKHR& swapchain, VkSurfaceKHR& surface, VkPresentModeKHR& presentMode)
+{
+	VkSwapchainCreateInfoKHR info = {};
+
+	info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+	info.presentMode = presentMode;
+	info.surface = surface;
+	info.oldSwapchain = swapchain;
 
 	return info;
 }

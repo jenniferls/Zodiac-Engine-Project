@@ -11,14 +11,14 @@ namespace Zodiac {
 
 		VkPhysicalDevice& GetPhysicalDevice();
 		QueueFamilyIndices& GetFamilyIndices();
-		VkPhysicalDeviceProperties& GetDevicePropteries();
+		VkPhysicalDeviceProperties& GetDeviceProperties();
 		VkPhysicalDeviceFeatures& GetDeviceFeatures();
 		VkPhysicalDeviceMemoryProperties& GetDeviceMemoryProperties();
 
 		static VulkanPhysicalDevice* GetPhysicalDevice(VulkanInstance* instance);
 
 	private:
-		VulkanPhysicalDevice(VulkanInstance* instance, VkPhysicalDevice device, QueueFamilyIndices indices);
+		VulkanPhysicalDevice(VulkanInstance* instance, VkPhysicalDevice device, QueueFamilyIndices indices); //Private constructor only called for getting a new physical device
 		static std::vector<VkPhysicalDevice> GetAvailablePhysicalDevices(VulkanInstance* instance);
 		static bool PhysicalDeviceSupported(VkPhysicalDevice& device, QueueFamilyIndices& family_indices);
 		static bool QueueFamilySupported(VkPhysicalDevice& device, QueueFamilyIndices& family_indices);

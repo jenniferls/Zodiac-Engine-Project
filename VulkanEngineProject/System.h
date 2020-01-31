@@ -1,6 +1,4 @@
 #pragma once
-//#define GLFW_INCLUDE_VULKAN
-//#include <GLFW/glfw3.h>
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO
@@ -16,6 +14,7 @@
 #include "Settings.h"
 #include "Window.h"
 
+//This class acts more or less as a testbed for now
 namespace Zodiac {
 	class System {
 	public:

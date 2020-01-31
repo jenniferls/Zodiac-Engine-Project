@@ -82,7 +82,7 @@
 #if defined(IMGUI_IMPL_OPENGL_LOADER_GL3W)
 #include <GL/gl3w.h>
 #elif defined(IMGUI_IMPL_OPENGL_LOADER_GLEW)
-#include "../glew/include/GL/glew.h"
+#include "../Dependencies/glew/include/GL/glew.h"
 #elif defined(IMGUI_IMPL_OPENGL_LOADER_GLAD)
 #include <glad/glad.h>
 #else

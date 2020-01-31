@@ -22,11 +22,15 @@ namespace Zodiac {
 		void FreeComputeCommand(VkCommandBuffer* buffers, uint32_t count);
 
 	private:
+		std::vector<const char*> m_extensions;
+
 		VulkanInstance* m_instance;
 		VulkanPhysicalDevice* m_physical_device;
 		VkDevice m_device;
 		VkQueue m_compute_queue;
-		float m_priority;
+		VkQueue m_graphics_queue;
 		VkCommandPool m_compute_command_pool;
+		VkCommandPool m_graphics_command_pool;
+		float m_priority;
 	};
 }
