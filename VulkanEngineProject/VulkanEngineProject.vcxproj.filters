@@ -90,6 +90,12 @@
     <ClCompile Include="VulkanSwapchain.cpp">
       <Filter>Vulkan\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="VulkanSemaphore.h">
+      <Filter>Vulkan\Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanSemaphore.cpp">
+      <Filter>Vulkan\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Initializers.h">

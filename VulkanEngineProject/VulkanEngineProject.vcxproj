@@ -183,6 +183,8 @@
     <ClCompile Include="VulkanDevice.cpp" />
     <ClCompile Include="VulkanInstance.cpp" />
     <ClCompile Include="VulkanPhysicalDevice.cpp" />
+    <ClCompile Include="VulkanSemaphore.cpp" />
+    <ClCompile Include="VulkanSemaphore.h" />
     <ClCompile Include="VulkanSwapchain.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="Zodiacpch.cpp" />
