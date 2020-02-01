@@ -9,7 +9,7 @@
 namespace Zodiac {
 	class VulkanSwapchain {
 	public:
-		VulkanSwapchain(/*VulkanInstance* instance, VulkanPhysicalDevice* physicalDevice, VkDevice* device*/);
+		VulkanSwapchain(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice* device);
 		~VulkanSwapchain();
 
 		uint32_t GetImageCount() const;
@@ -21,9 +21,9 @@ namespace Zodiac {
 		VkPresentModeKHR& GetPresentMode();
 
 	private:
-		//VulkanInstance* m_instance;
-		//VulkanPhysicalDevice* m_physicalDevice;
-		//VkDevice* m_device;
+		VkInstance m_instance;
+		VkPhysicalDevice m_physicalDevice;
+		VkDevice* m_device;
 
 		VkSwapchainKHR m_swapchain;
 		VkFormat m_colorFormat;

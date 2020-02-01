@@ -1,10 +1,10 @@
 #include "VulkanSwapchain.h"
 
-Zodiac::VulkanSwapchain::VulkanSwapchain(/*VulkanInstance* instance, VulkanPhysicalDevice* physicalDevice, VkDevice* device*/)
+Zodiac::VulkanSwapchain::VulkanSwapchain(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice* device)
 {
-	//m_instance = instance;
-	//m_physicalDevice = physicalDevice;
-	//m_device = device;
+	m_instance = instance;
+	m_physicalDevice = physicalDevice;
+	m_device = device;
 
 }
 

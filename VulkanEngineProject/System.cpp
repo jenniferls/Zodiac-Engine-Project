@@ -58,7 +58,7 @@ bool Zodiac::System::InitVulkan() {
 	m_instance = new Zodiac::VulkanInstance(m_vulkanConfig, m_window->GetGLFWExtensions(), m_window->GetGLFWExtCount());
 	m_physical_device = Zodiac::VulkanPhysicalDevice::GetPhysicalDevice(m_instance);
 	m_device = new Zodiac::VulkanDevice(m_instance, m_physical_device);
-	//m_swapchain = new Zodiac::VulkanSwapchain(m_instance->GetInstance(), m_physical_device->GetPhysicalDevice(), m_device->GetDevice());
+	m_swapchain = new Zodiac::VulkanSwapchain(m_instance->GetInstance(), m_physical_device->GetPhysicalDevice(), m_device->GetDevice());
 
 	m_presentSemaphore = new Zodiac::VulkanSemaphore(m_device);
 	m_renderCompleteSemaphore = new Zodiac::VulkanSemaphore(m_device);
