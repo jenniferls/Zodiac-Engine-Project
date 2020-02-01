@@ -1,9 +1,6 @@
 #pragma once
 #include <vulkan/vulkan.h>
 #include <vector>
-//#include "VulkanInstance.h"
-//#include "VulkanPhysicalDevice.h"
-//#include "VulkanDevice.h"
 #include "VulkanSwapChainBuffer.h"
 
 namespace Zodiac {

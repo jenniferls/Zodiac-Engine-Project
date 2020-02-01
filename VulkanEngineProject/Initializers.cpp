@@ -65,6 +65,20 @@ VkSemaphoreCreateInfo Zodiac::Initializers::SemaphoreCreateInfo()
 	return info;
 }
 
+VkSubmitInfo Zodiac::Initializers::SubmitInfo(VkSemaphore& present_semaphore, VkSemaphore& render_semaphore, VkPipelineStageFlags flags)
+{
+	VkSubmitInfo info = {};
+
+	info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	info.pWaitDstStageMask = &flags;
+	info.waitSemaphoreCount = 1;
+	info.pWaitSemaphores = &present_semaphore;
+	info.signalSemaphoreCount = 1;
+	info.pSignalSemaphores = &render_semaphore;
+
+	return info;
+}
+
 VkCommandPoolCreateInfo Zodiac::Initializers::CommandPoolCreateinfo(uint32_t queue_family_index, VkCommandPoolCreateFlags flags) {
 	VkCommandPoolCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;

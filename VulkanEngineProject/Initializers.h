@@ -13,6 +13,7 @@ namespace Zodiac { namespace Initializers {
 		VkDeviceQueueCreateInfo DeviceQueueCreate(uint32_t queue_family_index, float& priority);
 		VkSwapchainCreateInfoKHR SwapchainCreateInfo(VkSwapchainKHR& swapchain, VkSurfaceKHR& surface, VkPresentModeKHR& presentMode);
 		VkSemaphoreCreateInfo SemaphoreCreateInfo();
+		VkSubmitInfo SubmitInfo(VkSemaphore& present_semaphore, VkSemaphore& render_semaphore, VkPipelineStageFlags flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 		VkCommandPoolCreateInfo CommandPoolCreateinfo(uint32_t queue_family_index, VkCommandPoolCreateFlags flags = 0);
 		VkCommandBufferAllocateInfo CommandBufferAllocateInfo(VkCommandPool pool, uint32_t count);
 		VkBufferCreateInfo BufferCreateInfo(VkDeviceSize size, VkBufferUsageFlags usage_flags);
@@ -20,7 +21,6 @@ namespace Zodiac { namespace Initializers {
 
 		VkDebugUtilsMessengerCreateInfoEXT DebugUtilsMessengerCreateInfo();
 
-		VkSubmitInfo SubmitInfo();
 		VkRenderPassBeginInfo RenderPassBeginInfo();
 	}
 }
