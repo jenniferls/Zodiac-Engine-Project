@@ -1,6 +1,5 @@
 #pragma once
 #include "vulkan/vulkan.h"
-#include "Initializers.h"
 #include "VulkanDevice.h"
 
 namespace Zodiac {

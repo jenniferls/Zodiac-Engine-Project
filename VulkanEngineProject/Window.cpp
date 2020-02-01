@@ -52,6 +52,17 @@ void Zodiac::Window::Shutdown() {
 	glfwTerminate();
 }
 
+bool Zodiac::Window::CreateSurface(VkInstance& instance)
+{
+	ErrorCheck(glfwCreateWindowSurface(instance, m_window, NULL, &m_surface));
+	return true;
+}
+
+void Zodiac::Window::DestroySurface(VkInstance& instance)
+{
+	vkDestroySurfaceKHR(instance, m_surface, NULL);
+}
+
 bool Zodiac::Window::WindowShouldClose() {
 	return glfwWindowShouldClose(m_window);
 }

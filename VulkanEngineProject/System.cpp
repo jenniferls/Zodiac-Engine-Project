@@ -51,11 +51,13 @@ void Zodiac::System::Run() {
 	while (!m_window->WindowShouldClose()) {
 		m_window->PollWindowEvents();
 	}
+	m_window->DestroySurface(m_instance->GetInstance());
 	m_window->Shutdown();
 }
 
 bool Zodiac::System::InitVulkan() {
 	m_instance = new Zodiac::VulkanInstance(m_vulkanConfig, m_window->GetGLFWExtensions(), m_window->GetGLFWExtCount());
+	m_window->CreateSurface(m_instance->GetInstance());
 	m_physical_device = Zodiac::VulkanPhysicalDevice::GetPhysicalDevice(m_instance);
 	m_device = new Zodiac::VulkanDevice(m_instance, m_physical_device);
 	m_swapchain = new Zodiac::VulkanSwapchain(m_instance->GetInstance(), m_physical_device->GetPhysicalDevice(), m_device->GetDevice());

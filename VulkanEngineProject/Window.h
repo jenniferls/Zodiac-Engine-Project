@@ -5,6 +5,8 @@
 #include <string>
 #include <iostream>
 
+#include "Validation.h"
+
 namespace Zodiac {
 	struct WindowProperties {
 		std::string Title;
@@ -26,6 +28,9 @@ namespace Zodiac {
 		void PollWindowEvents();
 		void Shutdown();
 
+		bool CreateSurface(VkInstance& instance);
+		void DestroySurface(VkInstance& instance);
+
 		void* GetNativeWindow() const;
 		const char** GetGLFWExtensions() const;
 		uint32_t GetGLFWExtCount() const;
@@ -34,6 +39,7 @@ namespace Zodiac {
 		void Init(const WindowProperties& props);
 
 		GLFWwindow* m_window = nullptr;
+		VkSurfaceKHR m_surface;
 		bool windowShouldClose = false;
 		uint32_t glfwExtensionCount = 0;
 		const char** glfwExtensions;

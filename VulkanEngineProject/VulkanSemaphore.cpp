@@ -1,4 +1,6 @@
 #include "VulkanSemaphore.h"
+#include "Initializers.h"
+#include "Validation.h"
 
 Zodiac::VulkanSemaphore::VulkanSemaphore(VulkanDevice* device)
 {

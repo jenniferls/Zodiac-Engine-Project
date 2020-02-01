@@ -1,4 +1,6 @@
 #include "VulkanDevice.h"
+#include "Validation.h"
+#include "Initializers.h"
 
 Zodiac::VulkanDevice::VulkanDevice(VulkanInstance* instance, VulkanPhysicalDevice* physical_device) {
 	m_extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME); //Device extension
