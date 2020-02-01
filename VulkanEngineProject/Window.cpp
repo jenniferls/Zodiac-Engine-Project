@@ -1,4 +1,6 @@
+#include <Zodiacpch.h>
 #include "Window.h"
+#include "Validation.h"
 #define new new ( _NORMAL_BLOCK , __FILE__ , __LINE__ ) //For detecting memory leaks
 
 Zodiac::Window::Window(const WindowProperties& props) {
@@ -47,20 +49,44 @@ void Zodiac::Window::Init(const WindowProperties& props) {
 	std::cout << "GLFW initialization successful!" << std::endl;
 }
 
+void Zodiac::Window::QuerySurfaceDetails(VulkanPhysicalDevice* physicalDevice)
+{
+	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physicalDevice->GetPhysicalDevice(), m_surface, &m_surfaceDetails.capabilities);
+
+	uint32_t formatCount = 0;
+	vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice->GetPhysicalDevice(), m_surface, &formatCount, m_surfaceDetails.supported_formats.data());
+	if (formatCount != 0)
+	{
+		m_surfaceDetails.supported_formats.resize(formatCount);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(physicalDevice->GetPhysicalDevice(), m_surface, &formatCount, m_surfaceDetails.supported_formats.data());
+	}
+
+	uint32_t presentModeCount = 0;
+	vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice->GetPhysicalDevice(), m_surface, &presentModeCount, nullptr);
+
+	if (presentModeCount != 0)
+	{
+		m_surfaceDetails.supported_present_modes.resize(presentModeCount);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(physicalDevice->GetPhysicalDevice(), m_surface, &presentModeCount, m_surfaceDetails.supported_present_modes.data());
+	}
+}
+
 void Zodiac::Window::Shutdown() {
 	glfwDestroyWindow(m_window);
 	glfwTerminate();
 }
 
-bool Zodiac::Window::CreateSurface(VkInstance& instance)
+bool Zodiac::Window::CreateSurface(VulkanInstance* instance, VulkanPhysicalDevice* physicalDevice)
 {
-	ErrorCheck(glfwCreateWindowSurface(instance, m_window, NULL, &m_surface));
+	ErrorCheck(glfwCreateWindowSurface(instance->GetInstance(), m_window, NULL, &m_surface));
+	QuerySurfaceDetails(physicalDevice);
+
 	return true;
 }
 
-void Zodiac::Window::DestroySurface(VkInstance& instance)
+void Zodiac::Window::DestroySurface(VulkanInstance* instance)
 {
-	vkDestroySurfaceKHR(instance, m_surface, NULL);
+	vkDestroySurfaceKHR(instance->GetInstance(), m_surface, NULL);
 }
 
 bool Zodiac::Window::WindowShouldClose() {

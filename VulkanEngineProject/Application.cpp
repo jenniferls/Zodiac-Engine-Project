@@ -1,3 +1,4 @@
+#include <Zodiacpch.h>
 #include "Application.h"
 
 Zodiac::Application* Zodiac::Application::s_instance = nullptr;

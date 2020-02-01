@@ -4,7 +4,6 @@
 
 #include "Validation.h"
 #include "VulkanConfiguration.h"
-#include "VulkanSwapchain.h"
 
 namespace Zodiac { namespace Initializers {
 		VkApplicationInfo ApplicationInfo(VulkanConfiguration& config);

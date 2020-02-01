@@ -1,3 +1,4 @@
+#include <Zodiacpch.h>
 #include "OrthographicCamera.h"
 
 Zodiac::OrthographicCamera::OrthographicCamera(float left, float right, float bottom, float top) {

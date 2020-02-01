@@ -1,8 +1,6 @@
 #pragma once
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#include <iostream>
-#include <glm/glm.hpp>
 
 //#include "vulkan/vulkan.h"
 //#include "VulkanInstance.h"
@@ -21,7 +19,7 @@ namespace Zodiac {
 		static void EndScene();
 		static void Flush();
 
-		void SetClearColor(const glm::vec4 color);
+		//void SetClearColor(const glm::vec4 color);
 		void Clear();
 
 		void DrawIndexed();

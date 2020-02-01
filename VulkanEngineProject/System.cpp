@@ -1,4 +1,8 @@
+#include <Zodiacpch.h>
 #include "System.h"
+
+#include <vulkan/vulkan.h>
+#include "Validation.h"
 #define new new ( _NORMAL_BLOCK , __FILE__ , __LINE__ ) //For detecting memory leaks
 
 Zodiac::System::System(const char* applicationName) {
@@ -51,16 +55,16 @@ void Zodiac::System::Run() {
 	while (!m_window->WindowShouldClose()) {
 		m_window->PollWindowEvents();
 	}
-	m_window->DestroySurface(m_instance->GetInstance());
+	m_window->DestroySurface(m_instance);
 	m_window->Shutdown();
 }
 
 bool Zodiac::System::InitVulkan() {
 	m_instance = new Zodiac::VulkanInstance(m_vulkanConfig, m_window->GetGLFWExtensions(), m_window->GetGLFWExtCount());
-	m_window->CreateSurface(m_instance->GetInstance());
 	m_physical_device = Zodiac::VulkanPhysicalDevice::GetPhysicalDevice(m_instance);
+	m_window->CreateSurface(m_instance, m_physical_device);
 	m_device = new Zodiac::VulkanDevice(m_instance, m_physical_device);
-	m_swapchain = new Zodiac::VulkanSwapchain(m_instance->GetInstance(), m_physical_device->GetPhysicalDevice(), m_device->GetDevice());
+	m_swapchain = new Zodiac::VulkanSwapchain(m_instance, m_physical_device, m_device);
 
 	m_presentSemaphore = new Zodiac::VulkanSemaphore(m_device);
 	m_renderCompleteSemaphore = new Zodiac::VulkanSemaphore(m_device);

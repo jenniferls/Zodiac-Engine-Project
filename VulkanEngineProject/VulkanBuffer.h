@@ -1,9 +1,7 @@
 #pragma once
 #include <vulkan\vulkan.h>
 
-#include "Validation.h"
 #include "VulkanDevice.h"
-#include "Initializers.h"
 
 namespace Zodiac {
 	class VulkanBuffer {

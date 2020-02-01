@@ -1,4 +1,6 @@
 #include "VulkanBuffer.h"
+#include "Validation.h"
+#include "Initializers.h"
 
 Zodiac::VulkanBuffer::VulkanBuffer(VulkanDevice* device, void* ptr, unsigned int elementSize, unsigned int count, VkBufferUsageFlags usageFlags) {
 	m_device = device;

@@ -1,4 +1,5 @@
 #include "VulkanPhysicalDevice.h"
+#include <vector>
 
 Zodiac::VulkanPhysicalDevice::VulkanPhysicalDevice(VulkanInstance* instance, VkPhysicalDevice device, QueueFamilyIndices indices) {
 	m_instance = instance;
@@ -35,7 +36,6 @@ bool Zodiac::VulkanPhysicalDevice::QueueFamilySupported(VkPhysicalDevice& device
 
 	for (int i = 0; i < queue_families.size(); i++) { //Loop through the gathered queue families and test their support
 		if (queue_families[i].queueCount > 0) {
-			//vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_swapchain, );
 
 			if (queue_families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
 				family_indices.graphics_indices = i;

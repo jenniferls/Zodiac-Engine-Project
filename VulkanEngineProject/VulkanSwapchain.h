@@ -1,12 +1,14 @@
 #pragma once
 #include <vulkan/vulkan.h>
-#include <vector>
 #include "VulkanSwapChainBuffer.h"
+#include "VulkanInstance.h"
+#include "VulkanPhysicalDevice.h"
+#include "VulkanDevice.h"
 
 namespace Zodiac {
 	class VulkanSwapchain {
 	public:
-		VulkanSwapchain(VkInstance instance, VkPhysicalDevice physicalDevice, VkDevice* device);
+		VulkanSwapchain(VulkanInstance* instance, VulkanPhysicalDevice* physicalDevice, VulkanDevice* device);
 		~VulkanSwapchain();
 
 		uint32_t GetImageCount() const;
@@ -23,6 +25,7 @@ namespace Zodiac {
 		VkDevice* m_device;
 
 		VkSwapchainKHR m_swapchain;
+
 		VkFormat m_colorFormat;
 		VkColorSpaceKHR m_colorSpace;
 		VkSurfaceKHR m_surface;

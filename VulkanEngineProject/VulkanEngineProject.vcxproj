@@ -203,6 +203,7 @@
     <ClInclude Include="QueueFamilyIndices.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Settings.h" />
+    <ClInclude Include="SurfaceDetails.h" />
     <ClInclude Include="System.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Validation.h" />

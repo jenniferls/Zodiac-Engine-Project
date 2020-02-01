@@ -2,10 +2,9 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#include <string>
-#include <iostream>
-
-#include "Validation.h"
+#include "SurfaceDetails.h"
+#include "VulkanInstance.h"
+#include "VulkanPhysicalDevice.h"
 
 namespace Zodiac {
 	struct WindowProperties {
@@ -28,8 +27,8 @@ namespace Zodiac {
 		void PollWindowEvents();
 		void Shutdown();
 
-		bool CreateSurface(VkInstance& instance);
-		void DestroySurface(VkInstance& instance);
+		bool CreateSurface(VulkanInstance* instance, VulkanPhysicalDevice* physicalDevice);
+		void DestroySurface(VulkanInstance* instance);
 
 		void* GetNativeWindow() const;
 		const char** GetGLFWExtensions() const;
@@ -37,9 +36,13 @@ namespace Zodiac {
 
 	private:
 		void Init(const WindowProperties& props);
+		void QuerySurfaceDetails(VulkanPhysicalDevice* physicalDevice);
 
 		GLFWwindow* m_window = nullptr;
+
 		VkSurfaceKHR m_surface;
+		SurfaceDetails m_surfaceDetails;
+
 		bool windowShouldClose = false;
 		uint32_t glfwExtensionCount = 0;
 		const char** glfwExtensions;
