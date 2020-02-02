@@ -96,6 +96,9 @@
     <ClCompile Include="VulkanSemaphore.cpp">
       <Filter>Vulkan\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="VulkanSurface.cpp">
+      <Filter>Vulkan\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Initializers.h">
@@ -180,6 +183,9 @@
       <Filter>Renderer\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SurfaceDetails.h">
+      <Filter>Vulkan\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanSurface.h">
       <Filter>Vulkan\Header Files</Filter>
     </ClInclude>
   </ItemGroup>

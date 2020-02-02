@@ -1,4 +1,6 @@
 #include "VulkanInstance.h"
+#include "Validation.h"
+#include "Initializers.h"
 
 Zodiac::VulkanInstance::VulkanInstance(VulkanConfiguration& config, const char** glfwExtensions, int glfwExtCount) {
 	m_layers.push_back("VK_LAYER_KHRONOS_validation");

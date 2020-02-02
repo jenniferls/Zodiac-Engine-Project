@@ -2,8 +2,6 @@
 #include <vector>
 #include <vulkan\vulkan.h>
 
-#include "Validation.h"
-#include "Initializers.h"
 #include "VulkanConfiguration.h"
 
 namespace Zodiac {

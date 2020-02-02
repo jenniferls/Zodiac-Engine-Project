@@ -4,6 +4,7 @@
 #include "VulkanPhysicalDevice.h"
 #include "VulkanDevice.h"
 #include "VulkanBuffer.h"
+#include "VulkanSurface.h"
 #include "VulkanSwapchain.h"
 #include "VulkanSemaphore.h"
 
@@ -20,14 +21,19 @@ namespace Zodiac {
 		bool Init();
 		void Run();
 
+		void SetVSync(bool vsync);
+		void SetFullscreen(bool fullscreen);
+
 	private:
 		bool InitVulkan();
 
+		Settings m_settings;
 		VulkanConfiguration m_vulkanConfig;
 		VulkanInstance* m_instance;
 		VulkanPhysicalDevice* m_physical_device;
 		VulkanDevice* m_device;
 		VulkanBuffer* m_buffer;
+		VulkanSurface* m_surface;
 		VulkanSwapchain* m_swapchain;
 
 		VulkanSemaphore* m_presentSemaphore;

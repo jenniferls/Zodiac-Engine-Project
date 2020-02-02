@@ -185,6 +185,7 @@
     <ClCompile Include="VulkanPhysicalDevice.cpp" />
     <ClCompile Include="VulkanSemaphore.cpp" />
     <ClCompile Include="VulkanSemaphore.h" />
+    <ClCompile Include="VulkanSurface.cpp" />
     <ClCompile Include="VulkanSwapchain.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="Zodiacpch.cpp" />
@@ -213,6 +214,7 @@
     <ClInclude Include="VulkanDevice.h" />
     <ClInclude Include="VulkanInstance.h" />
     <ClInclude Include="VulkanPhysicalDevice.h" />
+    <ClInclude Include="VulkanSurface.h" />
     <ClInclude Include="VulkanSwapchain.h" />
     <ClInclude Include="VulkanSwapChainBuffer.h" />
     <ClInclude Include="Window.h" />

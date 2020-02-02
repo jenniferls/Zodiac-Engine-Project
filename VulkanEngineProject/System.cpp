@@ -17,6 +17,7 @@ Zodiac::System::~System() {
 	delete m_renderCompleteSemaphore;
 
 	delete m_swapchain;
+	delete m_surface; //Has to be deleted after swapchains associated to it
 
 	delete m_buffer;
 	delete m_device;
@@ -55,16 +56,25 @@ void Zodiac::System::Run() {
 	while (!m_window->WindowShouldClose()) {
 		m_window->PollWindowEvents();
 	}
-	m_window->DestroySurface(m_instance);
 	m_window->Shutdown();
+}
+
+void Zodiac::System::SetVSync(bool vsync)
+{
+	m_settings.vsync = vsync;
+}
+
+void Zodiac::System::SetFullscreen(bool fullscreen)
+{
+	m_settings.fullscreen = fullscreen;
 }
 
 bool Zodiac::System::InitVulkan() {
 	m_instance = new Zodiac::VulkanInstance(m_vulkanConfig, m_window->GetGLFWExtensions(), m_window->GetGLFWExtCount());
 	m_physical_device = Zodiac::VulkanPhysicalDevice::GetPhysicalDevice(m_instance);
-	m_window->CreateSurface(m_instance, m_physical_device);
 	m_device = new Zodiac::VulkanDevice(m_instance, m_physical_device);
-	m_swapchain = new Zodiac::VulkanSwapchain(m_instance, m_physical_device, m_device);
+	m_surface = new Zodiac::VulkanSurface(m_instance, m_physical_device, m_window->GetNativeWindow());
+	m_swapchain = new Zodiac::VulkanSwapchain(m_device, m_surface->GetSurfaceDetails(), m_surface->GetSurface(), m_settings);
 
 	m_presentSemaphore = new Zodiac::VulkanSemaphore(m_device);
 	m_renderCompleteSemaphore = new Zodiac::VulkanSemaphore(m_device);

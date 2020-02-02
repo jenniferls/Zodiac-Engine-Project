@@ -45,14 +45,27 @@ VkDeviceQueueCreateInfo Zodiac::Initializers::DeviceQueueCreate(uint32_t queue_f
 	return info;
 }
 
-VkSwapchainCreateInfoKHR Zodiac::Initializers::SwapchainCreateInfo(VkSwapchainKHR& swapchain, VkSurfaceKHR& surface, VkPresentModeKHR& presentMode)
+VkSwapchainCreateInfoKHR Zodiac::Initializers::SwapchainCreateInfo(VkSwapchainKHR& swapchain, VkSurfaceKHR& surface, VkPresentModeKHR& presentMode, SurfaceDetails* details, VkImageUsageFlags usageFlags, VkSurfaceFormatKHR surfaceFormat, VkExtent2D extent)
 {
 	VkSwapchainCreateInfoKHR info = {};
 
 	info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-	info.presentMode = presentMode;
+	info.pNext = NULL;
 	info.surface = surface;
+	info.minImageCount = details->capabilities.minImageCount + 1;
+	info.imageFormat = surfaceFormat.format;
+	info.imageColorSpace = surfaceFormat.colorSpace;
+	info.imageExtent = extent;
+	info.imageUsage = usageFlags;
+	info.preTransform = details->capabilities.currentTransform;
+	info.imageArrayLayers = 1;
+	info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+	info.queueFamilyIndexCount = 0;
+	info.pQueueFamilyIndices = NULL;
+	info.presentMode = presentMode;
 	info.oldSwapchain = swapchain;
+	info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+	info.clipped = VK_TRUE;
 
 	return info;
 }
