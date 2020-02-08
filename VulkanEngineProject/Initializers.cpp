@@ -1,3 +1,4 @@
+#include <Zodiacpch.h>
 #include "Initializers.h"
 
 VkApplicationInfo Zodiac::Initializers::ApplicationInfo(VulkanConfiguration& config) {
@@ -66,6 +67,25 @@ VkSwapchainCreateInfoKHR Zodiac::Initializers::SwapchainCreateInfo(VkSwapchainKH
 	info.oldSwapchain = swapchain;
 	info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
 	info.clipped = VK_TRUE;
+
+	return info;
+}
+
+VkImageViewCreateInfo Zodiac::Initializers::ImageViewCreateInfo(VkFormat colorFormat, VkImage image, VkImageViewType viewType)
+{
+	VkImageViewCreateInfo info = {};
+
+	info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	info.pNext = NULL;
+	info.format = colorFormat;
+	info.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
+	info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	info.subresourceRange.baseMipLevel = 0;
+	info.subresourceRange.levelCount = 1;
+	info.subresourceRange.baseArrayLayer = 0;
+	info.subresourceRange.layerCount = 1;
+	info.viewType = viewType;
+	info.image = image;
 
 	return info;
 }

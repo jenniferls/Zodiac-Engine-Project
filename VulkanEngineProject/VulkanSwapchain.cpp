@@ -16,9 +16,21 @@ Zodiac::VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, SurfaceDetails& d
 	VkSwapchainCreateInfoKHR swapchainCreateInfo = Initializers::SwapchainCreateInfo(m_swapchain, surface, m_presentMode, &details, m_usageFlags, m_surfaceFormat, m_extent2D);
 
 	ErrorCheck(vkCreateSwapchainKHR(*m_device, &swapchainCreateInfo, nullptr, &m_swapchain));
+	ErrorCheck(vkGetSwapchainImagesKHR(*m_device, m_swapchain, &m_imageCount, NULL));
+	m_images.resize(m_imageCount);
+	ErrorCheck(vkGetSwapchainImagesKHR(*m_device, m_swapchain, &m_imageCount, m_images.data()));
+	m_buffers.resize(m_imageCount);
+	for (uint32_t i = 0; i < m_imageCount; i++) {
+		m_buffers[i].image = m_images[i];
+		VkImageViewCreateInfo colorAttachmentView = Initializers::ImageViewCreateInfo(m_surfaceFormat.format, m_images[i]);
+		ErrorCheck(vkCreateImageView(*m_device, &colorAttachmentView, nullptr, &m_buffers[i].view));
+	}
 }
 
 Zodiac::VulkanSwapchain::~VulkanSwapchain() {
+	for (uint32_t i = 0; i < m_imageCount; i++) {
+		vkDestroyImageView(*m_device, m_buffers[i].view, nullptr);
+	};
 	vkDestroySwapchainKHR(*m_device, m_swapchain, nullptr);
 }
 
