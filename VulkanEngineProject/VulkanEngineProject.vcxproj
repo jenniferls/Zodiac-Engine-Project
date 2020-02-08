@@ -187,6 +187,7 @@
     <ClCompile Include="VulkanSemaphore.h" />
     <ClCompile Include="VulkanSurface.cpp" />
     <ClCompile Include="VulkanSwapchain.cpp" />
+    <ClCompile Include="VulkanFence.cpp" />
     <ClCompile Include="Window.cpp" />
     <ClCompile Include="Zodiacpch.cpp" />
   </ItemGroup>
@@ -217,6 +218,7 @@
     <ClInclude Include="VulkanSurface.h" />
     <ClInclude Include="VulkanSwapchain.h" />
     <ClInclude Include="VulkanSwapChainBuffer.h" />
+    <ClInclude Include="VulkanFence.h" />
     <ClInclude Include="Window.h" />
     <ClInclude Include="Zodiac.h" />
     <ClInclude Include="Zodiacpch.h" />

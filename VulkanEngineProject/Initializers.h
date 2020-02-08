@@ -13,6 +13,7 @@ namespace Zodiac { namespace Initializers {
 		VkSwapchainCreateInfoKHR SwapchainCreateInfo(VkSwapchainKHR& swapchain, VkSurfaceKHR& surface, VkPresentModeKHR& presentMode, SurfaceDetails* details, VkImageUsageFlags usageFlags, VkSurfaceFormatKHR surfaceFormat, VkExtent2D extent);
 		VkImageViewCreateInfo ImageViewCreateInfo(VkFormat colorFormat, VkImage image, VkImageViewType viewType = VK_IMAGE_VIEW_TYPE_2D);
 		VkSemaphoreCreateInfo SemaphoreCreateInfo();
+		VkFenceCreateInfo FenceCreateInfo(VkFenceCreateFlags flags = 0);
 		VkSubmitInfo SubmitInfo(VkSemaphore& present_semaphore, VkSemaphore& render_semaphore, VkPipelineStageFlags flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 		VkCommandPoolCreateInfo CommandPoolCreateinfo(uint32_t queue_family_index, VkCommandPoolCreateFlags flags = 0);
 		VkCommandBufferAllocateInfo CommandBufferAllocateInfo(VkCommandPool pool, uint32_t count);

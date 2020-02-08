@@ -99,6 +99,9 @@
     <ClCompile Include="VulkanSurface.cpp">
       <Filter>Vulkan\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="VulkanFence.cpp">
+      <Filter>Vulkan\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Initializers.h">
@@ -186,6 +189,9 @@
       <Filter>Vulkan\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VulkanSurface.h">
+      <Filter>Vulkan\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanFence.h">
       <Filter>Vulkan\Header Files</Filter>
     </ClInclude>
   </ItemGroup>

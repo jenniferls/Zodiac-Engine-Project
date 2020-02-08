@@ -98,6 +98,15 @@ VkSemaphoreCreateInfo Zodiac::Initializers::SemaphoreCreateInfo()
 	return info;
 }
 
+VkFenceCreateInfo Zodiac::Initializers::FenceCreateInfo(VkFenceCreateFlags flags) {
+	VkFenceCreateInfo info = {};
+
+	info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	info.flags = flags;
+
+	return info;
+}
+
 VkSubmitInfo Zodiac::Initializers::SubmitInfo(VkSemaphore& present_semaphore, VkSemaphore& render_semaphore, VkPipelineStageFlags flags)
 {
 	VkSubmitInfo info = {};

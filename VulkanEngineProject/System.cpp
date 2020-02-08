@@ -49,6 +49,13 @@ bool Zodiac::System::Init() {
 	delete[] arr;
 	//////////////////
 
+	m_drawCmdBuffers.resize(m_swapchain->GetImageCount());
+	m_device->GetGraphicsCommand(m_drawCmdBuffers.data(), m_swapchain->GetImageCount());
+
+	m_device->FreeGraphicsCommand(m_drawCmdBuffers.data(), m_swapchain->GetImageCount());
+
+	/////////////////
+
 	return true;
 }
 

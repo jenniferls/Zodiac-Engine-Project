@@ -17,7 +17,9 @@ namespace Zodiac {
 		VulkanPhysicalDevice* GetPhysicalDevice();
 
 		void GetComputeCommand(VkCommandBuffer* buffers, uint32_t count);
+		void GetGraphicsCommand(VkCommandBuffer* buffers, uint32_t count);
 		void FreeComputeCommand(VkCommandBuffer* buffers, uint32_t count);
+		void FreeGraphicsCommand(VkCommandBuffer* buffers, uint32_t count);
 
 	private:
 		std::vector<const char*> m_extensions;

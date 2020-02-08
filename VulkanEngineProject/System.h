@@ -34,6 +34,9 @@ namespace Zodiac {
 		VulkanDevice* m_device;
 		VulkanBuffer* m_buffer;
 		VulkanSurface* m_surface;
+
+		//TODO: Move rendering to renderer
+		std::vector<VkCommandBuffer> m_drawCmdBuffers;
 		VulkanSwapchain* m_swapchain;
 
 		VulkanSemaphore* m_presentSemaphore;
