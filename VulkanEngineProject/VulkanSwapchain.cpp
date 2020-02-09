@@ -8,6 +8,7 @@ Zodiac::VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, SurfaceDetails& d
 	m_swapchain = VK_NULL_HANDLE;
 
 	ChooseSurfaceFormat(details);
+	ChooseDepthFormat(device->GetPhysicalDevice()->GetPhysicalDevice()); //TODO: Don't do this for every swapchain...
 	ChoosePresentMode(details, settings);
 	ChooseExtent(details);
 	ChooseUsageFlags(details);
@@ -20,14 +21,32 @@ Zodiac::VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, SurfaceDetails& d
 	m_images.resize(m_imageCount);
 	ErrorCheck(vkGetSwapchainImagesKHR(*m_device, m_swapchain, &m_imageCount, m_images.data()));
 	m_buffers.resize(m_imageCount);
+	VkImageSubresourceRange subResourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 	for (uint32_t i = 0; i < m_imageCount; i++) {
 		m_buffers[i].image = m_images[i];
-		VkImageViewCreateInfo colorAttachmentView = Initializers::ImageViewCreateInfo(m_surfaceFormat.format, m_images[i]);
+		VkImageViewCreateInfo colorAttachmentView = Initializers::ImageViewCreateInfo(m_surfaceFormat.format, m_images[i], subResourceRange);
 		ErrorCheck(vkCreateImageView(*m_device, &colorAttachmentView, nullptr, &m_buffers[i].view));
 	}
+
+	//Depth attachment
+	VkImageCreateInfo image = Initializers::ImageCreateInfo(m_depthFormat, VkExtent3D({ m_extent2D.width, m_extent2D.height, 1 }), VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
+	ErrorCheck(vkCreateImage(*m_device, &image, nullptr, &m_depthStencil.image));
+	VkMemoryRequirements mem_reqs;
+	vkGetImageMemoryRequirements(*m_device, m_depthStencil.image, &mem_reqs);
+	VkMemoryAllocateInfo allocateInfo = Initializers::MemoryAllocateInfo(mem_reqs.size, GetMemoryTypeIndex(device->GetPhysicalDevice()->GetDeviceMemoryProperties(), mem_reqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT));
+	ErrorCheck(vkAllocateMemory(*m_device, &allocateInfo, nullptr, &m_depthStencil.mem));
+	ErrorCheck(vkBindImageMemory(*m_device, m_depthStencil.image, m_depthStencil.mem, 0));
+	//Image view for depth attachment
+	VkImageSubresourceRange subResourceRangeDepth = { VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 0, 1, 0, 1 };
+	VkImageViewCreateInfo depthStencilView = Initializers::ImageViewCreateInfo(m_depthFormat, m_depthStencil.image, subResourceRangeDepth);
+	ErrorCheck(vkCreateImageView(*m_device, &depthStencilView, nullptr, &m_depthStencil.view));
 }
 
 Zodiac::VulkanSwapchain::~VulkanSwapchain() {
+	vkFreeMemory(*m_device, m_depthStencil.mem, nullptr);
+	vkDestroyImage(*m_device, m_depthStencil.image, nullptr);
+	vkDestroyImageView(*m_device, m_depthStencil.view, nullptr);
+
 	for (uint32_t i = 0; i < m_imageCount; i++) {
 		vkDestroyImageView(*m_device, m_buffers[i].view, nullptr);
 	};
@@ -66,6 +85,26 @@ void Zodiac::VulkanSwapchain::ChooseSurfaceFormat(SurfaceDetails& details) {
 		if (!found_B8G8R8A8_UNORM) {
 			m_surfaceFormat.format = details.supported_formats[0].format;
 			m_surfaceFormat.colorSpace = details.supported_formats[0].colorSpace;
+		}
+	}
+}
+
+void Zodiac::VulkanSwapchain::ChooseDepthFormat(VkPhysicalDevice& physicalDevice) {
+	std::vector<VkFormat> depthFormats = {
+		VK_FORMAT_D32_SFLOAT_S8_UINT,
+		VK_FORMAT_D32_SFLOAT,
+		VK_FORMAT_D24_UNORM_S8_UINT,
+		VK_FORMAT_D16_UNORM_S8_UINT,
+		VK_FORMAT_D16_UNORM
+	};
+
+	for (auto& format : depthFormats) {
+		VkFormatProperties formatProps;
+		vkGetPhysicalDeviceFormatProperties(physicalDevice, format, &formatProps);
+		// Format must support depth stencil attachment for optimal tiling
+		if (formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+			m_depthFormat = format;
+			break;
 		}
 	}
 }
@@ -131,4 +170,17 @@ void Zodiac::VulkanSwapchain::ChooseUsageFlags(SurfaceDetails& details) {
 			<< std::endl;
 		m_usageFlags = static_cast<VkImageUsageFlags>(-1);
 	}
+}
+
+uint32_t Zodiac::VulkanSwapchain::GetMemoryTypeIndex(VkPhysicalDeviceMemoryProperties physDeviceMemProps, uint32_t memTypeBits, VkMemoryPropertyFlagBits flags) {
+	for (uint32_t i = 0; i < physDeviceMemProps.memoryTypeCount; i++) {
+		if ((memTypeBits & 1) == 1) {
+			if ((physDeviceMemProps.memoryTypes[i].propertyFlags & flags) == flags) {
+				return i;
+			}
+		}
+		memTypeBits >>= 1;
+	}
+
+	throw "Could not find a suitable memory type!";
 }

@@ -71,7 +71,7 @@ VkSwapchainCreateInfoKHR Zodiac::Initializers::SwapchainCreateInfo(VkSwapchainKH
 	return info;
 }
 
-VkImageViewCreateInfo Zodiac::Initializers::ImageViewCreateInfo(VkFormat colorFormat, VkImage image, VkImageViewType viewType)
+VkImageViewCreateInfo Zodiac::Initializers::ImageViewCreateInfo(VkFormat colorFormat, VkImage image, VkImageSubresourceRange subResourceRange, VkImageViewType viewType)
 {
 	VkImageViewCreateInfo info = {};
 
@@ -79,13 +79,26 @@ VkImageViewCreateInfo Zodiac::Initializers::ImageViewCreateInfo(VkFormat colorFo
 	info.pNext = NULL;
 	info.format = colorFormat;
 	info.components = { VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A };
-	info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	info.subresourceRange.baseMipLevel = 0;
-	info.subresourceRange.levelCount = 1;
-	info.subresourceRange.baseArrayLayer = 0;
-	info.subresourceRange.layerCount = 1;
+	info.subresourceRange = subResourceRange;
 	info.viewType = viewType;
 	info.image = image;
+
+	return info;
+}
+
+VkImageCreateInfo Zodiac::Initializers::ImageCreateInfo(VkFormat format, VkExtent3D extent, VkImageUsageFlags usageFlags, VkImageType imageType) {
+	VkImageCreateInfo info = {};
+
+	info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	info.imageType = imageType;
+	info.format = format;
+	info.extent = extent;
+	info.mipLevels = 1;
+	info.arrayLayers = 1;
+	info.samples = VK_SAMPLE_COUNT_1_BIT;
+	info.tiling = VK_IMAGE_TILING_OPTIMAL;
+	info.usage = usageFlags;
+	info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
 	return info;
 }

@@ -4,6 +4,7 @@
 #include "VulkanDevice.h"
 #include "SurfaceDetails.h"
 #include "Settings.h"
+#include "DepthStencil.h"
 
 namespace Zodiac {
 	class VulkanSwapchain {
@@ -18,9 +19,12 @@ namespace Zodiac {
 
 	private:
 		void ChooseSurfaceFormat(SurfaceDetails& details);
+		void ChooseDepthFormat(VkPhysicalDevice& physicalDevice);
 		void ChoosePresentMode(SurfaceDetails& details, Settings& settings);
 		void ChooseExtent(SurfaceDetails& details);
 		void ChooseUsageFlags(SurfaceDetails& details);
+
+		uint32_t GetMemoryTypeIndex(VkPhysicalDeviceMemoryProperties physDeviceMemProps, uint32_t memTypeBits, VkMemoryPropertyFlagBits flags);
 
 		VkDevice* m_device;
 
@@ -33,6 +37,9 @@ namespace Zodiac {
 		uint32_t m_imageCount;
 		std::vector<VkImage> m_images;
 		std::vector<VulkanSwapChainBuffer> m_buffers;
+
+		DepthStencil m_depthStencil;
+		VkFormat m_depthFormat;
 
 		uint32_t m_queueNodeIndex = UINT32_MAX;
 	};

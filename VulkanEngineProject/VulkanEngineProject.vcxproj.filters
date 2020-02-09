@@ -194,5 +194,8 @@
     <ClInclude Include="VulkanFence.h">
       <Filter>Vulkan\Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DepthStencil.h">
+      <Filter>Vulkan\Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -193,6 +193,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
+    <ClInclude Include="DepthStencil.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="OrthographicCamera.h" />
     <ClInclude Include="Clock.h" />
