@@ -69,6 +69,10 @@ VkSurfaceFormatKHR& Zodiac::VulkanSwapchain::GetSurfaceFormat() {
 	return m_surfaceFormat;
 }
 
+VkFormat& Zodiac::VulkanSwapchain::GetDepthFormat() {
+	return m_depthFormat;
+}
+
 void Zodiac::VulkanSwapchain::ChooseSurfaceFormat(SurfaceDetails& details) {
 	if ((details.supported_formats.size() == 1) && (details.supported_formats[0].format == VK_FORMAT_UNDEFINED)) {
 		m_surfaceFormat.format = VK_FORMAT_B8G8R8A8_UNORM;

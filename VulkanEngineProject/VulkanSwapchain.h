@@ -17,6 +17,7 @@ namespace Zodiac {
 		VkSwapchainKHR* GetSwapchain();
 		VkPresentModeKHR& GetPresentMode();
 		VkSurfaceFormatKHR& GetSurfaceFormat();
+		VkFormat& GetDepthFormat();
 
 	private:
 		void ChooseSurfaceFormat(SurfaceDetails& details);

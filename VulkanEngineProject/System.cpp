@@ -16,6 +16,7 @@ Zodiac::System::~System() {
 	delete m_presentSemaphore;
 	delete m_renderCompleteSemaphore;
 
+	Zodiac::Renderer::Shutdown();
 	delete m_surface; //Has to be deleted after swapchains associated to it
 
 	delete m_buffer;

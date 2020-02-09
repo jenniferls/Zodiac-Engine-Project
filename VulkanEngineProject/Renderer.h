@@ -18,6 +18,7 @@ namespace Zodiac {
 		static void Submit();
 		static void EndScene();
 		static void Flush();
+		static void Shutdown();
 
 		//void SetClearColor(const glm::vec4 color);
 		void Clear();
@@ -26,16 +27,16 @@ namespace Zodiac {
 
 	private:
 		Renderer();
-		void Init();
-		void SetupRenderPass();
+		static void InitInternal();
+		static void SetupRenderPass();
 
 		static Renderer* s_instance;
 
 		static VulkanDevice* s_device;
 		static VulkanSurface* s_surface;
-		VulkanSwapchain* m_swapchain;
 		static Settings s_settings;
+		static VulkanSwapchain* s_swapchain;
 
-		std::vector<VkCommandBuffer> m_drawCmdBuffers;
+		static std::vector<VkCommandBuffer> s_drawCmdBuffers;
 	};
 }
