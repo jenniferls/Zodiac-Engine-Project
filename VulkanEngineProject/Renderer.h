@@ -36,6 +36,7 @@ namespace Zodiac {
 		static VulkanSurface* s_surface;
 		static Settings s_settings;
 		static VulkanSwapchain* s_swapchain;
+		static VkRenderPass s_renderPass;
 
 		static std::vector<VkCommandBuffer> s_drawCmdBuffers;
 	};

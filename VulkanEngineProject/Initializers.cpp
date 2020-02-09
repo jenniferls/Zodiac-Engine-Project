@@ -103,6 +103,20 @@ VkImageCreateInfo Zodiac::Initializers::ImageCreateInfo(VkFormat format, VkExten
 	return info;
 }
 
+VkRenderPassCreateInfo Zodiac::Initializers::RenderPassCreateInfo(std::vector<VkAttachmentDescription>& attachDesc, std::vector<VkSubpassDescription>& subpassDesc, std::vector<VkSubpassDependency>& dependencies) {
+	VkRenderPassCreateInfo info = {};
+
+	info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	info.attachmentCount = static_cast<uint32_t>(attachDesc.size());
+	info.pAttachments = attachDesc.data();
+	info.subpassCount = static_cast<uint32_t>(subpassDesc.size());
+	info.pSubpasses = subpassDesc.data();
+	info.dependencyCount = static_cast<uint32_t>(dependencies.size());
+	info.pDependencies = dependencies.data();
+
+	return info;
+}
+
 VkSemaphoreCreateInfo Zodiac::Initializers::SemaphoreCreateInfo()
 {
 	VkSemaphoreCreateInfo info = {};
