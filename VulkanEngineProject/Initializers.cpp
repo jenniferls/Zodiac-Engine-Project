@@ -117,6 +117,14 @@ VkRenderPassCreateInfo Zodiac::Initializers::RenderPassCreateInfo(std::vector<Vk
 	return info;
 }
 
+VkPipelineCacheCreateInfo Zodiac::Initializers::PipelineCacheCreateInfo() {
+	VkPipelineCacheCreateInfo info = {};
+
+	info.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+
+	return info;
+}
+
 VkSemaphoreCreateInfo Zodiac::Initializers::SemaphoreCreateInfo()
 {
 	VkSemaphoreCreateInfo info = {};

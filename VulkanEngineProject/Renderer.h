@@ -8,6 +8,7 @@ namespace Zodiac {
 	class Renderer {
 	public:
 		Renderer(const Renderer&) = delete;
+		void operator=(Renderer const&) = delete;
 
 		~Renderer();
 
@@ -37,6 +38,7 @@ namespace Zodiac {
 		static Settings s_settings;
 		static VulkanSwapchain* s_swapchain;
 		static VkRenderPass s_renderPass;
+		static VkPipelineCache s_pipelineCache;
 
 		static std::vector<VkCommandBuffer> s_drawCmdBuffers;
 	};

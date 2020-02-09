@@ -14,6 +14,7 @@ namespace Zodiac { namespace Initializers {
 		VkImageViewCreateInfo ImageViewCreateInfo(VkFormat colorFormat, VkImage image, VkImageSubresourceRange subResourceRange, VkImageViewType viewType = VK_IMAGE_VIEW_TYPE_2D);
 		VkImageCreateInfo ImageCreateInfo(VkFormat format, VkExtent3D extent, VkImageUsageFlags usageFlags, VkImageType imageType = VK_IMAGE_TYPE_2D);
 		VkRenderPassCreateInfo RenderPassCreateInfo(std::vector<VkAttachmentDescription>& attachDesc, std::vector<VkSubpassDescription>& subpassDesc, std::vector<VkSubpassDependency>& dependencies);
+		VkPipelineCacheCreateInfo PipelineCacheCreateInfo();
 		VkSemaphoreCreateInfo SemaphoreCreateInfo();
 		VkFenceCreateInfo FenceCreateInfo(VkFenceCreateFlags flags = 0);
 		VkSubmitInfo SubmitInfo(VkSemaphore& present_semaphore, VkSemaphore& render_semaphore, VkPipelineStageFlags flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);

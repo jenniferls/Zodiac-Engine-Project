@@ -9,10 +9,15 @@ Zodiac::VulkanSurface* Zodiac::Renderer::s_surface;
 Zodiac::Settings Zodiac::Renderer::s_settings;
 Zodiac::VulkanSwapchain* Zodiac::Renderer::s_swapchain;
 VkRenderPass Zodiac::Renderer::s_renderPass;
+VkPipelineCache Zodiac::Renderer::s_pipelineCache;
 std::vector<VkCommandBuffer> Zodiac::Renderer::s_drawCmdBuffers;
 
-Zodiac::Renderer::Renderer() {
+void Zodiac::Renderer::DrawIndexed() {
 
+}
+
+Zodiac::Renderer::Renderer() {
+	s_instance = this;
 }
 
 Zodiac::Renderer::~Renderer() {
@@ -34,6 +39,8 @@ Zodiac::Renderer& Zodiac::Renderer::Get() {
 void Zodiac::Renderer::InitInternal() {
 	s_swapchain = new Zodiac::VulkanSwapchain(s_device, s_surface->GetSurfaceDetails(), s_surface->GetSurface(), s_settings);
 	SetupRenderPass();
+	VkPipelineCacheCreateInfo pipelineCacheInfo = Initializers::PipelineCacheCreateInfo();
+	ErrorCheck(vkCreatePipelineCache(*s_device->GetDevice(), &pipelineCacheInfo, nullptr, &s_pipelineCache));
 
 	//Tests
 	s_drawCmdBuffers.resize(s_swapchain->GetImageCount());
@@ -122,6 +129,7 @@ void Zodiac::Renderer::SetupRenderPass() {
 }
 
 void Zodiac::Renderer::Shutdown() {
+	vkDestroyPipelineCache(*s_device->GetDevice(), s_pipelineCache, nullptr);
 	vkDestroyRenderPass(*s_device->GetDevice(), s_renderPass, nullptr);
 	delete s_swapchain;
 }
