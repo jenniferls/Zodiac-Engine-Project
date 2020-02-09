@@ -12,9 +12,6 @@ Zodiac::System::System(const char* applicationName) {
 }
 
 Zodiac::System::~System() {
-	delete m_presentSemaphore;
-	delete m_renderCompleteSemaphore;
-
 	delete m_surface; //Has to be deleted after swapchains associated to it
 
 	delete m_buffer;
@@ -75,10 +72,6 @@ bool Zodiac::System::InitVulkan() {
 	m_surface = new Zodiac::VulkanSurface(m_instance, m_physical_device, m_window->GetNativeWindow());
 
 	Zodiac::Renderer::Init(m_device, m_settings, m_surface);
-
-	//TODO: Move to where they should be
-	m_presentSemaphore = new Zodiac::VulkanSemaphore(m_device);
-	m_renderCompleteSemaphore = new Zodiac::VulkanSemaphore(m_device);
 
 	return true;
 }

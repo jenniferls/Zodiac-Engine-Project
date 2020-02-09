@@ -5,8 +5,6 @@
 #include "VulkanDevice.h"
 #include "VulkanBuffer.h"
 #include "VulkanSurface.h"
-//#include "VulkanSwapchain.h"
-#include "VulkanSemaphore.h"
 
 #include "Settings.h"
 #include "Window.h"
@@ -36,11 +34,6 @@ namespace Zodiac {
 		VulkanDevice* m_device;
 		VulkanBuffer* m_buffer;
 		VulkanSurface* m_surface;
-
-		//TODO: Move all rendering variables to renderer
-
-		VulkanSemaphore* m_presentSemaphore;
-		VulkanSemaphore* m_renderCompleteSemaphore;
 
 		std::unique_ptr<Window> m_window;
 	};

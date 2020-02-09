@@ -3,6 +3,7 @@
 
 #include "VulkanSurface.h"
 #include "VulkanSwapchain.h"
+#include "VulkanSemaphore.h"
 
 namespace Zodiac {
 	class Renderer {
@@ -44,5 +45,8 @@ namespace Zodiac {
 		static std::vector<VkFramebuffer> s_framebuffers;
 
 		static std::vector<VkCommandBuffer> s_drawCmdBuffers;
+
+		static VulkanSemaphore* s_presentSemaphore;
+		static VulkanSemaphore* s_renderCompleteSemaphore;
 	};
 }

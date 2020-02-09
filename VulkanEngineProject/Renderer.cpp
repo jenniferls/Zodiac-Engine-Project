@@ -12,6 +12,8 @@ VkRenderPass Zodiac::Renderer::s_renderPass;
 VkPipelineCache Zodiac::Renderer::s_pipelineCache;
 std::vector<VkFramebuffer> Zodiac::Renderer::s_framebuffers;
 std::vector<VkCommandBuffer> Zodiac::Renderer::s_drawCmdBuffers;
+Zodiac::VulkanSemaphore* Zodiac::Renderer::s_presentSemaphore;
+Zodiac::VulkanSemaphore* Zodiac::Renderer::s_renderCompleteSemaphore;
 
 void Zodiac::Renderer::DrawIndexed() {
 
@@ -42,6 +44,8 @@ void Zodiac::Renderer::InitInternal() {
 	SetupRenderPass();
 	SetupPipelineCache();
 	SetupFramebuffers();
+	s_presentSemaphore = new Zodiac::VulkanSemaphore(s_device);
+	s_renderCompleteSemaphore = new Zodiac::VulkanSemaphore(s_device);
 
 	//Tests
 	s_drawCmdBuffers.resize(s_swapchain->GetImageCount());
@@ -147,6 +151,9 @@ void Zodiac::Renderer::SetupFramebuffers() {
 }
 
 void Zodiac::Renderer::Shutdown() {
+	delete s_presentSemaphore;
+	delete s_renderCompleteSemaphore;
+
 	for (size_t i = 0; i < s_framebuffers.size(); i++) {
 		vkDestroyFramebuffer(*s_device->GetDevice(), s_framebuffers[i], nullptr);
 	}
