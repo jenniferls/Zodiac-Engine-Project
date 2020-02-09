@@ -73,6 +73,22 @@ VkFormat& Zodiac::VulkanSwapchain::GetDepthFormat() {
 	return m_depthFormat;
 }
 
+std::vector<Zodiac::VulkanSwapChainBuffer>& Zodiac::VulkanSwapchain::GetBuffers() {
+	return m_buffers;
+}
+
+Zodiac::VulkanSwapChainBuffer& Zodiac::VulkanSwapchain::GetBuffer(uint32_t index) {
+	return m_buffers[index];
+}
+
+Zodiac::DepthStencil& Zodiac::VulkanSwapchain::GetDepthStencil() {
+	return m_depthStencil;
+}
+
+VkExtent2D Zodiac::VulkanSwapchain::GetExtent2D() const {
+	return m_extent2D;
+}
+
 void Zodiac::VulkanSwapchain::ChooseSurfaceFormat(SurfaceDetails& details) {
 	if ((details.supported_formats.size() == 1) && (details.supported_formats[0].format == VK_FORMAT_UNDEFINED)) {
 		m_surfaceFormat.format = VK_FORMAT_B8G8R8A8_UNORM;

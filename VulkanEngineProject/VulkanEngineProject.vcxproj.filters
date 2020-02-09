@@ -105,6 +105,9 @@
     <ClCompile Include="Renderer.cpp">
       <Filter>Renderer\Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="VulkanFramebuffer.cpp">
+      <Filter>Vulkan\Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Initializers.h">
@@ -198,6 +201,9 @@
       <Filter>Vulkan\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DepthStencil.h">
+      <Filter>Vulkan\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanFramebuffer.h">
       <Filter>Vulkan\Header Files</Filter>
     </ClInclude>
   </ItemGroup>

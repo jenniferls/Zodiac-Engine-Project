@@ -18,6 +18,10 @@ namespace Zodiac {
 		VkPresentModeKHR& GetPresentMode();
 		VkSurfaceFormatKHR& GetSurfaceFormat();
 		VkFormat& GetDepthFormat();
+		std::vector<VulkanSwapChainBuffer>& GetBuffers();
+		VulkanSwapChainBuffer& GetBuffer(uint32_t index);
+		DepthStencil& GetDepthStencil();
+		VkExtent2D GetExtent2D() const;
 
 	private:
 		void ChooseSurfaceFormat(SurfaceDetails& details);

@@ -3,7 +3,6 @@
 
 #include <vulkan/vulkan.h>
 #include "Validation.h"
-#define new new ( _NORMAL_BLOCK , __FILE__ , __LINE__ ) //For detecting memory leaks
 
 Zodiac::System::System(const char* applicationName) {
 	m_vulkanConfig.app_name = applicationName;
@@ -16,7 +15,6 @@ Zodiac::System::~System() {
 	delete m_presentSemaphore;
 	delete m_renderCompleteSemaphore;
 
-	Zodiac::Renderer::Shutdown();
 	delete m_surface; //Has to be deleted after swapchains associated to it
 
 	delete m_buffer;
@@ -56,6 +54,7 @@ void Zodiac::System::Run() {
 	while (!m_window->WindowShouldClose()) {
 		m_window->PollWindowEvents();
 	}
+	Zodiac::Renderer::Shutdown();
 	m_window->Shutdown();
 }
 

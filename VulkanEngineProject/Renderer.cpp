@@ -10,6 +10,7 @@ Zodiac::Settings Zodiac::Renderer::s_settings;
 Zodiac::VulkanSwapchain* Zodiac::Renderer::s_swapchain;
 VkRenderPass Zodiac::Renderer::s_renderPass;
 VkPipelineCache Zodiac::Renderer::s_pipelineCache;
+std::vector<VkFramebuffer> Zodiac::Renderer::s_framebuffers;
 std::vector<VkCommandBuffer> Zodiac::Renderer::s_drawCmdBuffers;
 
 void Zodiac::Renderer::DrawIndexed() {
@@ -39,8 +40,8 @@ Zodiac::Renderer& Zodiac::Renderer::Get() {
 void Zodiac::Renderer::InitInternal() {
 	s_swapchain = new Zodiac::VulkanSwapchain(s_device, s_surface->GetSurfaceDetails(), s_surface->GetSurface(), s_settings);
 	SetupRenderPass();
-	VkPipelineCacheCreateInfo pipelineCacheInfo = Initializers::PipelineCacheCreateInfo();
-	ErrorCheck(vkCreatePipelineCache(*s_device->GetDevice(), &pipelineCacheInfo, nullptr, &s_pipelineCache));
+	SetupPipelineCache();
+	SetupFramebuffers();
 
 	//Tests
 	s_drawCmdBuffers.resize(s_swapchain->GetImageCount());
@@ -128,7 +129,27 @@ void Zodiac::Renderer::SetupRenderPass() {
 	ErrorCheck(vkCreateRenderPass(*s_device->GetDevice(), &renderPassInfo, nullptr, &s_renderPass));
 }
 
+void Zodiac::Renderer::SetupPipelineCache() {
+	VkPipelineCacheCreateInfo pipelineCacheInfo = Initializers::PipelineCacheCreateInfo();
+	ErrorCheck(vkCreatePipelineCache(*s_device->GetDevice(), &pipelineCacheInfo, nullptr, &s_pipelineCache));
+}
+
+void Zodiac::Renderer::SetupFramebuffers() {
+	s_framebuffers.resize(s_swapchain->GetImageCount());
+	for (size_t i = 0; i < s_framebuffers.size(); i++) {
+		std::vector<VkImageView> attachments(2);
+		attachments[0] = s_swapchain->GetBuffers()[i].view;							// Color attachment is the view of the swapchain image			
+		attachments[1] = s_swapchain->GetDepthStencil().view;						// Depth/Stencil attachment is the same for all frame buffers
+
+		VkFramebufferCreateInfo framebufferInfo = Initializers::FramebufferCreateInfo(s_renderPass, attachments, s_swapchain->GetExtent2D().width, s_swapchain->GetExtent2D().height);
+		ErrorCheck(vkCreateFramebuffer(*s_device->GetDevice(), &framebufferInfo, nullptr, &s_framebuffers[i]));
+	}
+}
+
 void Zodiac::Renderer::Shutdown() {
+	for (size_t i = 0; i < s_framebuffers.size(); i++) {
+		vkDestroyFramebuffer(*s_device->GetDevice(), s_framebuffers[i], nullptr);
+	}
 	vkDestroyPipelineCache(*s_device->GetDevice(), s_pipelineCache, nullptr);
 	vkDestroyRenderPass(*s_device->GetDevice(), s_renderPass, nullptr);
 	delete s_swapchain;

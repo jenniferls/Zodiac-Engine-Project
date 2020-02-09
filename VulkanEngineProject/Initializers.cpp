@@ -125,6 +125,20 @@ VkPipelineCacheCreateInfo Zodiac::Initializers::PipelineCacheCreateInfo() {
 	return info;
 }
 
+VkFramebufferCreateInfo Zodiac::Initializers::FramebufferCreateInfo(VkRenderPass renderPass, std::vector<VkImageView>& attachments, uint32_t width, uint32_t height) {
+	VkFramebufferCreateInfo info = {};
+
+	info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+	info.renderPass = renderPass;
+	info.attachmentCount = static_cast<uint32_t>(attachments.size());
+	info.pAttachments = attachments.data();
+	info.width = width;
+	info.height = height;
+	info.layers = 1;
+
+	return info;
+}
+
 VkSemaphoreCreateInfo Zodiac::Initializers::SemaphoreCreateInfo()
 {
 	VkSemaphoreCreateInfo info = {};

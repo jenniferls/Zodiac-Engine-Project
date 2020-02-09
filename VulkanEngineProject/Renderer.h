@@ -30,6 +30,8 @@ namespace Zodiac {
 		Renderer();
 		static void InitInternal();
 		static void SetupRenderPass();
+		static void SetupPipelineCache();
+		static void SetupFramebuffers();
 
 		static Renderer* s_instance;
 
@@ -39,6 +41,7 @@ namespace Zodiac {
 		static VulkanSwapchain* s_swapchain;
 		static VkRenderPass s_renderPass;
 		static VkPipelineCache s_pipelineCache;
+		static std::vector<VkFramebuffer> s_framebuffers;
 
 		static std::vector<VkCommandBuffer> s_drawCmdBuffers;
 	};
