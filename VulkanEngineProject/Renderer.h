@@ -1,18 +1,18 @@
 #pragma once
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#include "vulkan/vulkan.h"
 
-//#include "vulkan/vulkan.h"
-//#include "VulkanInstance.h"
-//#include "VulkanPhysicalDevice.h"
-//#include "VulkanDevice.h"
-//#include "VulkanSwapchain.h"
+#include "VulkanSurface.h"
+#include "VulkanSwapchain.h"
 
 namespace Zodiac {
 	class Renderer {
 	public:
-		Renderer(/*VulkanInstance* instance, VulkanPhysicalDevice* physicalDevice, VulkanDevice* device*/);
+		Renderer(const Renderer&) = delete;
+
 		~Renderer();
+
+		static void Init(VulkanDevice* device, Settings settings, VulkanSurface* surface);
+		static Renderer& Get();
 
 		static void BeginScene();
 		static void Submit();
@@ -25,11 +25,17 @@ namespace Zodiac {
 		void DrawIndexed();
 
 	private:
-		//VulkanInstance* m_instance;
-		//VulkanPhysicalDevice* m_physicalDevice;
-		//VulkanDevice* m_device;
+		Renderer();
+		void Init();
+		void SetupRenderPass();
 
-		//VulkanSwapchain m_swapchain;
+		static Renderer* s_instance;
 
+		static VulkanDevice* s_device;
+		static VulkanSurface* s_surface;
+		VulkanSwapchain* m_swapchain;
+		static Settings s_settings;
+
+		std::vector<VkCommandBuffer> m_drawCmdBuffers;
 	};
 }

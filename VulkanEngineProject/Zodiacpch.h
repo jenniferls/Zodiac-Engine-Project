@@ -9,5 +9,6 @@
 
 #include <memory>
 #include <vector>
+#include <array>
 #include <iostream>
 #include <string>

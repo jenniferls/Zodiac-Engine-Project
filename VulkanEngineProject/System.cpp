@@ -16,7 +16,6 @@ Zodiac::System::~System() {
 	delete m_presentSemaphore;
 	delete m_renderCompleteSemaphore;
 
-	delete m_swapchain;
 	delete m_surface; //Has to be deleted after swapchains associated to it
 
 	delete m_buffer;
@@ -49,13 +48,6 @@ bool Zodiac::System::Init() {
 	delete[] arr;
 	//////////////////
 
-	m_drawCmdBuffers.resize(m_swapchain->GetImageCount());
-	m_device->GetGraphicsCommand(m_drawCmdBuffers.data(), m_swapchain->GetImageCount());
-
-	m_device->FreeGraphicsCommand(m_drawCmdBuffers.data(), m_swapchain->GetImageCount());
-
-	/////////////////
-
 	return true;
 }
 
@@ -81,8 +73,10 @@ bool Zodiac::System::InitVulkan() {
 	m_physical_device = Zodiac::VulkanPhysicalDevice::GetPhysicalDevice(m_instance);
 	m_device = new Zodiac::VulkanDevice(m_instance, m_physical_device);
 	m_surface = new Zodiac::VulkanSurface(m_instance, m_physical_device, m_window->GetNativeWindow());
-	m_swapchain = new Zodiac::VulkanSwapchain(m_device, m_surface->GetSurfaceDetails(), m_surface->GetSurface(), m_settings);
 
+	Zodiac::Renderer::Init(m_device, m_settings, m_surface);
+
+	//TODO: Move to where they should be
 	m_presentSemaphore = new Zodiac::VulkanSemaphore(m_device);
 	m_renderCompleteSemaphore = new Zodiac::VulkanSemaphore(m_device);
 

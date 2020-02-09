@@ -5,11 +5,12 @@
 #include "VulkanDevice.h"
 #include "VulkanBuffer.h"
 #include "VulkanSurface.h"
-#include "VulkanSwapchain.h"
+//#include "VulkanSwapchain.h"
 #include "VulkanSemaphore.h"
 
 #include "Settings.h"
 #include "Window.h"
+#include "Renderer.h"
 
 //This class acts more or less as a testbed for now
 namespace Zodiac {
@@ -28,6 +29,7 @@ namespace Zodiac {
 		bool InitVulkan();
 
 		Settings m_settings;
+
 		VulkanConfiguration m_vulkanConfig;
 		VulkanInstance* m_instance;
 		VulkanPhysicalDevice* m_physical_device;
@@ -35,9 +37,7 @@ namespace Zodiac {
 		VulkanBuffer* m_buffer;
 		VulkanSurface* m_surface;
 
-		//TODO: Move rendering to renderer
-		std::vector<VkCommandBuffer> m_drawCmdBuffers;
-		VulkanSwapchain* m_swapchain;
+		//TODO: Move all rendering variables to renderer
 
 		VulkanSemaphore* m_presentSemaphore;
 		VulkanSemaphore* m_renderCompleteSemaphore;
