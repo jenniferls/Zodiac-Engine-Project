@@ -14,6 +14,7 @@ std::vector<VkFramebuffer> Zodiac::Renderer::s_framebuffers;
 std::vector<VkCommandBuffer> Zodiac::Renderer::s_drawCmdBuffers;
 Zodiac::VulkanSemaphore* Zodiac::Renderer::s_presentSemaphore;
 Zodiac::VulkanSemaphore* Zodiac::Renderer::s_renderCompleteSemaphore;
+std::vector<Zodiac::VulkanFence*> Zodiac::Renderer::s_waitFences;
 
 void Zodiac::Renderer::DrawIndexed() {
 
@@ -46,9 +47,13 @@ void Zodiac::Renderer::InitInternal() {
 	SetupFramebuffers();
 	s_presentSemaphore = new Zodiac::VulkanSemaphore(s_device);
 	s_renderCompleteSemaphore = new Zodiac::VulkanSemaphore(s_device);
+	s_drawCmdBuffers.resize(s_swapchain->GetImageCount());
+	s_waitFences.reserve(s_drawCmdBuffers.size());
+	for (size_t i = 0; i < s_drawCmdBuffers.size(); i++) {
+		s_waitFences.emplace_back(new VulkanFence(s_device));
+	}
 
 	//Tests
-	s_drawCmdBuffers.resize(s_swapchain->GetImageCount());
 	s_device->GetGraphicsCommand(s_drawCmdBuffers.data(), s_swapchain->GetImageCount());
 
 	s_device->FreeGraphicsCommand(s_drawCmdBuffers.data(), s_swapchain->GetImageCount());
@@ -151,6 +156,9 @@ void Zodiac::Renderer::SetupFramebuffers() {
 }
 
 void Zodiac::Renderer::Shutdown() {
+	for (size_t i = 0; i < s_waitFences.size(); i++) {
+		delete s_waitFences[i];
+	}
 	delete s_presentSemaphore;
 	delete s_renderCompleteSemaphore;
 

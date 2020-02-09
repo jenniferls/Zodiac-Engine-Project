@@ -4,6 +4,7 @@
 #include "VulkanSurface.h"
 #include "VulkanSwapchain.h"
 #include "VulkanSemaphore.h"
+#include "VulkanFence.h"
 
 namespace Zodiac {
 	class Renderer {
@@ -48,5 +49,6 @@ namespace Zodiac {
 
 		static VulkanSemaphore* s_presentSemaphore;
 		static VulkanSemaphore* s_renderCompleteSemaphore;
+		static std::vector<VulkanFence*> s_waitFences;
 	};
 }
