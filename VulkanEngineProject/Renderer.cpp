@@ -2,6 +2,7 @@
 #include "Renderer.h"
 #include "Initializers.h"
 #include "Validation.h"
+#include "VulkanShaderModule.h"
 
 Zodiac::Renderer* Zodiac::Renderer::s_instance = nullptr;
 Zodiac::VulkanDevice* Zodiac::Renderer::s_device;
@@ -154,7 +155,8 @@ void Zodiac::Renderer::SetupFramebuffers() {
 }
 
 void Zodiac::Renderer::SetupPipeline() {
-
+	VulkanShaderModule vertexShader(s_device, "Shaders/vert.spv");
+	VulkanShaderModule fragmentShader(s_device, "Shaders/frag.spv");
 }
 
 void Zodiac::Renderer::PrepareGeometry() {

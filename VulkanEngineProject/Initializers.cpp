@@ -219,6 +219,17 @@ VkMemoryAllocateInfo Zodiac::Initializers::MemoryAllocateInfo(VkDeviceSize size,
 	return info;
 }
 
+VkShaderModuleCreateInfo Zodiac::Initializers::ShaderModuleCreateInfo(std::vector<char>& code) {
+	VkShaderModuleCreateInfo info;
+	info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	info.pNext = nullptr;
+	info.flags = 0;
+	info.codeSize = code.size();
+	info.pCode = reinterpret_cast<const uint32_t*>(code.data());
+
+	return info;
+}
+
 VkDebugUtilsMessengerCreateInfoEXT Zodiac::Initializers::DebugUtilsMessengerCreateInfo() {
 	VkDebugUtilsMessengerCreateInfoEXT info = {};
 	info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;

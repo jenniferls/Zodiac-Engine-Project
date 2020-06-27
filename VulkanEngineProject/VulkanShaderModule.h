@@ -1,13 +1,17 @@
 #pragma once
 #include <vulkan\vulkan.h>
+#include "VulkanDevice.h"
 
 namespace Zodiac {
 	class VulkanShaderModule {
 	public:
-		VulkanShaderModule();
+		VulkanShaderModule(VulkanDevice* device, const char* source);
 		~VulkanShaderModule();
 
 	private:
+		std::vector<char> ReadFile(const char* source);
 
+		VkShaderModule m_shaderModule = nullptr;
+		VkDevice* m_device;
 	};
 }
