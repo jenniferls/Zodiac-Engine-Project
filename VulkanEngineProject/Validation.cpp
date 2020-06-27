@@ -1,5 +1,6 @@
+#include "Zodiacpch.h"
 #include "Validation.h"
-#include <iostream>
+//#include <iostream>
 
 void Zodiac::ErrorCheck(VkResult result) {
 	if (result != VK_SUCCESS) {

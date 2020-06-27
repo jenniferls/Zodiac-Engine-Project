@@ -1,7 +1,6 @@
 //This file is used for testing the library by building as an .exe
 
-#include <windows.h>
-#include <iostream>
+#include "Zodiacpch.h"
 
 #include "System.h"
 

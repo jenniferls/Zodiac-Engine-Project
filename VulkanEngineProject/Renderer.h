@@ -5,6 +5,7 @@
 #include "VulkanSwapchain.h"
 #include "VulkanSemaphore.h"
 #include "VulkanFence.h"
+#include "VulkanBuffer.h"
 
 namespace Zodiac {
 	class Renderer {
@@ -34,6 +35,9 @@ namespace Zodiac {
 		static void SetupRenderPass();
 		static void SetupPipelineCache();
 		static void SetupFramebuffers();
+
+		static void SetupPipeline();
+		static void PrepareGeometry();
 
 		static Renderer* s_instance;
 

@@ -1,3 +1,4 @@
+#include "Zodiacpch.h"
 #include "VulkanDevice.h"
 #include "Validation.h"
 #include "Initializers.h"
@@ -46,6 +47,10 @@ VkDevice* Zodiac::VulkanDevice::GetDevice() {
 
 VkQueue* Zodiac::VulkanDevice::GetComputeQueue() {
 	return &m_compute_queue;
+}
+
+VkQueue* Zodiac::VulkanDevice::GetGraphicsQueue() {
+	return &m_graphics_queue;
 }
 
 VkCommandPool& Zodiac::VulkanDevice::GetComputeCommandPool() {

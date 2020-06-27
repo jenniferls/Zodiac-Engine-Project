@@ -45,6 +45,7 @@ void Zodiac::Renderer::InitInternal() {
 	SetupRenderPass();
 	SetupPipelineCache();
 	SetupFramebuffers();
+
 	s_presentSemaphore = new Zodiac::VulkanSemaphore(s_device);
 	s_renderCompleteSemaphore = new Zodiac::VulkanSemaphore(s_device);
 	s_drawCmdBuffers.resize(s_swapchain->GetImageCount());
@@ -53,11 +54,8 @@ void Zodiac::Renderer::InitInternal() {
 		s_waitFences.emplace_back(new VulkanFence(s_device));
 	}
 
-	//Tests
-	s_device->GetGraphicsCommand(s_drawCmdBuffers.data(), s_swapchain->GetImageCount());
-
-	s_device->FreeGraphicsCommand(s_drawCmdBuffers.data(), s_swapchain->GetImageCount());
-	///////
+	SetupPipeline();
+	PrepareGeometry();
 }
 
 void Zodiac::Renderer::SetupRenderPass() {
@@ -153,6 +151,50 @@ void Zodiac::Renderer::SetupFramebuffers() {
 		VkFramebufferCreateInfo framebufferInfo = Initializers::FramebufferCreateInfo(s_renderPass, attachments, s_swapchain->GetExtent2D().width, s_swapchain->GetExtent2D().height);
 		ErrorCheck(vkCreateFramebuffer(*s_device->GetDevice(), &framebufferInfo, nullptr, &s_framebuffers[i]));
 	}
+}
+
+void Zodiac::Renderer::SetupPipeline() {
+
+}
+
+void Zodiac::Renderer::PrepareGeometry() {
+	struct TestVertex {
+		float pos[3];
+		float color[3];
+	};
+
+	TestVertex* vertArr = new TestVertex[3];
+	vertArr[0] = { -1.0f,-1.0f,-1.0f, 1.0f, 0.0f, 0.0f };
+	vertArr[1] = { -1.0f,-1.0f, 1.0f, 1.0f, 0.0f, 0.0f };
+	vertArr[2] = { -1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f };
+
+	std::vector<uint32_t> indexBuffer = { 0, 1, 2 };
+
+	struct StagingBuffer {
+		VkDeviceMemory memory;
+		VkBuffer buffer;
+	};
+
+	struct {
+		StagingBuffer vertices;
+		StagingBuffer indices;
+	} stagingBuffers;
+
+	Zodiac::VulkanBuffer* stagingBuffer = new Zodiac::VulkanBuffer(s_device, vertArr, sizeof(TestVertex), 3, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+	stagingBuffer->SetData();
+
+	delete[] vertArr;
+	delete stagingBuffer;
+
+	//Zodiac::VulkanBuffer* vertexBuffer = new Zodiac::VulkanBuffer(s_device, vertArr, sizeof(TestVertex), 3, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+
+	//delete vertexBuffer;
+
+	//Tests
+	s_device->GetGraphicsCommand(s_drawCmdBuffers.data(), s_swapchain->GetImageCount());
+
+	s_device->FreeGraphicsCommand(s_drawCmdBuffers.data(), s_swapchain->GetImageCount());
+	///////
 }
 
 void Zodiac::Renderer::Shutdown() {

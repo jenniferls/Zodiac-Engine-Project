@@ -53,7 +53,7 @@ VkSwapchainCreateInfoKHR Zodiac::Initializers::SwapchainCreateInfo(VkSwapchainKH
 	info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 	info.pNext = NULL;
 	info.surface = surface;
-	info.minImageCount = details->capabilities.minImageCount + 1;
+	info.minImageCount = details->capabilities.minImageCount + 1; //According to comments on swapchain extension
 	info.imageFormat = surfaceFormat.format;
 	info.imageColorSpace = surfaceFormat.colorSpace;
 	info.imageExtent = extent;
@@ -121,6 +121,17 @@ VkPipelineCacheCreateInfo Zodiac::Initializers::PipelineCacheCreateInfo() {
 	VkPipelineCacheCreateInfo info = {};
 
 	info.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+
+	return info;
+}
+
+VkPipelineShaderStageCreateInfo Zodiac::Initializers::PipelineShaderStageCreateInfo(VkShaderStageFlagBits stage, VkShaderModule shaderModule) {
+	VkPipelineShaderStageCreateInfo info;
+	info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	info.stage = stage;
+	info.module = shaderModule;
+	info.pName = "main";
+	info.pSpecializationInfo = nullptr;
 
 	return info;
 }
@@ -215,6 +226,15 @@ VkDebugUtilsMessengerCreateInfoEXT Zodiac::Initializers::DebugUtilsMessengerCrea
 	info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 	info.pfnUserCallback = Zodiac::DebugCallback;
 	info.pUserData = nullptr;
+
+	return info;
+}
+
+VkCommandBufferBeginInfo Zodiac::Initializers::CommandBufferBeginInfo(VkCommandBufferUsageFlags flags) {
+	VkCommandBufferBeginInfo info;
+	info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	info.flags = flags;
+	info.pInheritanceInfo = nullptr;
 
 	return info;
 }

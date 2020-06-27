@@ -15,6 +15,7 @@ namespace Zodiac { namespace Initializers {
 		VkImageCreateInfo ImageCreateInfo(VkFormat format, VkExtent3D extent, VkImageUsageFlags usageFlags, VkImageType imageType = VK_IMAGE_TYPE_2D);
 		VkRenderPassCreateInfo RenderPassCreateInfo(std::vector<VkAttachmentDescription>& attachDesc, std::vector<VkSubpassDescription>& subpassDesc, std::vector<VkSubpassDependency>& dependencies);
 		VkPipelineCacheCreateInfo PipelineCacheCreateInfo();
+		VkPipelineShaderStageCreateInfo PipelineShaderStageCreateInfo(VkShaderStageFlagBits stage, VkShaderModule shaderModule);
 		VkFramebufferCreateInfo FramebufferCreateInfo(VkRenderPass renderPass, std::vector<VkImageView>& attachments, uint32_t width, uint32_t height);
 		VkSemaphoreCreateInfo SemaphoreCreateInfo();
 		VkFenceCreateInfo FenceCreateInfo(VkFenceCreateFlags flags = 0);
@@ -26,6 +27,7 @@ namespace Zodiac { namespace Initializers {
 
 		VkDebugUtilsMessengerCreateInfoEXT DebugUtilsMessengerCreateInfo();
 
+		VkCommandBufferBeginInfo CommandBufferBeginInfo(VkCommandBufferUsageFlags flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 		VkRenderPassBeginInfo RenderPassBeginInfo();
 	}
 }

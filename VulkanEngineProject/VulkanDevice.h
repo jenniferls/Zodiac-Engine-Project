@@ -1,5 +1,4 @@
 #pragma once
-#include <vector>
 #include <vulkan\vulkan.h>
 
 #include "VulkanInstance.h"
@@ -13,6 +12,7 @@ namespace Zodiac {
 
 		VkDevice* GetDevice();
 		VkQueue* GetComputeQueue();
+		VkQueue* GetGraphicsQueue();
 		VkCommandPool& GetComputeCommandPool();
 		VulkanPhysicalDevice* GetPhysicalDevice();
 

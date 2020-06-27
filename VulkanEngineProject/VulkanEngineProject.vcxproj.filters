@@ -90,12 +90,6 @@
     <ClCompile Include="VulkanSwapchain.cpp">
       <Filter>Vulkan\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VulkanSemaphore.h">
-      <Filter>Vulkan\Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="VulkanSemaphore.cpp">
-      <Filter>Vulkan\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="VulkanSurface.cpp">
       <Filter>Vulkan\Source Files</Filter>
     </ClCompile>
@@ -106,6 +100,18 @@
       <Filter>Renderer\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VulkanFramebuffer.cpp">
+      <Filter>Vulkan\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Vulkan\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>Vulkan\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanShaderModule.cpp">
+      <Filter>Vulkan\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanSemaphore.cpp">
       <Filter>Vulkan\Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -204,6 +210,12 @@
       <Filter>Vulkan\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VulkanFramebuffer.h">
+      <Filter>Vulkan\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanShaderModule.h">
+      <Filter>Vulkan\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanSemaphore.h">
       <Filter>Vulkan\Header Files</Filter>
     </ClInclude>
   </ItemGroup>

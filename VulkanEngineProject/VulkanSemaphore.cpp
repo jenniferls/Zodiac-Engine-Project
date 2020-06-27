@@ -1,22 +1,20 @@
+#include "Zodiacpch.h"
 #include "VulkanSemaphore.h"
 #include "Initializers.h"
 #include "Validation.h"
 //#include "VulkanDevice.h"
 
-Zodiac::VulkanSemaphore::VulkanSemaphore(VulkanDevice* device)
-{
+Zodiac::VulkanSemaphore::VulkanSemaphore(VulkanDevice* device) {
 	m_device = device;
 	VkSemaphoreCreateInfo semaphore_create_info = Initializers::SemaphoreCreateInfo();
 
 	ErrorCheck(vkCreateSemaphore(*device->GetDevice(), &semaphore_create_info, nullptr, &m_semaphore));
 }
 
-Zodiac::VulkanSemaphore::~VulkanSemaphore()
-{
+Zodiac::VulkanSemaphore::~VulkanSemaphore() {
 	vkDestroySemaphore(*m_device->GetDevice(), m_semaphore, nullptr);
 }
 
-VkSemaphore& Zodiac::VulkanSemaphore::GetSemaphore()
-{
+VkSemaphore& Zodiac::VulkanSemaphore::GetSemaphore() {
 	return m_semaphore;
 }

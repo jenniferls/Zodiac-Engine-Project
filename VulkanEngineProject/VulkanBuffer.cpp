@@ -1,3 +1,4 @@
+#include "Zodiacpch.h"
 #include "VulkanBuffer.h"
 #include "Validation.h"
 #include "Initializers.h"
@@ -37,10 +38,10 @@ void Zodiac::VulkanBuffer::CreateBuffer() {
 	VkMemoryRequirements mem_reqs;
 	vkGetBufferMemoryRequirements(*m_device->GetDevice(), m_buffer, &mem_reqs);
 
-	VkMemoryAllocateInfo mem_alloc_info = Initializers::MemoryAllocateInfo(mem_reqs.size, FindMemoryType(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, mem_reqs.memoryTypeBits));
+	VkMemoryAllocateInfo mem_alloc_info = Initializers::MemoryAllocateInfo(mem_reqs.size, FindMemoryType(VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, mem_reqs.memoryTypeBits));
 	ErrorCheck(vkAllocateMemory(*m_device->GetDevice(), &mem_alloc_info, nullptr, &m_deviceMemory));
 	ErrorCheck(vkBindBufferMemory(*m_device->GetDevice(), m_buffer, m_deviceMemory, 0)); //Last parameter is offset
-	vkMapMemory(*m_device->GetDevice(), m_deviceMemory, 0, buffer_info.size, 0, &m_mappedMemory); //Note to self: Keep an eye on the buffer size here to make sure this is correct usage
+	ErrorCheck(vkMapMemory(*m_device->GetDevice(), m_deviceMemory, 0, buffer_info.size, 0, &m_mappedMemory)); //Note to self: Keep an eye on the buffer size here to make sure this is correct usage
 }
 
 uint32_t Zodiac::VulkanBuffer::FindMemoryType(VkMemoryPropertyFlags flags, uint32_t typeFilter) {

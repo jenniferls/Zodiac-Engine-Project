@@ -1,5 +1,7 @@
 #pragma once
 
+#include <windows.h>
+
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO
 #include <glm/vec4.hpp>

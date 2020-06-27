@@ -1,4 +1,5 @@
 #pragma once
+#include "Mesh.h"
 
 namespace Zodiac {
 	class Model {
@@ -6,7 +7,9 @@ namespace Zodiac {
 		Model();
 		~Model();
 
-	private:
+		void AddMesh(Mesh& mesh);
 
+	private:
+		//std::vector<Mesh*> m_meshes;
 	};
 }

@@ -8,6 +8,6 @@ namespace Zodiac {
 		~Mesh();
 
 	private:
-
+		std::vector<SimpleVertex> m_vertexBuffer;
 	};
 }
