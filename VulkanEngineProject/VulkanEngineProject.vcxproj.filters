@@ -48,6 +48,15 @@
     <Filter Include="Animation">
       <UniqueIdentifier>{052fe682-acd7-44c0-ae42-dbb01a83d219}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets">
+      <UniqueIdentifier>{833e81a5-d83c-46ad-b21c-ee842ce3bd5b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Header Files">
+      <UniqueIdentifier>{ecd85100-854e-4226-aec8-8eb64b472c31}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Source Files">
+      <UniqueIdentifier>{a3259aab-15bc-4d19-a21c-b4c8302984f6}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Initializers.cpp">
@@ -102,17 +111,17 @@
     <ClCompile Include="VulkanFramebuffer.cpp">
       <Filter>Vulkan\Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Mesh.cpp">
-      <Filter>Vulkan\Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Model.cpp">
-      <Filter>Vulkan\Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="VulkanShaderModule.cpp">
       <Filter>Vulkan\Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VulkanSemaphore.cpp">
       <Filter>Vulkan\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Assets\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>Assets\Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -170,12 +179,6 @@
     <ClInclude Include="Input.h">
       <Filter>Input\Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Model.h">
-      <Filter>Renderer\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Vertex.h">
-      <Filter>Renderer\Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Window.h">
       <Filter>Engine\Header Files</Filter>
     </ClInclude>
@@ -193,9 +196,6 @@
     </ClInclude>
     <ClInclude Include="VulkanSwapChainBuffer.h">
       <Filter>Vulkan\Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>Renderer\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SurfaceDetails.h">
       <Filter>Vulkan\Header Files</Filter>
@@ -217,6 +217,15 @@
     </ClInclude>
     <ClInclude Include="VulkanSemaphore.h">
       <Filter>Vulkan\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Assets\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>Assets\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vertex.h">
+      <Filter>Assets\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

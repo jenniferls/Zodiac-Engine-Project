@@ -126,8 +126,9 @@ VkPipelineCacheCreateInfo Zodiac::Initializers::PipelineCacheCreateInfo() {
 }
 
 VkPipelineShaderStageCreateInfo Zodiac::Initializers::PipelineShaderStageCreateInfo(VkShaderStageFlagBits stage, VkShaderModule shaderModule) {
-	VkPipelineShaderStageCreateInfo info;
+	VkPipelineShaderStageCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	info.flags = 0;
 	info.stage = stage;
 	info.module = shaderModule;
 	info.pName = "main";
@@ -220,12 +221,167 @@ VkMemoryAllocateInfo Zodiac::Initializers::MemoryAllocateInfo(VkDeviceSize size,
 }
 
 VkShaderModuleCreateInfo Zodiac::Initializers::ShaderModuleCreateInfo(std::vector<char>& code) {
-	VkShaderModuleCreateInfo info;
+	VkShaderModuleCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 	info.pNext = nullptr;
 	info.flags = 0;
 	info.codeSize = code.size();
 	info.pCode = reinterpret_cast<const uint32_t*>(code.data());
+
+	return info;
+}
+
+VkPipelineVertexInputStateCreateInfo Zodiac::Initializers::PipelineVertexInputStateCreateInfo(std::vector<VkVertexInputBindingDescription>& vertexInputBindingDesc, std::vector<VkVertexInputAttributeDescription>& vertexInputAttrDesc) {
+	VkPipelineVertexInputStateCreateInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	info.pNext = nullptr;
+	info.flags = 0;
+	info.vertexBindingDescriptionCount = static_cast<uint32_t>(vertexInputBindingDesc.size());
+	info.pVertexBindingDescriptions = vertexInputBindingDesc.data();
+	info.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexInputAttrDesc.size());
+	info.pVertexAttributeDescriptions = vertexInputAttrDesc.data();
+
+	return info;
+}
+
+VkPipelineInputAssemblyStateCreateInfo Zodiac::Initializers::PipelineInputAssemblyStateCreateInfo(VkPrimitiveTopology topology) {
+	VkPipelineInputAssemblyStateCreateInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+	info.pNext = nullptr;
+	info.flags = 0;
+	info.primitiveRestartEnable = VK_FALSE;
+	info.topology = topology;
+
+	return info;
+}
+
+VkPipelineViewportStateCreateInfo Zodiac::Initializers::PipelineViewportStateCreateInfo() {
+	VkPipelineViewportStateCreateInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+	info.flags = 0;
+	info.pNext = nullptr;
+	info.viewportCount = 1;
+	info.pViewports = nullptr;
+	info.scissorCount = 1;
+	info.pScissors = nullptr;
+
+	return info;
+}
+
+VkPipelineRasterizationStateCreateInfo Zodiac::Initializers::PipelineRasterizationStateCreateInfo() {
+	VkPipelineRasterizationStateCreateInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+	info.flags = 0;
+	info.pNext = nullptr;
+	info.depthClampEnable = VK_FALSE;
+	info.rasterizerDiscardEnable = VK_FALSE;
+	info.polygonMode = VK_POLYGON_MODE_FILL;
+	info.cullMode = VK_CULL_MODE_BACK_BIT;
+	info.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+	info.depthBiasEnable = VK_FALSE;
+	info.depthBiasConstantFactor = 0.0f;
+	info.depthBiasClamp = 0.0f;
+	info.depthBiasSlopeFactor = 0.0f;
+	info.lineWidth = 1.0f;
+
+	return info;
+}
+
+VkPipelineMultisampleStateCreateInfo Zodiac::Initializers::PipelineMultisampleStateCreateInfo() {
+	VkPipelineMultisampleStateCreateInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+	info.pNext = nullptr;
+	info.flags = 0;
+	info.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+	info.sampleShadingEnable = VK_FALSE;
+	info.minSampleShading = 1.0f;
+	info.pSampleMask = nullptr;
+	info.alphaToCoverageEnable = VK_FALSE;
+	info.alphaToOneEnable = VK_FALSE;
+
+	return info;
+}
+
+VkPipelineColorBlendStateCreateInfo Zodiac::Initializers::PipelineColorBlendStateCreateInfo(VkPipelineColorBlendAttachmentState colorBlendAttachmentState, uint32_t attachmentCount) {
+	VkPipelineColorBlendStateCreateInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+	info.flags = 0;
+	info.pNext = nullptr;
+	info.pAttachments = &colorBlendAttachmentState;
+	info.logicOpEnable = VK_FALSE;
+	info.logicOp = VK_LOGIC_OP_COPY;
+	info.attachmentCount = attachmentCount;
+	info.blendConstants[0] = 0.0f;
+	info.blendConstants[1] = 0.0f;
+	info.blendConstants[2] = 0.0f;
+	info.blendConstants[3] = 0.0f;
+
+	return info;
+}
+
+VkPipelineDynamicStateCreateInfo Zodiac::Initializers::PipelineDynamicStateCreateInfo(std::vector<VkDynamicState>& dynamicStates) {
+	VkPipelineDynamicStateCreateInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+	info.pNext = nullptr;
+	info.flags = 0;
+	info.pDynamicStates = dynamicStates.data();
+	info.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
+
+	return info;
+}
+
+VkPipelineDepthStencilStateCreateInfo Zodiac::Initializers::PipelineDepthStencilStateCreateinfo() {
+	VkPipelineDepthStencilStateCreateInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	info.pNext = nullptr;
+	info.flags = 0;
+	info.depthTestEnable = VK_TRUE;
+	info.depthWriteEnable = VK_TRUE;
+	info.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+	info.depthBoundsTestEnable = VK_FALSE;
+	info.back.failOp = VK_STENCIL_OP_KEEP;
+	info.back.passOp = VK_STENCIL_OP_KEEP;
+	info.back.compareOp = VK_COMPARE_OP_ALWAYS;
+	info.stencilTestEnable = VK_FALSE;
+	info.front = info.back;
+
+	return info;
+}
+
+VkGraphicsPipelineCreateInfo Zodiac::Initializers::GraphicsPipelineCreateInfo(std::vector<VkPipelineShaderStageCreateInfo>& shaderStageCreateInfos, VkPipelineVertexInputStateCreateInfo& vertexInputStageCreateInfo, VkPipelineInputAssemblyStateCreateInfo& inputAssemblyStateCreateInfo, VkPipelineViewportStateCreateInfo& viewportStateCreateInfo, VkPipelineRasterizationStateCreateInfo& rasterizationStateCreateInfo, VkPipelineMultisampleStateCreateInfo& multisampleStateCreateInfo, VkPipelineColorBlendStateCreateInfo& colorBlendStateCreateInfo, VkPipelineDynamicStateCreateInfo& dynamicStateCreateInfo, VkPipelineLayout& pipelineLayout, VkRenderPass& renderPass, VkPipelineDepthStencilStateCreateInfo& depthStencilStateCreateInfo) {
+	VkGraphicsPipelineCreateInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	info.pNext = nullptr;
+	info.flags = 0;
+	info.stageCount = static_cast<uint32_t>(shaderStageCreateInfos.size());
+	info.pStages = shaderStageCreateInfos.data();
+	info.pVertexInputState = &vertexInputStageCreateInfo;
+	info.pInputAssemblyState = &inputAssemblyStateCreateInfo;
+	info.pTessellationState = nullptr; //Right now, no tesselation
+	info.pViewportState = &viewportStateCreateInfo;
+	info.pRasterizationState = &rasterizationStateCreateInfo;
+	info.pMultisampleState = &multisampleStateCreateInfo;
+	info.pDepthStencilState = &depthStencilStateCreateInfo; //No depth stencil right now
+	info.pColorBlendState = &colorBlendStateCreateInfo;
+	info.pDynamicState = &dynamicStateCreateInfo;
+	info.layout = pipelineLayout;
+	info.renderPass = renderPass;
+	info.subpass = 0;
+	info.basePipelineHandle = VK_NULL_HANDLE;
+	info.basePipelineIndex = -1;
+
+	return info;
+}
+
+VkPipelineLayoutCreateInfo Zodiac::Initializers::PipelineLayoutCreateInfo() {
+	VkPipelineLayoutCreateInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	info.flags = 0;
+	info.pNext = nullptr;
+	info.pPushConstantRanges = nullptr;
+	info.pSetLayouts = nullptr;
+	info.pushConstantRangeCount = 0;
+	info.setLayoutCount = 0;
 
 	return info;
 }
@@ -242,10 +398,29 @@ VkDebugUtilsMessengerCreateInfoEXT Zodiac::Initializers::DebugUtilsMessengerCrea
 }
 
 VkCommandBufferBeginInfo Zodiac::Initializers::CommandBufferBeginInfo(VkCommandBufferUsageFlags flags) {
-	VkCommandBufferBeginInfo info;
+	VkCommandBufferBeginInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	info.flags = flags;
 	info.pInheritanceInfo = nullptr;
+
+	return info;
+}
+
+VkVertexInputBindingDescription Zodiac::Initializers::VertexInputBindingDescription(uint32_t binding, uint32_t vertexSize) {
+	VkVertexInputBindingDescription info = {};
+	info.binding = binding;
+	info.stride = vertexSize;
+	info.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+	return info;
+}
+
+VkVertexInputAttributeDescription Zodiac::Initializers::VertexInputAttributeDescription(uint32_t location, uint32_t binding, uint32_t offset) {
+	VkVertexInputAttributeDescription info = {};
+	info.location = location;
+	info.binding = binding;
+	info.format = VK_FORMAT_R32G32B32A32_SFLOAT; //data type
+	info.offset = offset; //byte offset
 
 	return info;
 }

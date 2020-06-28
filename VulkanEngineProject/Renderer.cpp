@@ -3,6 +3,7 @@
 #include "Initializers.h"
 #include "Validation.h"
 #include "VulkanShaderModule.h"
+#include "Vertex.h"
 
 Zodiac::Renderer* Zodiac::Renderer::s_instance = nullptr;
 Zodiac::VulkanDevice* Zodiac::Renderer::s_device;
@@ -10,7 +11,9 @@ Zodiac::VulkanSurface* Zodiac::Renderer::s_surface;
 Zodiac::Settings Zodiac::Renderer::s_settings;
 Zodiac::VulkanSwapchain* Zodiac::Renderer::s_swapchain;
 VkRenderPass Zodiac::Renderer::s_renderPass;
+VkPipeline Zodiac::Renderer::s_pipeline;
 VkPipelineCache Zodiac::Renderer::s_pipelineCache;
+VkPipelineLayout Zodiac::Renderer::s_pipelineLayout;
 std::vector<VkFramebuffer> Zodiac::Renderer::s_framebuffers;
 std::vector<VkCommandBuffer> Zodiac::Renderer::s_drawCmdBuffers;
 Zodiac::VulkanSemaphore* Zodiac::Renderer::s_presentSemaphore;
@@ -154,21 +157,69 @@ void Zodiac::Renderer::SetupFramebuffers() {
 	}
 }
 
-void Zodiac::Renderer::SetupPipeline() {
+bool Zodiac::Renderer::SetupPipeline() {
 	VulkanShaderModule vertexShader(s_device, "Shaders/vert.spv");
 	VulkanShaderModule fragmentShader(s_device, "Shaders/frag.spv");
+
+	if ((vertexShader.GetShaderModule() == nullptr) || (fragmentShader.GetShaderModule() == nullptr)) {
+		return false;
+	}
+
+	std::vector<VkPipelineShaderStageCreateInfo> shaderStageCreateInfos = {
+		{ Initializers::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, *vertexShader.GetShaderModule()) },
+		{ Initializers::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, *fragmentShader.GetShaderModule()) }
+	};
+
+	std::vector<VkVertexInputBindingDescription> vertexBindingDescriptions = {
+		{ Initializers::VertexInputBindingDescription(0, sizeof(SimpleVertex)) }
+	};
+
+	std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions = {
+		{ Initializers::VertexInputAttributeDescription(0, vertexBindingDescriptions[0].binding, 0) },
+		{ Initializers::VertexInputAttributeDescription(1, vertexBindingDescriptions[0].binding, offsetof(struct SimpleVertex, color)) }
+	};
+
+	VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo = Initializers::PipelineVertexInputStateCreateInfo(vertexBindingDescriptions, vertexInputAttributeDescriptions);
+	VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo = Initializers::PipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP);
+	VkPipelineViewportStateCreateInfo viewportStateCreateInfo = Initializers::PipelineViewportStateCreateInfo();
+	VkPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo = Initializers::PipelineRasterizationStateCreateInfo();
+	VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo = Initializers::PipelineMultisampleStateCreateInfo();
+
+	VkPipelineColorBlendAttachmentState colorBlendAttachmentState = {
+		VK_FALSE,
+		VK_BLEND_FACTOR_ONE,
+		VK_BLEND_FACTOR_ZERO,
+		VK_BLEND_OP_ADD,
+		VK_BLEND_FACTOR_ONE,
+		VK_BLEND_FACTOR_ZERO,
+		VK_BLEND_OP_ADD,
+		VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+		VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
+	};
+
+	VkPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo = Initializers::PipelineColorBlendStateCreateInfo(colorBlendAttachmentState, 1);
+	VkPipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo = Initializers::PipelineDepthStencilStateCreateinfo();
+
+	std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+	VkPipelineDynamicStateCreateInfo dynamicStateCreateInfo = Initializers::PipelineDynamicStateCreateInfo(dynamicStates);
+
+	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = Initializers::PipelineLayoutCreateInfo();
+	ErrorCheck(vkCreatePipelineLayout(*s_device->GetDevice(), &pipelineLayoutCreateInfo, nullptr, &s_pipelineLayout));
+	if (!s_pipelineLayout) {
+		return false;
+	}
+
+	VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo = Initializers::GraphicsPipelineCreateInfo(shaderStageCreateInfos, vertexInputStateCreateInfo, inputAssemblyStateCreateInfo, viewportStateCreateInfo, rasterizationStateCreateInfo, multisampleStateCreateInfo, colorBlendStateCreateInfo, dynamicStateCreateInfo, s_pipelineLayout, s_renderPass, depthStencilStateCreateInfo);
+	ErrorCheck(vkCreateGraphicsPipelines(*s_device->GetDevice(), s_pipelineCache, 1, &graphicsPipelineCreateInfo, nullptr, &s_pipeline));
+
+	return true;
 }
 
 void Zodiac::Renderer::PrepareGeometry() {
-	struct TestVertex {
-		float pos[3];
-		float color[3];
-	};
-
-	TestVertex* vertArr = new TestVertex[3];
-	vertArr[0] = { -1.0f,-1.0f,-1.0f, 1.0f, 0.0f, 0.0f };
-	vertArr[1] = { -1.0f,-1.0f, 1.0f, 1.0f, 0.0f, 0.0f };
-	vertArr[2] = { -1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f };
+	SimpleVertex* vertArr = new SimpleVertex[3];
+	vertArr[0] = { glm::vec3(-1.0f,-1.0f,-1.0f), glm::vec3(1.0f, 0.0f, 0.0f) };
+	vertArr[1] = { glm::vec3(-1.0f,-1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f) };
+	vertArr[2] = { glm::vec3(-1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f) };
 
 	std::vector<uint32_t> indexBuffer = { 0, 1, 2 };
 
@@ -182,7 +233,7 @@ void Zodiac::Renderer::PrepareGeometry() {
 		StagingBuffer indices;
 	} stagingBuffers;
 
-	Zodiac::VulkanBuffer* stagingBuffer = new Zodiac::VulkanBuffer(s_device, vertArr, sizeof(TestVertex), 3, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+	Zodiac::VulkanBuffer* stagingBuffer = new Zodiac::VulkanBuffer(s_device, vertArr, sizeof(SimpleVertex), 3, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
 	stagingBuffer->SetData();
 
 	delete[] vertArr;
@@ -210,6 +261,8 @@ void Zodiac::Renderer::Shutdown() {
 		vkDestroyFramebuffer(*s_device->GetDevice(), s_framebuffers[i], nullptr);
 	}
 	vkDestroyPipelineCache(*s_device->GetDevice(), s_pipelineCache, nullptr);
+	vkDestroyPipelineLayout(*s_device->GetDevice(), s_pipelineLayout, nullptr);
 	vkDestroyRenderPass(*s_device->GetDevice(), s_renderPass, nullptr);
+	vkDestroyPipeline(*s_device->GetDevice(), s_pipeline, nullptr);
 	delete s_swapchain;
 }

@@ -20,6 +20,10 @@ Zodiac::VulkanShaderModule::~VulkanShaderModule() {
 	vkDestroyShaderModule(*m_device, m_shaderModule, nullptr);
 }
 
+VkShaderModule* Zodiac::VulkanShaderModule::GetShaderModule() {
+	return &m_shaderModule;
+}
+
 std::vector<char> Zodiac::VulkanShaderModule::ReadFile(const char* source) {
 	std::ifstream file(source, std::ios::binary);
 	if (!file.fail()) {

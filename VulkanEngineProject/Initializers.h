@@ -6,6 +6,7 @@
 #include "SurfaceDetails.h"
 
 namespace Zodiac { namespace Initializers {
+		//Infos
 		VkApplicationInfo ApplicationInfo(VulkanConfiguration& config);
 		VkInstanceCreateInfo InstanceCreateInfo(VkApplicationInfo& appInfo, std::vector<const char*>& layers, std::vector<const char*>& extensions);
 		VkDeviceCreateInfo DeviceCreateInfo(std::vector<VkDeviceQueueCreateInfo>& queue_create_info, VkPhysicalDeviceFeatures& physical_device_features, std::vector<const char*>& device_extensions);
@@ -25,10 +26,24 @@ namespace Zodiac { namespace Initializers {
 		VkBufferCreateInfo BufferCreateInfo(VkDeviceSize size, VkBufferUsageFlags usage_flags);
 		VkMemoryAllocateInfo MemoryAllocateInfo(VkDeviceSize size, uint32_t memory_type_index);
 		VkShaderModuleCreateInfo ShaderModuleCreateInfo(std::vector<char>& code);
+		VkPipelineVertexInputStateCreateInfo PipelineVertexInputStateCreateInfo(std::vector<VkVertexInputBindingDescription>& vertexInputBindingDesc, std::vector<VkVertexInputAttributeDescription>& vertexInputAttrDesc);
+		VkPipelineInputAssemblyStateCreateInfo PipelineInputAssemblyStateCreateInfo(VkPrimitiveTopology topology);
+		VkPipelineViewportStateCreateInfo PipelineViewportStateCreateInfo(); //For now only 1. Can be extended later.
+		VkPipelineRasterizationStateCreateInfo PipelineRasterizationStateCreateInfo(); //For now, no options needed<
+		VkPipelineMultisampleStateCreateInfo PipelineMultisampleStateCreateInfo(); //For now, no options needed
+		VkPipelineColorBlendStateCreateInfo PipelineColorBlendStateCreateInfo(VkPipelineColorBlendAttachmentState colorBlendAttachmentState, uint32_t attachmentCount);
+		VkPipelineDynamicStateCreateInfo PipelineDynamicStateCreateInfo(std::vector<VkDynamicState>& dynamicStates);
+		VkPipelineDepthStencilStateCreateInfo PipelineDepthStencilStateCreateinfo();
+		VkGraphicsPipelineCreateInfo GraphicsPipelineCreateInfo(std::vector<VkPipelineShaderStageCreateInfo>& shaderStageCreateInfos, VkPipelineVertexInputStateCreateInfo& vertexInputStageCreateInfo, VkPipelineInputAssemblyStateCreateInfo& inputAssemblyStateCreateInfo, VkPipelineViewportStateCreateInfo& viewportStateCreateInfo, VkPipelineRasterizationStateCreateInfo& rasterizationStateCreateInfo, VkPipelineMultisampleStateCreateInfo& multisampleStateCreateInfo, VkPipelineColorBlendStateCreateInfo& colorBlendStateCreateInfo, VkPipelineDynamicStateCreateInfo& dynamicStateCreateInfo, VkPipelineLayout& pipelineLayout, VkRenderPass& renderPass, VkPipelineDepthStencilStateCreateInfo& depthStencilStateCreateInfo);
+		VkPipelineLayoutCreateInfo PipelineLayoutCreateInfo();
 
 		VkDebugUtilsMessengerCreateInfoEXT DebugUtilsMessengerCreateInfo();
 
 		VkCommandBufferBeginInfo CommandBufferBeginInfo(VkCommandBufferUsageFlags flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
 		VkRenderPassBeginInfo RenderPassBeginInfo();
+
+		//Descriptions
+		VkVertexInputBindingDescription VertexInputBindingDescription(uint32_t binding, uint32_t vertexSize);
+		VkVertexInputAttributeDescription VertexInputAttributeDescription(uint32_t location, uint32_t binding, uint32_t offset);
 	}
 }

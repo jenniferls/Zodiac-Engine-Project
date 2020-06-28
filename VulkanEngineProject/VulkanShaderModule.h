@@ -8,6 +8,8 @@ namespace Zodiac {
 		VulkanShaderModule(VulkanDevice* device, const char* source);
 		~VulkanShaderModule();
 
+		VkShaderModule* GetShaderModule();
+
 	private:
 		std::vector<char> ReadFile(const char* source);
 
