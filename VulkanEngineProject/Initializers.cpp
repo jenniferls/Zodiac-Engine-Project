@@ -168,7 +168,7 @@ VkFenceCreateInfo Zodiac::Initializers::FenceCreateInfo(VkFenceCreateFlags flags
 	return info;
 }
 
-VkSubmitInfo Zodiac::Initializers::SubmitInfo(VkSemaphore& present_semaphore, VkSemaphore& render_semaphore, VkPipelineStageFlags flags)
+VkSubmitInfo Zodiac::Initializers::SubmitInfo(VkSemaphore& present_semaphore, VkSemaphore& render_semaphore, VkCommandBuffer& commandBuffer, VkPipelineStageFlags flags)
 {
 	VkSubmitInfo info = {};
 
@@ -178,6 +178,8 @@ VkSubmitInfo Zodiac::Initializers::SubmitInfo(VkSemaphore& present_semaphore, Vk
 	info.pWaitSemaphores = &present_semaphore;
 	info.signalSemaphoreCount = 1;
 	info.pSignalSemaphores = &render_semaphore;
+	info.pCommandBuffers = &commandBuffer;
+	info.commandBufferCount = 1;
 
 	return info;
 }
@@ -236,10 +238,11 @@ VkPipelineVertexInputStateCreateInfo Zodiac::Initializers::PipelineVertexInputSt
 	info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	info.pNext = nullptr;
 	info.flags = 0;
-	info.vertexBindingDescriptionCount = static_cast<uint32_t>(vertexInputBindingDesc.size());
-	info.pVertexBindingDescriptions = vertexInputBindingDesc.data();
-	info.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexInputAttrDesc.size());
-	info.pVertexAttributeDescriptions = vertexInputAttrDesc.data();
+	//TODO: Use buffers
+	info.vertexBindingDescriptionCount = 0;//static_cast<uint32_t>(vertexInputBindingDesc.size());
+	info.pVertexBindingDescriptions = nullptr;//vertexInputBindingDesc.data();
+	info.vertexAttributeDescriptionCount = 0;//static_cast<uint32_t>(vertexInputAttrDesc.size());
+	info.pVertexAttributeDescriptions = nullptr;// vertexInputAttrDesc.data();
 
 	return info;
 }
@@ -255,15 +258,15 @@ VkPipelineInputAssemblyStateCreateInfo Zodiac::Initializers::PipelineInputAssemb
 	return info;
 }
 
-VkPipelineViewportStateCreateInfo Zodiac::Initializers::PipelineViewportStateCreateInfo() {
+VkPipelineViewportStateCreateInfo Zodiac::Initializers::PipelineViewportStateCreateInfo(VkViewport& viewport, VkRect2D& scissor) {
 	VkPipelineViewportStateCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 	info.flags = 0;
 	info.pNext = nullptr;
 	info.viewportCount = 1;
-	info.pViewports = nullptr;
+	//info.pViewports = &viewport;
 	info.scissorCount = 1;
-	info.pScissors = nullptr;
+	//info.pScissors = &scissor;
 
 	return info;
 }
@@ -276,18 +279,18 @@ VkPipelineRasterizationStateCreateInfo Zodiac::Initializers::PipelineRasterizati
 	info.depthClampEnable = VK_FALSE;
 	info.rasterizerDiscardEnable = VK_FALSE;
 	info.polygonMode = VK_POLYGON_MODE_FILL;
-	info.cullMode = VK_CULL_MODE_BACK_BIT;
-	info.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+	info.cullMode = VK_CULL_MODE_NONE;//VK_CULL_MODE_BACK_BIT; //TODO: Turn on back face culling
+	info.frontFace = VK_FRONT_FACE_CLOCKWISE; //TODO: This could be counter-clockwise
 	info.depthBiasEnable = VK_FALSE;
-	info.depthBiasConstantFactor = 0.0f;
-	info.depthBiasClamp = 0.0f;
-	info.depthBiasSlopeFactor = 0.0f;
+	//info.depthBiasConstantFactor = 0.0f;
+	//info.depthBiasClamp = 0.0f;
+	//info.depthBiasSlopeFactor = 0.0f;
 	info.lineWidth = 1.0f;
 
 	return info;
 }
 
-VkPipelineMultisampleStateCreateInfo Zodiac::Initializers::PipelineMultisampleStateCreateInfo() {
+VkPipelineMultisampleStateCreateInfo Zodiac::Initializers::PipelineMultisampleStateCreateInfo() { //For now disabled
 	VkPipelineMultisampleStateCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	info.pNext = nullptr;
@@ -361,7 +364,7 @@ VkGraphicsPipelineCreateInfo Zodiac::Initializers::GraphicsPipelineCreateInfo(st
 	info.pViewportState = &viewportStateCreateInfo;
 	info.pRasterizationState = &rasterizationStateCreateInfo;
 	info.pMultisampleState = &multisampleStateCreateInfo;
-	info.pDepthStencilState = &depthStencilStateCreateInfo; //No depth stencil right now
+	info.pDepthStencilState = &depthStencilStateCreateInfo;
 	info.pColorBlendState = &colorBlendStateCreateInfo;
 	info.pDynamicState = &dynamicStateCreateInfo;
 	info.layout = pipelineLayout;
@@ -386,6 +389,24 @@ VkPipelineLayoutCreateInfo Zodiac::Initializers::PipelineLayoutCreateInfo() {
 	return info;
 }
 
+VkPresentInfoKHR Zodiac::Initializers::PresentInfo(VkSwapchainKHR& swapchain, uint32_t& index, VkSemaphore& waitSemaphore) {
+	VkPresentInfoKHR info = {};
+	info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+	info.pNext = NULL;
+	info.swapchainCount = 1;
+	info.pSwapchains = &swapchain;
+	info.pImageIndices = &index;
+	
+	//if (waitSemaphore != VK_NULL_HANDLE) {
+		info.pWaitSemaphores = &waitSemaphore;
+		info.waitSemaphoreCount = 1;
+	//}
+		
+	info.pResults = nullptr;
+
+	return info;
+}
+
 VkDebugUtilsMessengerCreateInfoEXT Zodiac::Initializers::DebugUtilsMessengerCreateInfo() {
 	VkDebugUtilsMessengerCreateInfoEXT info = {};
 	info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -402,6 +423,19 @@ VkCommandBufferBeginInfo Zodiac::Initializers::CommandBufferBeginInfo(VkCommandB
 	info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	info.flags = flags;
 	info.pInheritanceInfo = nullptr;
+
+	return info;
+}
+
+VkRenderPassBeginInfo Zodiac::Initializers::RenderPassBeginInfo(VkRenderPass renderPass, VkExtent2D renderArea, VkClearValue clearValue, uint32_t clearValueCount) {
+	VkRenderPassBeginInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	info.pNext = nullptr;
+	info.renderPass = renderPass;
+	info.renderArea.offset = { 0, 0 };
+	info.renderArea.extent = renderArea;
+	info.clearValueCount = clearValueCount;
+	info.pClearValues = &clearValue;
 
 	return info;
 }

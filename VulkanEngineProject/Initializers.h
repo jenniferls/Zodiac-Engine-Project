@@ -20,7 +20,7 @@ namespace Zodiac { namespace Initializers {
 		VkFramebufferCreateInfo FramebufferCreateInfo(VkRenderPass renderPass, std::vector<VkImageView>& attachments, uint32_t width, uint32_t height);
 		VkSemaphoreCreateInfo SemaphoreCreateInfo();
 		VkFenceCreateInfo FenceCreateInfo(VkFenceCreateFlags flags = 0);
-		VkSubmitInfo SubmitInfo(VkSemaphore& present_semaphore, VkSemaphore& render_semaphore, VkPipelineStageFlags flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+		VkSubmitInfo SubmitInfo(VkSemaphore& present_semaphore, VkSemaphore& render_semaphore, VkCommandBuffer& commandBuffer, VkPipelineStageFlags flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 		VkCommandPoolCreateInfo CommandPoolCreateinfo(uint32_t queue_family_index, VkCommandPoolCreateFlags flags = 0);
 		VkCommandBufferAllocateInfo CommandBufferAllocateInfo(VkCommandPool pool, uint32_t count);
 		VkBufferCreateInfo BufferCreateInfo(VkDeviceSize size, VkBufferUsageFlags usage_flags);
@@ -28,7 +28,7 @@ namespace Zodiac { namespace Initializers {
 		VkShaderModuleCreateInfo ShaderModuleCreateInfo(std::vector<char>& code);
 		VkPipelineVertexInputStateCreateInfo PipelineVertexInputStateCreateInfo(std::vector<VkVertexInputBindingDescription>& vertexInputBindingDesc, std::vector<VkVertexInputAttributeDescription>& vertexInputAttrDesc);
 		VkPipelineInputAssemblyStateCreateInfo PipelineInputAssemblyStateCreateInfo(VkPrimitiveTopology topology);
-		VkPipelineViewportStateCreateInfo PipelineViewportStateCreateInfo(); //For now only 1. Can be extended later.
+		VkPipelineViewportStateCreateInfo PipelineViewportStateCreateInfo(VkViewport& viewport, VkRect2D& scissor); //For now only 1. Can be extended later.
 		VkPipelineRasterizationStateCreateInfo PipelineRasterizationStateCreateInfo(); //For now, no options needed<
 		VkPipelineMultisampleStateCreateInfo PipelineMultisampleStateCreateInfo(); //For now, no options needed
 		VkPipelineColorBlendStateCreateInfo PipelineColorBlendStateCreateInfo(VkPipelineColorBlendAttachmentState colorBlendAttachmentState, uint32_t attachmentCount);
@@ -36,11 +36,12 @@ namespace Zodiac { namespace Initializers {
 		VkPipelineDepthStencilStateCreateInfo PipelineDepthStencilStateCreateinfo();
 		VkGraphicsPipelineCreateInfo GraphicsPipelineCreateInfo(std::vector<VkPipelineShaderStageCreateInfo>& shaderStageCreateInfos, VkPipelineVertexInputStateCreateInfo& vertexInputStageCreateInfo, VkPipelineInputAssemblyStateCreateInfo& inputAssemblyStateCreateInfo, VkPipelineViewportStateCreateInfo& viewportStateCreateInfo, VkPipelineRasterizationStateCreateInfo& rasterizationStateCreateInfo, VkPipelineMultisampleStateCreateInfo& multisampleStateCreateInfo, VkPipelineColorBlendStateCreateInfo& colorBlendStateCreateInfo, VkPipelineDynamicStateCreateInfo& dynamicStateCreateInfo, VkPipelineLayout& pipelineLayout, VkRenderPass& renderPass, VkPipelineDepthStencilStateCreateInfo& depthStencilStateCreateInfo);
 		VkPipelineLayoutCreateInfo PipelineLayoutCreateInfo();
+		VkPresentInfoKHR PresentInfo(VkSwapchainKHR& swapchain, uint32_t& index, VkSemaphore& waitSemaphore);
 
 		VkDebugUtilsMessengerCreateInfoEXT DebugUtilsMessengerCreateInfo();
 
 		VkCommandBufferBeginInfo CommandBufferBeginInfo(VkCommandBufferUsageFlags flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
-		VkRenderPassBeginInfo RenderPassBeginInfo();
+		VkRenderPassBeginInfo RenderPassBeginInfo(VkRenderPass renderPass, VkExtent2D renderArea, VkClearValue clearValue, uint32_t clearValueCount);
 
 		//Descriptions
 		VkVertexInputBindingDescription VertexInputBindingDescription(uint32_t binding, uint32_t vertexSize);

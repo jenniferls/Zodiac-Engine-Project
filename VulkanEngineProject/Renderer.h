@@ -18,13 +18,15 @@ namespace Zodiac {
 		static void Init(VulkanDevice* device, Settings settings, VulkanSurface* surface);
 		static Renderer& Get();
 
+		static void Draw();
+
 		static void BeginScene();
 		static void Submit();
 		static void EndScene();
 		static void Flush();
 		static void Shutdown();
 
-		//void SetClearColor(const glm::vec4 color);
+		void SetClearColor(const glm::vec4 color);
 		void Clear();
 
 		void DrawIndexed();
@@ -38,6 +40,9 @@ namespace Zodiac {
 
 		static bool SetupPipeline();
 		static void PrepareGeometry();
+		static void BuildCommandBuffers();
+
+		const int MAX_FRAMES_IN_FLIGHT = 2;
 
 		static Renderer* s_instance;
 
@@ -56,5 +61,8 @@ namespace Zodiac {
 		static VulkanSemaphore* s_presentSemaphore;
 		static VulkanSemaphore* s_renderCompleteSemaphore;
 		static std::vector<VulkanFence*> s_waitFences;
+
+		static VkClearValue s_clearValues[2];
+		static uint32_t s_imageIndex;
 	};
 }

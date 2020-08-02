@@ -8,8 +8,9 @@ namespace Zodiac {
 		VulkanFence(VulkanDevice* device);
 		~VulkanFence();
 
+		VkFence p_fence;
+
 	private:
 		VkDevice* m_device;
-		VkFence m_fence;
 	};
 }

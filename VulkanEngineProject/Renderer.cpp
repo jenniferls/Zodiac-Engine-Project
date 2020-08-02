@@ -19,6 +19,8 @@ std::vector<VkCommandBuffer> Zodiac::Renderer::s_drawCmdBuffers;
 Zodiac::VulkanSemaphore* Zodiac::Renderer::s_presentSemaphore;
 Zodiac::VulkanSemaphore* Zodiac::Renderer::s_renderCompleteSemaphore;
 std::vector<Zodiac::VulkanFence*> Zodiac::Renderer::s_waitFences;
+VkClearValue Zodiac::Renderer::s_clearValues[2];
+uint32_t Zodiac::Renderer::s_imageIndex;
 
 void Zodiac::Renderer::DrawIndexed() {
 
@@ -37,11 +39,32 @@ void Zodiac::Renderer::Init(VulkanDevice* device, Settings settings, VulkanSurfa
 	s_settings = settings;
 	s_surface = surface;
 
+	s_clearValues[0].color = { 0.2f, 0.0f, 0.2f, 1.0f };
+	s_clearValues[1].depthStencil = { 1.0f, 0 };
+
+	s_imageIndex = 0;
+
 	InitInternal();
 }
 
 Zodiac::Renderer& Zodiac::Renderer::Get() {
 	return *s_instance;
+}
+
+void Zodiac::Renderer::Draw() {
+	ErrorCheck(vkAcquireNextImageKHR(*s_device->GetDevice(), *s_swapchain->GetSwapchain(), UINT64_MAX, s_presentSemaphore->GetSemaphore(), VK_NULL_HANDLE, &s_imageIndex));
+
+	//Fences for syncronization
+	ErrorCheck(vkWaitForFences(*s_device->GetDevice(), 1, &s_waitFences[s_imageIndex]->p_fence, VK_TRUE, UINT64_MAX));
+	ErrorCheck(vkResetFences(*s_device->GetDevice(), 1, &s_waitFences[s_imageIndex]->p_fence));
+
+	// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
+	VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	VkSubmitInfo submitInfo = Initializers::SubmitInfo(s_presentSemaphore->GetSemaphore(), s_renderCompleteSemaphore->GetSemaphore(), s_drawCmdBuffers[s_imageIndex], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+	ErrorCheck(vkQueueSubmit(*s_device->GetGraphicsQueue(), 1, &submitInfo, /*NULL*/s_waitFences[s_imageIndex]->p_fence)); //TODO: The fences help with syncronization, but I need to look into this.
+
+	VkPresentInfoKHR presentInfo = Initializers::PresentInfo(*s_swapchain->GetSwapchain(),  s_imageIndex, s_renderCompleteSemaphore->GetSemaphore());
+	ErrorCheck(vkQueuePresentKHR(*s_device->GetGraphicsQueue(), &presentInfo));
 }
 
 void Zodiac::Renderer::InitInternal() {
@@ -59,7 +82,8 @@ void Zodiac::Renderer::InitInternal() {
 	}
 
 	SetupPipeline();
-	PrepareGeometry();
+	//PrepareGeometry(); //TODO: Use specified geometry and buffers
+	BuildCommandBuffers();
 }
 
 void Zodiac::Renderer::SetupRenderPass() {
@@ -180,22 +204,44 @@ bool Zodiac::Renderer::SetupPipeline() {
 	};
 
 	VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo = Initializers::PipelineVertexInputStateCreateInfo(vertexBindingDescriptions, vertexInputAttributeDescriptions);
-	VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo = Initializers::PipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP);
-	VkPipelineViewportStateCreateInfo viewportStateCreateInfo = Initializers::PipelineViewportStateCreateInfo();
+	VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo = Initializers::PipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); //TODO: Triangle strip later
+	
+	//TODO: May remove since dynamic state
+	VkViewport viewport{};
+	viewport.x = 0.0f;
+	viewport.y = 0.0f;
+	viewport.width = (float)s_swapchain->GetExtent2D().width;
+	viewport.height = (float)s_swapchain->GetExtent2D().height;
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+	VkRect2D scissor{};
+	scissor.offset = { 0, 0 };
+	scissor.extent = s_swapchain->GetExtent2D();
+
+	VkPipelineViewportStateCreateInfo viewportStateCreateInfo = Initializers::PipelineViewportStateCreateInfo(viewport, scissor);
 	VkPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo = Initializers::PipelineRasterizationStateCreateInfo();
 	VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo = Initializers::PipelineMultisampleStateCreateInfo();
 
-	VkPipelineColorBlendAttachmentState colorBlendAttachmentState = {
-		VK_FALSE,
-		VK_BLEND_FACTOR_ONE,
-		VK_BLEND_FACTOR_ZERO,
-		VK_BLEND_OP_ADD,
-		VK_BLEND_FACTOR_ONE,
-		VK_BLEND_FACTOR_ZERO,
-		VK_BLEND_OP_ADD,
-		VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-		VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
-	};
+	//VkPipelineColorBlendAttachmentState colorBlendAttachmentState = { //No blend
+	//	VK_FALSE,
+	//	VK_BLEND_FACTOR_ONE,
+	//	VK_BLEND_FACTOR_ZERO,
+	//	VK_BLEND_OP_ADD,
+	//	VK_BLEND_FACTOR_ONE,
+	//	VK_BLEND_FACTOR_ZERO,
+	//	VK_BLEND_OP_ADD,
+	//	VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+	//	VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
+	//};
+	VkPipelineColorBlendAttachmentState colorBlendAttachmentState{}; //Alpha blend
+	colorBlendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+	colorBlendAttachmentState.blendEnable = VK_TRUE;
+	colorBlendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+	colorBlendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	colorBlendAttachmentState.colorBlendOp = VK_BLEND_OP_ADD;
+	colorBlendAttachmentState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	colorBlendAttachmentState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+	colorBlendAttachmentState.alphaBlendOp = VK_BLEND_OP_ADD;
 
 	VkPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo = Initializers::PipelineColorBlendStateCreateInfo(colorBlendAttachmentState, 1);
 	VkPipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo = Initializers::PipelineDepthStencilStateCreateinfo();
@@ -244,10 +290,44 @@ void Zodiac::Renderer::PrepareGeometry() {
 	//delete vertexBuffer;
 
 	//Tests
-	s_device->GetGraphicsCommand(s_drawCmdBuffers.data(), s_swapchain->GetImageCount());
+	//s_device->GetGraphicsCommand(s_drawCmdBuffers.data(), s_swapchain->GetImageCount()); //Allocates buffers
+	//s_device->SubmitGraphicsCommand(s_drawCmdBuffers.data());
 
-	s_device->FreeGraphicsCommand(s_drawCmdBuffers.data(), s_swapchain->GetImageCount());
+	//s_device->FreeGraphicsCommand(s_drawCmdBuffers.data(), s_swapchain->GetImageCount());
 	///////
+}
+
+void Zodiac::Renderer::BuildCommandBuffers() {
+	s_device->GetGraphicsCommand(s_drawCmdBuffers.data(), s_swapchain->GetImageCount()); //Allocates buffers
+
+	VkCommandBufferBeginInfo commandBufferBeginInfo = Initializers::CommandBufferBeginInfo();
+	VkRenderPassBeginInfo renderPassBeginInfo = Initializers::RenderPassBeginInfo(s_renderPass, s_swapchain->GetExtent2D(), s_clearValues[0], 2);
+
+	for (int32_t i = 0; i < s_drawCmdBuffers.size(); i++) {
+		renderPassBeginInfo.framebuffer = s_framebuffers[i];
+		ErrorCheck(vkBeginCommandBuffer(s_drawCmdBuffers[i], &commandBufferBeginInfo));
+
+		vkCmdBeginRenderPass(s_drawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+			// Update dynamic viewport state
+			VkViewport viewport = {};
+			viewport.width = (float)s_swapchain->GetExtent2D().width;
+			viewport.height = (float)s_swapchain->GetExtent2D().height;
+			viewport.minDepth = 0.0f;
+			viewport.maxDepth = 1.0f;
+			vkCmdSetViewport(s_drawCmdBuffers[i], 0, 1, &viewport);
+			// Update dynamic scissor state
+			VkRect2D scissor = {};
+			scissor.extent = s_swapchain->GetExtent2D();
+			scissor.offset.x = 0;
+			scissor.offset.y = 0;
+			vkCmdSetScissor(s_drawCmdBuffers[i], 0, 1, &scissor);
+
+			vkCmdBindPipeline(s_drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, s_pipeline);
+			vkCmdDraw(s_drawCmdBuffers[i], 3, 1, 0, 0);
+		vkCmdEndRenderPass(s_drawCmdBuffers[i]);
+
+		ErrorCheck(vkEndCommandBuffer(s_drawCmdBuffers[i]));
+	}
 }
 
 void Zodiac::Renderer::Shutdown() {
@@ -265,4 +345,8 @@ void Zodiac::Renderer::Shutdown() {
 	vkDestroyRenderPass(*s_device->GetDevice(), s_renderPass, nullptr);
 	vkDestroyPipeline(*s_device->GetDevice(), s_pipeline, nullptr);
 	delete s_swapchain;
+}
+
+void Zodiac::Renderer::SetClearColor(const glm::vec4 color) {
+	s_clearValues[0].color = { color.r, color.g, color.b, color.a };
 }

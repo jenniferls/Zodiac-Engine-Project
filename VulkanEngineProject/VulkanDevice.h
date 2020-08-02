@@ -18,6 +18,7 @@ namespace Zodiac {
 
 		void GetComputeCommand(VkCommandBuffer* buffers, uint32_t count);
 		void GetGraphicsCommand(VkCommandBuffer* buffers, uint32_t count);
+		void SubmitGraphicsCommand(VkCommandBuffer* buffers);
 		void FreeComputeCommand(VkCommandBuffer* buffers, uint32_t count);
 		void FreeGraphicsCommand(VkCommandBuffer* buffers, uint32_t count);
 

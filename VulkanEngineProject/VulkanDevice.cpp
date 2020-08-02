@@ -71,6 +71,11 @@ void Zodiac::VulkanDevice::GetGraphicsCommand(VkCommandBuffer* buffers, uint32_t
 	ErrorCheck(vkAllocateCommandBuffers(m_device, &graphics_buffer_alloc_info, buffers));
 }
 
+void Zodiac::VulkanDevice::SubmitGraphicsCommand(VkCommandBuffer* buffers) {
+	VkCommandBufferBeginInfo cmdBufferBeginInfo = Initializers::CommandBufferBeginInfo();
+	ErrorCheck(vkBeginCommandBuffer(*buffers, &cmdBufferBeginInfo));
+}
+
 void Zodiac::VulkanDevice::FreeComputeCommand(VkCommandBuffer* buffers, uint32_t count) {
 	vkFreeCommandBuffers(m_device, m_compute_command_pool, count, buffers);
 }
