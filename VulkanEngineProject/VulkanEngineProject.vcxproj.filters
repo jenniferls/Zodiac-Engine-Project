@@ -227,5 +227,8 @@
     <ClInclude Include="Vertex.h">
       <Filter>Assets\Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="StagingBuffer.h">
+      <Filter>Vulkan\Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

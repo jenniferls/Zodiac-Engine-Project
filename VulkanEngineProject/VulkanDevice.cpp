@@ -2,6 +2,7 @@
 #include "VulkanDevice.h"
 #include "Validation.h"
 #include "Initializers.h"
+#include "VulkanFence.h"
 
 Zodiac::VulkanDevice::VulkanDevice(VulkanInstance* instance, VulkanPhysicalDevice* physical_device) {
 	m_extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME); //Device extension
@@ -57,6 +58,10 @@ VkCommandPool& Zodiac::VulkanDevice::GetComputeCommandPool() {
 	return m_compute_command_pool;
 }
 
+VkCommandPool & Zodiac::VulkanDevice::GetGraphicsCommandPool() {
+	return m_graphics_command_pool;
+}
+
 Zodiac::VulkanPhysicalDevice* Zodiac::VulkanDevice::GetPhysicalDevice() {
 	return m_physical_device;
 }
@@ -82,4 +87,32 @@ void Zodiac::VulkanDevice::FreeComputeCommand(VkCommandBuffer* buffers, uint32_t
 
 void Zodiac::VulkanDevice::FreeGraphicsCommand(VkCommandBuffer* buffers, uint32_t count) {
 	vkFreeCommandBuffers(m_device, m_graphics_command_pool, count, buffers);
+}
+
+VkCommandBuffer Zodiac::VulkanDevice::GetCommandBuffer(bool begin) {
+	VkCommandBuffer buffer;
+	VkCommandBufferAllocateInfo cmdBufAllocateInfo = Initializers::CommandBufferAllocateInfo(m_graphics_command_pool, 1);
+	ErrorCheck(vkAllocateCommandBuffers(m_device, &cmdBufAllocateInfo, &buffer));
+
+	if (begin) {
+		VkCommandBufferBeginInfo cmdBufInfo = Initializers::CommandBufferBeginInfo();
+		ErrorCheck(vkBeginCommandBuffer(buffer, &cmdBufInfo));
+	}
+
+	return buffer;
+}
+
+void Zodiac::VulkanDevice::FlushCommandBuffer(VkCommandBuffer& cmdBuffer, VkQueue& submitQueue, VkCommandPool& commandPool) {
+	assert(cmdBuffer != VK_NULL_HANDLE);
+
+	ErrorCheck(vkEndCommandBuffer(cmdBuffer));
+	VkSubmitInfo submitInfo = Initializers::SubmitInfo(cmdBuffer);
+	VkFenceCreateInfo fenceinfo = Initializers::FenceCreateInfo();
+	VkFence fence;
+	ErrorCheck(vkCreateFence(m_device, &fenceinfo, nullptr, &fence));
+	ErrorCheck(vkQueueSubmit(submitQueue, 1, &submitInfo, fence));
+	ErrorCheck(vkWaitForFences(m_device, 1, &fence, VK_TRUE, 100000000000)); //TODO: Perhaps create a define for a default fence timeout
+
+	vkDestroyFence(m_device, fence, nullptr);
+	vkFreeCommandBuffers(m_device, commandPool, 1, &cmdBuffer);
 }

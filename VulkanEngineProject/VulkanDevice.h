@@ -14,6 +14,7 @@ namespace Zodiac {
 		VkQueue* GetComputeQueue();
 		VkQueue* GetGraphicsQueue();
 		VkCommandPool& GetComputeCommandPool();
+		VkCommandPool& GetGraphicsCommandPool();
 		VulkanPhysicalDevice* GetPhysicalDevice();
 
 		void GetComputeCommand(VkCommandBuffer* buffers, uint32_t count);
@@ -21,6 +22,9 @@ namespace Zodiac {
 		void SubmitGraphicsCommand(VkCommandBuffer* buffers);
 		void FreeComputeCommand(VkCommandBuffer* buffers, uint32_t count);
 		void FreeGraphicsCommand(VkCommandBuffer* buffers, uint32_t count);
+
+		VkCommandBuffer GetCommandBuffer(bool begin); //Helper-function test
+		void FlushCommandBuffer(VkCommandBuffer& cmdBuffer, VkQueue& submitQueue, VkCommandPool& commandPool);
 
 	private:
 		std::vector<const char*> m_extensions;

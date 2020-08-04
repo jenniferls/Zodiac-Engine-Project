@@ -220,6 +220,7 @@
     <ClInclude Include="Texture.h" />
     <ClInclude Include="Validation.h" />
     <ClInclude Include="Vertex.h" />
+    <ClInclude Include="StagingBuffer.h" />
     <ClInclude Include="VulkanBuffer.h" />
     <ClInclude Include="VulkanConfiguration.h" />
     <ClInclude Include="VulkanDevice.h" />

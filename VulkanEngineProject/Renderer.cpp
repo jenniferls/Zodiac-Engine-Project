@@ -21,6 +21,8 @@ Zodiac::VulkanSemaphore* Zodiac::Renderer::s_renderCompleteSemaphore;
 std::vector<Zodiac::VulkanFence*> Zodiac::Renderer::s_waitFences;
 VkClearValue Zodiac::Renderer::s_clearValues[2];
 uint32_t Zodiac::Renderer::s_imageIndex;
+Zodiac::VulkanBuffer* Zodiac::Renderer::s_vertexBuffer;
+Zodiac::VulkanBuffer* Zodiac::Renderer::s_indexBuffer;
 
 void Zodiac::Renderer::DrawIndexed() {
 
@@ -81,8 +83,8 @@ void Zodiac::Renderer::InitInternal() {
 		s_waitFences.emplace_back(new VulkanFence(s_device));
 	}
 
+	PrepareGeometry(); //TODO: Use specified geometry and buffers
 	SetupPipeline();
-	//PrepareGeometry(); //TODO: Use specified geometry and buffers
 	BuildCommandBuffers();
 }
 
@@ -263,11 +265,13 @@ bool Zodiac::Renderer::SetupPipeline() {
 
 void Zodiac::Renderer::PrepareGeometry() {
 	SimpleVertex* vertArr = new SimpleVertex[3];
-	vertArr[0] = { glm::vec3(-1.0f,-1.0f,-1.0f), glm::vec3(1.0f, 0.0f, 0.0f) };
-	vertArr[1] = { glm::vec3(-1.0f,-1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f) };
-	vertArr[2] = { glm::vec3(-1.0f, 1.0f, 1.0f), glm::vec3(1.0f, 0.0f, 0.0f) };
+	vertArr[0] = { glm::vec3(1.0f,  1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f) };
+	vertArr[1] = { glm::vec3(-1.0f,  1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f) };
+	vertArr[2] = { glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f) };
 
-	std::vector<uint32_t> indexBuffer = { 0, 1, 2 };
+	//uint32_t vertBuffSize = 3 * sizeof(SimpleVertex); //TODO: This should not be hard-coded
+
+	std::vector<uint32_t> indices = { 0, 1, 2 };
 
 	struct StagingBuffer {
 		VkDeviceMemory memory;
@@ -279,20 +283,32 @@ void Zodiac::Renderer::PrepareGeometry() {
 		StagingBuffer indices;
 	} stagingBuffers;
 
-	Zodiac::VulkanBuffer* stagingBuffer = new Zodiac::VulkanBuffer(s_device, vertArr, sizeof(SimpleVertex), 3, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+	//Staging buffer
+	VulkanBuffer* stagingBuffer = new Zodiac::VulkanBuffer(s_device, vertArr, sizeof(SimpleVertex), 3, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	stagingBuffer->MapMemory();
 	stagingBuffer->SetData();
+	stagingBuffer->UnmapMemory();
 
-	delete[] vertArr;
+	//Device local buffer
+	s_vertexBuffer = new Zodiac::VulkanBuffer(s_device, vertArr, sizeof(SimpleVertex), 3, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+	VulkanBuffer* indexBuffer_staging = new Zodiac::VulkanBuffer(s_device, indices.data(), sizeof(uint32_t), 3, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	indexBuffer_staging->MapMemory();
+	indexBuffer_staging->SetData();
+	indexBuffer_staging->UnmapMemory();
+
+	s_indexBuffer = new Zodiac::VulkanBuffer(s_device, indices.data(), sizeof(uint32_t), 3, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+	VkCommandBuffer copyCommand = s_device->GetCommandBuffer(true);
+	s_vertexBuffer->CopyFrom(copyCommand, stagingBuffer);
+	s_indexBuffer->CopyFrom(copyCommand, indexBuffer_staging);
+	s_device->FlushCommandBuffer(copyCommand, *s_device->GetGraphicsQueue(), s_device->GetGraphicsCommandPool()); //TODO: Might change this a bit
+
 	delete stagingBuffer;
-
-	//Zodiac::VulkanBuffer* vertexBuffer = new Zodiac::VulkanBuffer(s_device, vertArr, sizeof(TestVertex), 3, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
-
-	//delete vertexBuffer;
+	delete indexBuffer_staging;
+	delete[] vertArr;
 
 	//Tests
-	//s_device->GetGraphicsCommand(s_drawCmdBuffers.data(), s_swapchain->GetImageCount()); //Allocates buffers
-	//s_device->SubmitGraphicsCommand(s_drawCmdBuffers.data());
-
 	//s_device->FreeGraphicsCommand(s_drawCmdBuffers.data(), s_swapchain->GetImageCount());
 	///////
 }
@@ -345,6 +361,10 @@ void Zodiac::Renderer::Shutdown() {
 	vkDestroyRenderPass(*s_device->GetDevice(), s_renderPass, nullptr);
 	vkDestroyPipeline(*s_device->GetDevice(), s_pipeline, nullptr);
 	delete s_swapchain;
+
+	//Note to self: Keep an eye on these so that they're destroyed at the right time
+	delete s_vertexBuffer;
+	delete s_indexBuffer;
 }
 
 void Zodiac::Renderer::SetClearColor(const glm::vec4 color) {

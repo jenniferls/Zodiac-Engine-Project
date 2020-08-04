@@ -37,7 +37,9 @@ bool Zodiac::System::Init() {
 	}
 
 	m_buffer = new Zodiac::VulkanBuffer(m_device, arr, sizeof(float), 3);
+	m_buffer->MapMemory();
 	m_buffer->SetData();
+	m_buffer->UnmapMemory();
 
 	m_device->FreeComputeCommand(commands, 3);
 	delete commands;

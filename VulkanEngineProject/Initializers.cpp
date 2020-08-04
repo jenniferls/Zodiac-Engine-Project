@@ -184,6 +184,15 @@ VkSubmitInfo Zodiac::Initializers::SubmitInfo(VkSemaphore& present_semaphore, Vk
 	return info;
 }
 
+VkSubmitInfo Zodiac::Initializers::SubmitInfo(VkCommandBuffer& commandBuffer) {
+	VkSubmitInfo info = {};
+
+	info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	info.pCommandBuffers = &commandBuffer;
+	info.commandBufferCount = 1;
+	return info;
+}
+
 VkCommandPoolCreateInfo Zodiac::Initializers::CommandPoolCreateinfo(uint32_t queue_family_index, VkCommandPoolCreateFlags flags) {
 	VkCommandPoolCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -280,7 +289,7 @@ VkPipelineRasterizationStateCreateInfo Zodiac::Initializers::PipelineRasterizati
 	info.rasterizerDiscardEnable = VK_FALSE;
 	info.polygonMode = VK_POLYGON_MODE_FILL;
 	info.cullMode = VK_CULL_MODE_NONE;//VK_CULL_MODE_BACK_BIT; //TODO: Turn on back face culling
-	info.frontFace = VK_FRONT_FACE_CLOCKWISE; //TODO: This could be counter-clockwise
+	info.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 	info.depthBiasEnable = VK_FALSE;
 	//info.depthBiasConstantFactor = 0.0f;
 	//info.depthBiasClamp = 0.0f;

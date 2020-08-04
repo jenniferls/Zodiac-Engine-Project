@@ -39,6 +39,10 @@ Zodiac::VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, SurfaceDetails& d
 	//Image view for depth attachment
 	VkImageSubresourceRange subResourceRangeDepth = { VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 0, 1, 0, 1 };
 	VkImageViewCreateInfo depthStencilView = Initializers::ImageViewCreateInfo(m_depthFormat, m_depthStencil.image, subResourceRangeDepth);
+	// Stencil aspect should only be set on depth + stencil formats (VK_FORMAT_D16_UNORM_S8_UINT..VK_FORMAT_D32_SFLOAT_S8_UINT
+	if (depthStencilView.format >= VK_FORMAT_D16_UNORM_S8_UINT) {
+		depthStencilView.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+	}
 	ErrorCheck(vkCreateImageView(*m_device, &depthStencilView, nullptr, &m_depthStencil.view));
 }
 

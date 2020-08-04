@@ -62,6 +62,9 @@ namespace Zodiac {
 		static VulkanSemaphore* s_renderCompleteSemaphore;
 		static std::vector<VulkanFence*> s_waitFences;
 
+		static VulkanBuffer* s_vertexBuffer;
+		static VulkanBuffer* s_indexBuffer;
+
 		static VkClearValue s_clearValues[2];
 		static uint32_t s_imageIndex;
 	};

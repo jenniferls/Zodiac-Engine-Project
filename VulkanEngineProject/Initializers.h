@@ -21,6 +21,7 @@ namespace Zodiac { namespace Initializers {
 		VkSemaphoreCreateInfo SemaphoreCreateInfo();
 		VkFenceCreateInfo FenceCreateInfo(VkFenceCreateFlags flags = 0);
 		VkSubmitInfo SubmitInfo(VkSemaphore& present_semaphore, VkSemaphore& render_semaphore, VkCommandBuffer& commandBuffer, VkPipelineStageFlags flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+		VkSubmitInfo SubmitInfo(VkCommandBuffer& commandBuffer); //No semaphores version
 		VkCommandPoolCreateInfo CommandPoolCreateinfo(uint32_t queue_family_index, VkCommandPoolCreateFlags flags = 0);
 		VkCommandBufferAllocateInfo CommandBufferAllocateInfo(VkCommandPool pool, uint32_t count);
 		VkBufferCreateInfo BufferCreateInfo(VkDeviceSize size, VkBufferUsageFlags usage_flags);
