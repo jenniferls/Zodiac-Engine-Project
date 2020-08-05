@@ -49,6 +49,10 @@ VkBuffer& Zodiac::VulkanBuffer::GetBuffer() {
 	return m_buffer;
 }
 
+unsigned int Zodiac::VulkanBuffer::GetCount(){
+	return m_count;
+}
+
 const VkDeviceSize Zodiac::VulkanBuffer::GetTotalSize() const{
 	return m_totalSize;
 }

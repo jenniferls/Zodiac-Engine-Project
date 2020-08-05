@@ -29,7 +29,7 @@ namespace Zodiac { namespace Initializers {
 		VkShaderModuleCreateInfo ShaderModuleCreateInfo(std::vector<char>& code);
 		VkPipelineVertexInputStateCreateInfo PipelineVertexInputStateCreateInfo(std::vector<VkVertexInputBindingDescription>& vertexInputBindingDesc, std::vector<VkVertexInputAttributeDescription>& vertexInputAttrDesc);
 		VkPipelineInputAssemblyStateCreateInfo PipelineInputAssemblyStateCreateInfo(VkPrimitiveTopology topology);
-		VkPipelineViewportStateCreateInfo PipelineViewportStateCreateInfo(VkViewport& viewport, VkRect2D& scissor); //For now only 1. Can be extended later.
+		VkPipelineViewportStateCreateInfo PipelineViewportStateCreateInfo(); //For now only 1. Can be extended later.
 		VkPipelineRasterizationStateCreateInfo PipelineRasterizationStateCreateInfo(); //For now, no options needed<
 		VkPipelineMultisampleStateCreateInfo PipelineMultisampleStateCreateInfo(); //For now, no options needed
 		VkPipelineColorBlendStateCreateInfo PipelineColorBlendStateCreateInfo(VkPipelineColorBlendAttachmentState colorBlendAttachmentState, uint32_t attachmentCount);
@@ -40,6 +40,8 @@ namespace Zodiac { namespace Initializers {
 		VkPipelineLayoutCreateInfo PipelineLayoutCreateInfo(uint32_t layoutCount, VkDescriptorSetLayout& pipelineLayoutInfo);
 		VkPresentInfoKHR PresentInfo(VkSwapchainKHR& swapchain, uint32_t& index, VkSemaphore& waitSemaphore);
 		VkDescriptorSetLayoutCreateInfo DescriptorSetLayoutCreateInfo(uint32_t bindingCount, VkDescriptorSetLayoutBinding& layoutBinding);
+		VkDescriptorPoolCreateInfo DescriptorPoolCreateInfo(uint32_t count, VkDescriptorPoolSize* poolSizes);
+		VkDescriptorSetAllocateInfo DescriptorSetAllocateInfo(VkDescriptorPool* descriptorPool, uint32_t setCount, VkDescriptorSetLayout* setLayout);
 
 		VkDebugUtilsMessengerCreateInfoEXT DebugUtilsMessengerCreateInfo();
 

@@ -15,6 +15,8 @@ VkPipeline Zodiac::Renderer::s_pipeline;
 VkPipelineCache Zodiac::Renderer::s_pipelineCache;
 VkPipelineLayout Zodiac::Renderer::s_pipelineLayout;
 VkDescriptorSetLayout Zodiac::Renderer::s_descriptorSetLayout;
+VkDescriptorPool Zodiac::Renderer::s_descriptorPool;
+VkDescriptorSet Zodiac::Renderer::s_descriptorSet;
 std::vector<VkFramebuffer> Zodiac::Renderer::s_framebuffers;
 std::vector<VkCommandBuffer> Zodiac::Renderer::s_drawCmdBuffers;
 Zodiac::VulkanSemaphore* Zodiac::Renderer::s_presentSemaphore;
@@ -89,6 +91,8 @@ void Zodiac::Renderer::InitInternal() {
 	PrepareUniformBuffers();
 	SetupDescriptorSets();
 	SetupPipeline();
+	SetupDescriptorPool();
+	PrepareDescriptorSet();
 	BuildCommandBuffers();
 }
 
@@ -188,8 +192,8 @@ void Zodiac::Renderer::SetupFramebuffers() {
 }
 
 bool Zodiac::Renderer::SetupPipeline() {
-	VulkanShaderModule vertexShader(s_device, "Shaders/vert.spv");
-	VulkanShaderModule fragmentShader(s_device, "Shaders/frag.spv");
+	VulkanShaderModule vertexShader(s_device, "Shaders/triangle.vert.spv");
+	VulkanShaderModule fragmentShader(s_device, "Shaders/triangle.frag.spv");
 
 	if ((vertexShader.GetShaderModule() == nullptr) || (fragmentShader.GetShaderModule() == nullptr)) {
 		return false;
@@ -210,21 +214,21 @@ bool Zodiac::Renderer::SetupPipeline() {
 	};
 
 	VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo = Initializers::PipelineVertexInputStateCreateInfo(vertexBindingDescriptions, vertexInputAttributeDescriptions);
-	VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo = Initializers::PipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST); //TODO: Triangle strip later
+	VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo = Initializers::PipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 	
 	//TODO: May remove since dynamic state
-	VkViewport viewport{};
-	viewport.x = 0.0f;
-	viewport.y = 0.0f;
-	viewport.width = (float)s_swapchain->GetExtent2D().width;
-	viewport.height = (float)s_swapchain->GetExtent2D().height;
-	viewport.minDepth = 0.0f;
-	viewport.maxDepth = 1.0f;
-	VkRect2D scissor{};
-	scissor.offset = { 0, 0 };
-	scissor.extent = s_swapchain->GetExtent2D();
+	//VkViewport viewport{};
+	//viewport.x = 0.0f;
+	//viewport.y = 0.0f;
+	//viewport.width = (float)s_swapchain->GetExtent2D().width;
+	//viewport.height = (float)s_swapchain->GetExtent2D().height;
+	//viewport.minDepth = 0.0f;
+	//viewport.maxDepth = 1.0f;
+	//VkRect2D scissor{};
+	//scissor.offset = { 0, 0 };
+	//scissor.extent = s_swapchain->GetExtent2D();
 
-	VkPipelineViewportStateCreateInfo viewportStateCreateInfo = Initializers::PipelineViewportStateCreateInfo(viewport, scissor);
+	VkPipelineViewportStateCreateInfo viewportStateCreateInfo = Initializers::PipelineViewportStateCreateInfo();
 	VkPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo = Initializers::PipelineRasterizationStateCreateInfo();
 	VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo = Initializers::PipelineMultisampleStateCreateInfo();
 
@@ -241,7 +245,7 @@ bool Zodiac::Renderer::SetupPipeline() {
 	//};
 	VkPipelineColorBlendAttachmentState colorBlendAttachmentState{}; //Alpha blend
 	colorBlendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	colorBlendAttachmentState.blendEnable = VK_TRUE;
+	colorBlendAttachmentState.blendEnable = VK_FALSE; //TODO: Turn on alpha-blending
 	colorBlendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
 	colorBlendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 	colorBlendAttachmentState.colorBlendOp = VK_BLEND_OP_ADD;
@@ -318,7 +322,7 @@ void Zodiac::Renderer::PrepareUniformBuffers() {
 	s_uniformBuffer->p_descriptor.range = sizeof(uboVS);
 
 	uboVS.projectionMatrix = glm::perspective(glm::radians(60.0f), (float)s_swapchain->GetExtent2D().width / (float)s_swapchain->GetExtent2D().height, 0.1f, 256.0f);
-	uboVS.viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0)); //Last parameter is zoom
+	uboVS.viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -2.5)); //Last parameter is zoom
 	
 	uboVS.modelMatrix = glm::mat4(1.0f);
 	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3().x, glm::vec3(1.0f, 0.0f, 0.0f)); //TODO: Add changable parameters
@@ -341,20 +345,53 @@ void Zodiac::Renderer::SetupDescriptorSets() {
 	VkDescriptorSetLayoutCreateInfo layoutCreateInfo = Initializers::DescriptorSetLayoutCreateInfo(1, layoutBinding);
 	ErrorCheck(vkCreateDescriptorSetLayout(*s_device->GetDevice(), &layoutCreateInfo, nullptr, &s_descriptorSetLayout));
 
-	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = Initializers::PipelineLayoutCreateInfo();
+	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = Initializers::PipelineLayoutCreateInfo(1, s_descriptorSetLayout);
 	ErrorCheck(vkCreatePipelineLayout(*s_device->GetDevice(), &pipelineLayoutCreateInfo, nullptr, &s_pipelineLayout));
+}
+
+void Zodiac::Renderer::SetupDescriptorPool() {
+	VkDescriptorPoolSize typeCounts[1];
+
+	typeCounts[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	typeCounts[0].descriptorCount = 1;
+	// For additional types you need to add new entries in the type count list
+	// E.g. for two combined image samplers :
+	// typeCounts[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	// typeCounts[1].descriptorCount = 2;
+
+	VkDescriptorPoolCreateInfo descriptorPoolInfo = Initializers::DescriptorPoolCreateInfo(typeCounts->descriptorCount, typeCounts);
+	ErrorCheck(vkCreateDescriptorPool(*s_device->GetDevice(), &descriptorPoolInfo, nullptr, &s_descriptorPool));
+}
+
+void Zodiac::Renderer::PrepareDescriptorSet() {
+	VkDescriptorSetAllocateInfo descriptorSetAllocInfo = Initializers::DescriptorSetAllocateInfo(&s_descriptorPool, 1, &s_descriptorSetLayout);
+	ErrorCheck(vkAllocateDescriptorSets(*s_device->GetDevice(), &descriptorSetAllocInfo, &s_descriptorSet));
+
+	VkWriteDescriptorSet writeDescriptorSet = {};
+
+	// Binding 0 : Uniform buffer
+	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writeDescriptorSet.dstSet = s_descriptorSet;
+	writeDescriptorSet.descriptorCount = 1;
+	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	writeDescriptorSet.pBufferInfo = &s_uniformBuffer->p_descriptor;
+	// Binds this uniform buffer to binding point 0
+	writeDescriptorSet.dstBinding = 0;
+
+	vkUpdateDescriptorSets(*s_device->GetDevice(), 1, &writeDescriptorSet, 0, nullptr);
 }
 
 void Zodiac::Renderer::BuildCommandBuffers() {
 	s_device->GetGraphicsCommand(s_drawCmdBuffers.data(), s_swapchain->GetImageCount()); //Allocates buffers
 
-	VkCommandBufferBeginInfo commandBufferBeginInfo = Initializers::CommandBufferBeginInfo();
+	VkCommandBufferBeginInfo commandBufferBeginInfo = Initializers::CommandBufferBeginInfo(0);
 	VkRenderPassBeginInfo renderPassBeginInfo = Initializers::RenderPassBeginInfo(s_renderPass, s_swapchain->GetExtent2D(), s_clearValues[0], 2);
 
 	for (int32_t i = 0; i < s_drawCmdBuffers.size(); i++) {
 		renderPassBeginInfo.framebuffer = s_framebuffers[i];
 		ErrorCheck(vkBeginCommandBuffer(s_drawCmdBuffers[i], &commandBufferBeginInfo));
 
+		// This will clear the color and depth attachment
 		vkCmdBeginRenderPass(s_drawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 			// Update dynamic viewport state
 			VkViewport viewport = {};
@@ -370,8 +407,15 @@ void Zodiac::Renderer::BuildCommandBuffers() {
 			scissor.offset.y = 0;
 			vkCmdSetScissor(s_drawCmdBuffers[i], 0, 1, &scissor);
 
+			// Bind descriptor sets describing shader binding points
+			vkCmdBindDescriptorSets(s_drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, s_pipelineLayout, 0, 1, &s_descriptorSet, 0, nullptr);
+
+			VkDeviceSize offsets[1] = { 0 };
+			vkCmdBindVertexBuffers(s_drawCmdBuffers[i], 0, 1, &s_vertexBuffer->GetBuffer(), offsets);
+			vkCmdBindIndexBuffer(s_drawCmdBuffers[i], s_indexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
+
 			vkCmdBindPipeline(s_drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, s_pipeline);
-			vkCmdDraw(s_drawCmdBuffers[i], 3, 1, 0, 0);
+			vkCmdDrawIndexed(s_drawCmdBuffers[i], s_indexBuffer->GetCount(), 1, 0, 0, 1);
 		vkCmdEndRenderPass(s_drawCmdBuffers[i]);
 
 		ErrorCheck(vkEndCommandBuffer(s_drawCmdBuffers[i]));
@@ -393,6 +437,7 @@ void Zodiac::Renderer::Shutdown() {
 	vkDestroyPipelineLayout(*s_device->GetDevice(), s_pipelineLayout, nullptr);
 	vkDestroyRenderPass(*s_device->GetDevice(), s_renderPass, nullptr);
 	vkDestroyPipeline(*s_device->GetDevice(), s_pipeline, nullptr);
+	vkDestroyDescriptorPool(*s_device->GetDevice(), s_descriptorPool, nullptr);
 	delete s_swapchain;
 
 	//Note to self: Keep an eye on these so that they're destroyed at the right time

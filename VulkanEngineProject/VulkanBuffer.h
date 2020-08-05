@@ -18,6 +18,7 @@ namespace Zodiac {
 
 		void CopyFrom(VkCommandBuffer& cmdBuffer, VulkanBuffer* sourceBuffer);
 		VkBuffer& GetBuffer();
+		unsigned int GetCount();
 
 		const VkDeviceSize GetTotalSize() const;
 		VkDeviceMemory& GetDeviceMemory();

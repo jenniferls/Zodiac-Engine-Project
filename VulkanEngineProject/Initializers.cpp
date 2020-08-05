@@ -247,11 +247,10 @@ VkPipelineVertexInputStateCreateInfo Zodiac::Initializers::PipelineVertexInputSt
 	info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	info.pNext = nullptr;
 	info.flags = 0;
-	//TODO: Use buffers
-	info.vertexBindingDescriptionCount = 0;//static_cast<uint32_t>(vertexInputBindingDesc.size());
-	info.pVertexBindingDescriptions = nullptr;//vertexInputBindingDesc.data();
-	info.vertexAttributeDescriptionCount = 0;//static_cast<uint32_t>(vertexInputAttrDesc.size());
-	info.pVertexAttributeDescriptions = nullptr;// vertexInputAttrDesc.data();
+	info.vertexBindingDescriptionCount = static_cast<uint32_t>(vertexInputBindingDesc.size());
+	info.pVertexBindingDescriptions = vertexInputBindingDesc.data();
+	info.vertexAttributeDescriptionCount = static_cast<uint32_t>(vertexInputAttrDesc.size());
+	info.pVertexAttributeDescriptions = vertexInputAttrDesc.data();
 
 	return info;
 }
@@ -261,13 +260,13 @@ VkPipelineInputAssemblyStateCreateInfo Zodiac::Initializers::PipelineInputAssemb
 	info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	info.pNext = nullptr;
 	info.flags = 0;
-	info.primitiveRestartEnable = VK_FALSE;
+	//info.primitiveRestartEnable = VK_FALSE;
 	info.topology = topology;
 
 	return info;
 }
 
-VkPipelineViewportStateCreateInfo Zodiac::Initializers::PipelineViewportStateCreateInfo(VkViewport& viewport, VkRect2D& scissor) {
+VkPipelineViewportStateCreateInfo Zodiac::Initializers::PipelineViewportStateCreateInfo() {
 	VkPipelineViewportStateCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 	info.flags = 0;
@@ -320,13 +319,13 @@ VkPipelineColorBlendStateCreateInfo Zodiac::Initializers::PipelineColorBlendStat
 	info.flags = 0;
 	info.pNext = nullptr;
 	info.pAttachments = &colorBlendAttachmentState;
-	info.logicOpEnable = VK_FALSE;
-	info.logicOp = VK_LOGIC_OP_COPY;
+	//info.logicOpEnable = VK_FALSE;
+	//info.logicOp = VK_LOGIC_OP_COPY;
 	info.attachmentCount = attachmentCount;
-	info.blendConstants[0] = 0.0f;
-	info.blendConstants[1] = 0.0f;
-	info.blendConstants[2] = 0.0f;
-	info.blendConstants[3] = 0.0f;
+	//info.blendConstants[0] = 0.0f;
+	//info.blendConstants[1] = 0.0f;
+	//info.blendConstants[2] = 0.0f;
+	//info.blendConstants[3] = 0.0f;
 
 	return info;
 }
@@ -379,8 +378,8 @@ VkGraphicsPipelineCreateInfo Zodiac::Initializers::GraphicsPipelineCreateInfo(st
 	info.layout = pipelineLayout;
 	info.renderPass = renderPass;
 	info.subpass = 0;
-	info.basePipelineHandle = VK_NULL_HANDLE;
-	info.basePipelineIndex = -1;
+	//info.basePipelineHandle = VK_NULL_HANDLE;
+	//info.basePipelineIndex = -1;
 
 	return info;
 }
@@ -435,6 +434,28 @@ VkDescriptorSetLayoutCreateInfo Zodiac::Initializers::DescriptorSetLayoutCreateI
 	info.pNext = 0;
 	info.bindingCount = bindingCount;
 	info.pBindings = &layoutBinding;
+
+	return info;
+}
+
+VkDescriptorPoolCreateInfo Zodiac::Initializers::DescriptorPoolCreateInfo(uint32_t count, VkDescriptorPoolSize* poolSizes) {
+	VkDescriptorPoolCreateInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	info.pNext = nullptr;
+	info.poolSizeCount = count;
+	info.pPoolSizes = poolSizes;
+	info.maxSets = count; //TODO: Can be changed later
+
+	return info;
+}
+
+VkDescriptorSetAllocateInfo Zodiac::Initializers::DescriptorSetAllocateInfo(VkDescriptorPool* descriptorPool, uint32_t setCount, VkDescriptorSetLayout* setLayout) {
+	VkDescriptorSetAllocateInfo info;
+	info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	info.pNext = nullptr;
+	info.descriptorPool = *descriptorPool;
+	info.descriptorSetCount = setCount;
+	info.pSetLayouts = setLayout;
 
 	return info;
 }
