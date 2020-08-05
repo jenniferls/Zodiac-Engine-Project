@@ -40,6 +40,7 @@ namespace Zodiac {
 
 		static bool SetupPipeline();
 		static void PrepareGeometry();
+		static void PrepareUniformBuffers();
 		static void BuildCommandBuffers();
 
 		const int MAX_FRAMES_IN_FLIGHT = 2;
@@ -64,6 +65,7 @@ namespace Zodiac {
 
 		static VulkanBuffer* s_vertexBuffer;
 		static VulkanBuffer* s_indexBuffer;
+		static VulkanBuffer* s_uniformBuffer;
 
 		static VkClearValue s_clearValues[2];
 		static uint32_t s_imageIndex;

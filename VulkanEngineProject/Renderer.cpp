@@ -23,6 +23,7 @@ VkClearValue Zodiac::Renderer::s_clearValues[2];
 uint32_t Zodiac::Renderer::s_imageIndex;
 Zodiac::VulkanBuffer* Zodiac::Renderer::s_vertexBuffer;
 Zodiac::VulkanBuffer* Zodiac::Renderer::s_indexBuffer;
+Zodiac::VulkanBuffer* Zodiac::Renderer::s_uniformBuffer;
 
 void Zodiac::Renderer::DrawIndexed() {
 
@@ -83,7 +84,8 @@ void Zodiac::Renderer::InitInternal() {
 		s_waitFences.emplace_back(new VulkanFence(s_device));
 	}
 
-	PrepareGeometry(); //TODO: Use specified geometry and buffers
+	PrepareGeometry();
+	PrepareUniformBuffers();
 	SetupPipeline();
 	BuildCommandBuffers();
 }
@@ -269,8 +271,6 @@ void Zodiac::Renderer::PrepareGeometry() {
 	vertArr[1] = { glm::vec3(-1.0f,  1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f) };
 	vertArr[2] = { glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f) };
 
-	//uint32_t vertBuffSize = 3 * sizeof(SimpleVertex); //TODO: This should not be hard-coded
-
 	std::vector<uint32_t> indices = { 0, 1, 2 };
 
 	struct StagingBuffer {
@@ -307,10 +307,31 @@ void Zodiac::Renderer::PrepareGeometry() {
 	delete stagingBuffer;
 	delete indexBuffer_staging;
 	delete[] vertArr;
+}
 
-	//Tests
-	//s_device->FreeGraphicsCommand(s_drawCmdBuffers.data(), s_swapchain->GetImageCount());
-	///////
+void Zodiac::Renderer::PrepareUniformBuffers() {
+	struct {
+		glm::mat4 projectionMatrix;
+		glm::mat4 modelMatrix;
+		glm::mat4 viewMatrix;
+	} uboVS;
+
+	s_uniformBuffer = new VulkanBuffer(s_device, &uboVS, sizeof(uboVS), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	s_uniformBuffer->p_descriptor.buffer = s_uniformBuffer->GetBuffer();
+	s_uniformBuffer->p_descriptor.offset = 0;
+	s_uniformBuffer->p_descriptor.range = sizeof(uboVS);
+
+	uboVS.projectionMatrix = glm::perspective(glm::radians(60.0f), (float)s_swapchain->GetExtent2D().width / (float)s_swapchain->GetExtent2D().height, 0.1f, 256.0f);
+	uboVS.viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, 0)); //Last parameter is zoom
+	
+	uboVS.modelMatrix = glm::mat4(1.0f);
+	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3().x, glm::vec3(1.0f, 0.0f, 0.0f)); //TODO: Add changable parameters
+	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3().y, glm::vec3(0.0f, 1.0f, 0.0f));
+	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3().z, glm::vec3(0.0f, 0.0f, 1.0f));
+
+	s_uniformBuffer->MapMemory();
+	s_uniformBuffer->SetData(); //Since the buffer has been passed a pointer at creation, it should technically be okay to do this without passing anything else
+	s_uniformBuffer->UnmapMemory();
 }
 
 void Zodiac::Renderer::BuildCommandBuffers() {
@@ -365,6 +386,7 @@ void Zodiac::Renderer::Shutdown() {
 	//Note to self: Keep an eye on these so that they're destroyed at the right time
 	delete s_vertexBuffer;
 	delete s_indexBuffer;
+	delete s_uniformBuffer;
 }
 
 void Zodiac::Renderer::SetClearColor(const glm::vec4 color) {

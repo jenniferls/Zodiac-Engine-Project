@@ -40,9 +40,6 @@ void Zodiac::VulkanBuffer::UnmapMemory() {
 }
 
 void Zodiac::VulkanBuffer::CopyFrom(VkCommandBuffer& cmdBuffer, VulkanBuffer* sourceBuffer) {
-	//VkCommandBufferAllocateInfo cmdBufferInfo = Initializers::CommandBufferAllocateInfo(m_device->GetGraphicsCommandPool(), 1);
-	//VkCommandBufferBeginInfo cmdBufferBeginInfo = Initializers::CommandBufferBeginInfo();
-	//ErrorCheck(vkBeginCommandBuffer(copyCommand, &cmdBufferBeginInfo));
 	VkBufferCopy copyRegion = {};
 	copyRegion.size = m_totalSize;
 	vkCmdCopyBuffer(cmdBuffer, sourceBuffer->GetBuffer(), m_buffer, 1, &copyRegion);

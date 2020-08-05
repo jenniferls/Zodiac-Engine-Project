@@ -25,6 +25,8 @@ namespace Zodiac {
 		//virtual void Resize();
 		//virtual void Transfer();
 
+		VkDescriptorBufferInfo p_descriptor;
+
 	private:
 		void CreateBuffer(VkMemoryPropertyFlags memoryFlags);
 		void DestroyBuffer();
