@@ -398,6 +398,19 @@ VkPipelineLayoutCreateInfo Zodiac::Initializers::PipelineLayoutCreateInfo() {
 	return info;
 }
 
+VkPipelineLayoutCreateInfo Zodiac::Initializers::PipelineLayoutCreateInfo(uint32_t layoutCount, VkDescriptorSetLayout& pipelineLayoutInfo) {
+	VkPipelineLayoutCreateInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	info.flags = 0;
+	info.pNext = nullptr;
+	info.pPushConstantRanges = nullptr;
+	info.pSetLayouts = &pipelineLayoutInfo;
+	info.pushConstantRangeCount = 0;
+	info.setLayoutCount = layoutCount;
+
+	return info;
+}
+
 VkPresentInfoKHR Zodiac::Initializers::PresentInfo(VkSwapchainKHR& swapchain, uint32_t& index, VkSemaphore& waitSemaphore) {
 	VkPresentInfoKHR info = {};
 	info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -412,6 +425,16 @@ VkPresentInfoKHR Zodiac::Initializers::PresentInfo(VkSwapchainKHR& swapchain, ui
 	//}
 		
 	info.pResults = nullptr;
+
+	return info;
+}
+
+VkDescriptorSetLayoutCreateInfo Zodiac::Initializers::DescriptorSetLayoutCreateInfo(uint32_t bindingCount, VkDescriptorSetLayoutBinding& layoutBinding) {
+	VkDescriptorSetLayoutCreateInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	info.pNext = 0;
+	info.bindingCount = bindingCount;
+	info.pBindings = &layoutBinding;
 
 	return info;
 }

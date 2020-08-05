@@ -37,7 +37,9 @@ namespace Zodiac { namespace Initializers {
 		VkPipelineDepthStencilStateCreateInfo PipelineDepthStencilStateCreateinfo();
 		VkGraphicsPipelineCreateInfo GraphicsPipelineCreateInfo(std::vector<VkPipelineShaderStageCreateInfo>& shaderStageCreateInfos, VkPipelineVertexInputStateCreateInfo& vertexInputStageCreateInfo, VkPipelineInputAssemblyStateCreateInfo& inputAssemblyStateCreateInfo, VkPipelineViewportStateCreateInfo& viewportStateCreateInfo, VkPipelineRasterizationStateCreateInfo& rasterizationStateCreateInfo, VkPipelineMultisampleStateCreateInfo& multisampleStateCreateInfo, VkPipelineColorBlendStateCreateInfo& colorBlendStateCreateInfo, VkPipelineDynamicStateCreateInfo& dynamicStateCreateInfo, VkPipelineLayout& pipelineLayout, VkRenderPass& renderPass, VkPipelineDepthStencilStateCreateInfo& depthStencilStateCreateInfo);
 		VkPipelineLayoutCreateInfo PipelineLayoutCreateInfo();
+		VkPipelineLayoutCreateInfo PipelineLayoutCreateInfo(uint32_t layoutCount, VkDescriptorSetLayout& pipelineLayoutInfo);
 		VkPresentInfoKHR PresentInfo(VkSwapchainKHR& swapchain, uint32_t& index, VkSemaphore& waitSemaphore);
+		VkDescriptorSetLayoutCreateInfo DescriptorSetLayoutCreateInfo(uint32_t bindingCount, VkDescriptorSetLayoutBinding& layoutBinding);
 
 		VkDebugUtilsMessengerCreateInfoEXT DebugUtilsMessengerCreateInfo();
 

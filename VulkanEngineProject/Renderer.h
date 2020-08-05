@@ -41,6 +41,7 @@ namespace Zodiac {
 		static bool SetupPipeline();
 		static void PrepareGeometry();
 		static void PrepareUniformBuffers();
+		static void SetupDescriptorSets();
 		static void BuildCommandBuffers();
 
 		const int MAX_FRAMES_IN_FLIGHT = 2;
@@ -55,6 +56,7 @@ namespace Zodiac {
 		static VkPipeline s_pipeline;
 		static VkPipelineCache s_pipelineCache;
 		static VkPipelineLayout s_pipelineLayout;
+		static VkDescriptorSetLayout s_descriptorSetLayout;
 		static std::vector<VkFramebuffer> s_framebuffers;
 
 		static std::vector<VkCommandBuffer> s_drawCmdBuffers;

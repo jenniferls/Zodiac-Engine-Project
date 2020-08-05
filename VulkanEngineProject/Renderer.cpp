@@ -14,6 +14,7 @@ VkRenderPass Zodiac::Renderer::s_renderPass;
 VkPipeline Zodiac::Renderer::s_pipeline;
 VkPipelineCache Zodiac::Renderer::s_pipelineCache;
 VkPipelineLayout Zodiac::Renderer::s_pipelineLayout;
+VkDescriptorSetLayout Zodiac::Renderer::s_descriptorSetLayout;
 std::vector<VkFramebuffer> Zodiac::Renderer::s_framebuffers;
 std::vector<VkCommandBuffer> Zodiac::Renderer::s_drawCmdBuffers;
 Zodiac::VulkanSemaphore* Zodiac::Renderer::s_presentSemaphore;
@@ -86,6 +87,7 @@ void Zodiac::Renderer::InitInternal() {
 
 	PrepareGeometry();
 	PrepareUniformBuffers();
+	SetupDescriptorSets();
 	SetupPipeline();
 	BuildCommandBuffers();
 }
@@ -253,12 +255,6 @@ bool Zodiac::Renderer::SetupPipeline() {
 	std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 	VkPipelineDynamicStateCreateInfo dynamicStateCreateInfo = Initializers::PipelineDynamicStateCreateInfo(dynamicStates);
 
-	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = Initializers::PipelineLayoutCreateInfo();
-	ErrorCheck(vkCreatePipelineLayout(*s_device->GetDevice(), &pipelineLayoutCreateInfo, nullptr, &s_pipelineLayout));
-	if (!s_pipelineLayout) {
-		return false;
-	}
-
 	VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo = Initializers::GraphicsPipelineCreateInfo(shaderStageCreateInfos, vertexInputStateCreateInfo, inputAssemblyStateCreateInfo, viewportStateCreateInfo, rasterizationStateCreateInfo, multisampleStateCreateInfo, colorBlendStateCreateInfo, dynamicStateCreateInfo, s_pipelineLayout, s_renderPass, depthStencilStateCreateInfo);
 	ErrorCheck(vkCreateGraphicsPipelines(*s_device->GetDevice(), s_pipelineCache, 1, &graphicsPipelineCreateInfo, nullptr, &s_pipeline));
 
@@ -334,6 +330,21 @@ void Zodiac::Renderer::PrepareUniformBuffers() {
 	s_uniformBuffer->UnmapMemory();
 }
 
+void Zodiac::Renderer::SetupDescriptorSets() {
+	// Binding 0: Uniform buffer (Vertex shader)
+	VkDescriptorSetLayoutBinding layoutBinding = {};
+	layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	layoutBinding.descriptorCount = 1;
+	layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	layoutBinding.pImmutableSamplers = nullptr;
+
+	VkDescriptorSetLayoutCreateInfo layoutCreateInfo = Initializers::DescriptorSetLayoutCreateInfo(1, layoutBinding);
+	ErrorCheck(vkCreateDescriptorSetLayout(*s_device->GetDevice(), &layoutCreateInfo, nullptr, &s_descriptorSetLayout));
+
+	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = Initializers::PipelineLayoutCreateInfo();
+	ErrorCheck(vkCreatePipelineLayout(*s_device->GetDevice(), &pipelineLayoutCreateInfo, nullptr, &s_pipelineLayout));
+}
+
 void Zodiac::Renderer::BuildCommandBuffers() {
 	s_device->GetGraphicsCommand(s_drawCmdBuffers.data(), s_swapchain->GetImageCount()); //Allocates buffers
 
@@ -378,6 +389,7 @@ void Zodiac::Renderer::Shutdown() {
 		vkDestroyFramebuffer(*s_device->GetDevice(), s_framebuffers[i], nullptr);
 	}
 	vkDestroyPipelineCache(*s_device->GetDevice(), s_pipelineCache, nullptr);
+	vkDestroyDescriptorSetLayout(*s_device->GetDevice(), s_descriptorSetLayout, nullptr);
 	vkDestroyPipelineLayout(*s_device->GetDevice(), s_pipelineLayout, nullptr);
 	vkDestroyRenderPass(*s_device->GetDevice(), s_renderPass, nullptr);
 	vkDestroyPipeline(*s_device->GetDevice(), s_pipeline, nullptr);
