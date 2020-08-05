@@ -215,18 +215,6 @@ bool Zodiac::Renderer::SetupPipeline() {
 
 	VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo = Initializers::PipelineVertexInputStateCreateInfo(vertexBindingDescriptions, vertexInputAttributeDescriptions);
 	VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo = Initializers::PipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-	
-	//TODO: May remove since dynamic state
-	//VkViewport viewport{};
-	//viewport.x = 0.0f;
-	//viewport.y = 0.0f;
-	//viewport.width = (float)s_swapchain->GetExtent2D().width;
-	//viewport.height = (float)s_swapchain->GetExtent2D().height;
-	//viewport.minDepth = 0.0f;
-	//viewport.maxDepth = 1.0f;
-	//VkRect2D scissor{};
-	//scissor.offset = { 0, 0 };
-	//scissor.extent = s_swapchain->GetExtent2D();
 
 	VkPipelineViewportStateCreateInfo viewportStateCreateInfo = Initializers::PipelineViewportStateCreateInfo();
 	VkPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo = Initializers::PipelineRasterizationStateCreateInfo();
@@ -268,20 +256,10 @@ bool Zodiac::Renderer::SetupPipeline() {
 void Zodiac::Renderer::PrepareGeometry() {
 	SimpleVertex* vertArr = new SimpleVertex[3];
 	vertArr[0] = { glm::vec3(1.0f,  1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f) };
-	vertArr[1] = { glm::vec3(-1.0f,  1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f) };
-	vertArr[2] = { glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f) };
+	vertArr[1] = { glm::vec3(-1.0f,  1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f) };
+	vertArr[2] = { glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f) };
 
 	std::vector<uint32_t> indices = { 0, 1, 2 };
-
-	struct StagingBuffer {
-		VkDeviceMemory memory;
-		VkBuffer buffer;
-	};
-
-	struct {
-		StagingBuffer vertices;
-		StagingBuffer indices;
-	} stagingBuffers;
 
 	//Staging buffer
 	VulkanBuffer* stagingBuffer = new Zodiac::VulkanBuffer(s_device, vertArr, sizeof(SimpleVertex), 3, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
@@ -385,7 +363,7 @@ void Zodiac::Renderer::BuildCommandBuffers() {
 	s_device->GetGraphicsCommand(s_drawCmdBuffers.data(), s_swapchain->GetImageCount()); //Allocates buffers
 
 	VkCommandBufferBeginInfo commandBufferBeginInfo = Initializers::CommandBufferBeginInfo(0);
-	VkRenderPassBeginInfo renderPassBeginInfo = Initializers::RenderPassBeginInfo(s_renderPass, s_swapchain->GetExtent2D(), s_clearValues[0], 2);
+	VkRenderPassBeginInfo renderPassBeginInfo = Initializers::RenderPassBeginInfo(s_renderPass, s_swapchain->GetExtent2D(), s_clearValues, 2);
 
 	for (int32_t i = 0; i < s_drawCmdBuffers.size(); i++) {
 		renderPassBeginInfo.framebuffer = s_framebuffers[i];

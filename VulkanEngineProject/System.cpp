@@ -28,22 +28,22 @@ bool Zodiac::System::Init() {
 	std::cout << "Selected physical device: " << m_physical_device->GetDeviceProperties().deviceName << std::endl;
 
 	/////// Tests ///////
-	VkCommandBuffer* commands = new VkCommandBuffer[3]; //Command buffers test
-	m_device->GetComputeCommand(commands, 3);
+	//VkCommandBuffer* commands = new VkCommandBuffer[3]; //Command buffers test
+	//m_device->GetComputeCommand(commands, 3);
 
-	float* arr = new float[3];
-	for (int i = 0; i < 3; i++) { //Test
-		arr[i] = (float)i;
-	}
+	//float* arr = new float[3];
+	//for (int i = 0; i < 3; i++) { //Test
+	//	arr[i] = (float)i;
+	//}
 
-	m_buffer = new Zodiac::VulkanBuffer(m_device, arr, sizeof(float), 3);
-	m_buffer->MapMemory();
-	m_buffer->SetData();
-	m_buffer->UnmapMemory();
+	//m_buffer = new Zodiac::VulkanBuffer(m_device, arr, sizeof(float), 3);
+	//m_buffer->MapMemory();
+	//m_buffer->SetData();
+	//m_buffer->UnmapMemory();
 
-	m_device->FreeComputeCommand(commands, 3);
-	delete commands;
-	delete[] arr;
+	//m_device->FreeComputeCommand(commands, 3);
+	//delete commands;
+	//delete[] arr;
 	//////////////////
 
 	return true;

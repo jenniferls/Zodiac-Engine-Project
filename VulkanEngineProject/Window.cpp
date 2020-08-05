@@ -37,7 +37,7 @@ void Zodiac::Window::Init(const WindowProperties& props) {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); //Not a resizable window
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); //TODO: Make it truly resizable or put to VK_FALSE
 	if (!glfwVulkanSupported()) {
 		throw std::runtime_error("GLFW ERROR: VULKAN IS NOT SUPPORTED!");
 	}

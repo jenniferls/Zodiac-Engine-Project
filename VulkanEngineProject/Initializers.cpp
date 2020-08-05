@@ -480,7 +480,7 @@ VkCommandBufferBeginInfo Zodiac::Initializers::CommandBufferBeginInfo(VkCommandB
 	return info;
 }
 
-VkRenderPassBeginInfo Zodiac::Initializers::RenderPassBeginInfo(VkRenderPass renderPass, VkExtent2D renderArea, VkClearValue clearValue, uint32_t clearValueCount) {
+VkRenderPassBeginInfo Zodiac::Initializers::RenderPassBeginInfo(VkRenderPass renderPass, VkExtent2D renderArea, VkClearValue* clearValue, uint32_t clearValueCount) {
 	VkRenderPassBeginInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	info.pNext = nullptr;
@@ -488,7 +488,7 @@ VkRenderPassBeginInfo Zodiac::Initializers::RenderPassBeginInfo(VkRenderPass ren
 	info.renderArea.offset = { 0, 0 };
 	info.renderArea.extent = renderArea;
 	info.clearValueCount = clearValueCount;
-	info.pClearValues = &clearValue;
+	info.pClearValues = clearValue;
 
 	return info;
 }

@@ -46,7 +46,7 @@ namespace Zodiac { namespace Initializers {
 		VkDebugUtilsMessengerCreateInfoEXT DebugUtilsMessengerCreateInfo();
 
 		VkCommandBufferBeginInfo CommandBufferBeginInfo(VkCommandBufferUsageFlags flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
-		VkRenderPassBeginInfo RenderPassBeginInfo(VkRenderPass renderPass, VkExtent2D renderArea, VkClearValue clearValue, uint32_t clearValueCount);
+		VkRenderPassBeginInfo RenderPassBeginInfo(VkRenderPass renderPass, VkExtent2D renderArea, VkClearValue* clearValue, uint32_t clearValueCount);
 
 		//Descriptions
 		VkVertexInputBindingDescription VertexInputBindingDescription(uint32_t binding, uint32_t vertexSize);
