@@ -45,5 +45,6 @@ namespace Zodiac {
 		void* m_mappedMemory;
 
 		VkBufferCreateInfo m_bufferInfo;
+		VkMemoryAllocateInfo m_mem_alloc_info;
 	};
 }

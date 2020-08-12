@@ -32,7 +32,7 @@ void Zodiac::VulkanBuffer::SetData(unsigned int startIndex, unsigned int count) 
 }
 
 void Zodiac::VulkanBuffer::MapMemory() {
-	ErrorCheck(vkMapMemory(*m_device->GetDevice(), m_deviceMemory, 0, m_bufferInfo.size, 0, &m_mappedMemory)); //Note to self: Keep an eye on the buffer size here to make sure this is correct usage
+	ErrorCheck(vkMapMemory(*m_device->GetDevice(), m_deviceMemory, 0, m_mem_alloc_info.allocationSize, 0, &m_mappedMemory)); //Note to self: Keep an eye on the buffer size here to make sure this is correct usage
 }
 
 void Zodiac::VulkanBuffer::UnmapMemory() {
@@ -68,8 +68,8 @@ void Zodiac::VulkanBuffer::CreateBuffer(VkMemoryPropertyFlags memoryFlags) {
 	VkMemoryRequirements mem_reqs;
 	vkGetBufferMemoryRequirements(*m_device->GetDevice(), m_buffer, &mem_reqs);
 
-	VkMemoryAllocateInfo mem_alloc_info = Initializers::MemoryAllocateInfo(mem_reqs.size, FindMemoryType(memoryFlags, mem_reqs.memoryTypeBits));
-	ErrorCheck(vkAllocateMemory(*m_device->GetDevice(), &mem_alloc_info, nullptr, &m_deviceMemory));
+	m_mem_alloc_info = Initializers::MemoryAllocateInfo(mem_reqs.size, FindMemoryType(memoryFlags, mem_reqs.memoryTypeBits));
+	ErrorCheck(vkAllocateMemory(*m_device->GetDevice(), &m_mem_alloc_info, nullptr, &m_deviceMemory));
 	ErrorCheck(vkBindBufferMemory(*m_device->GetDevice(), m_buffer, m_deviceMemory, 0)); //Last parameter is offset
 }
 

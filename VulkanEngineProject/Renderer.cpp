@@ -210,7 +210,7 @@ bool Zodiac::Renderer::SetupPipeline() {
 
 	std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions = {
 		{ Initializers::VertexInputAttributeDescription(0, vertexBindingDescriptions[0].binding, 0) },
-		{ Initializers::VertexInputAttributeDescription(1, vertexBindingDescriptions[0].binding, offsetof(struct SimpleVertex, color)) }
+		{ Initializers::VertexInputAttributeDescription(1, vertexBindingDescriptions[0].binding, offsetof(SimpleVertex, color)) }
 	};
 
 	VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo = Initializers::PipelineVertexInputStateCreateInfo(vertexBindingDescriptions, vertexInputAttributeDescriptions);
@@ -233,7 +233,7 @@ bool Zodiac::Renderer::SetupPipeline() {
 	//};
 	VkPipelineColorBlendAttachmentState colorBlendAttachmentState{}; //Alpha blend
 	colorBlendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	colorBlendAttachmentState.blendEnable = VK_FALSE; //TODO: Turn on alpha-blending
+	colorBlendAttachmentState.blendEnable = VK_TRUE;
 	colorBlendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
 	colorBlendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
 	colorBlendAttachmentState.colorBlendOp = VK_BLEND_OP_ADD;
@@ -255,9 +255,12 @@ bool Zodiac::Renderer::SetupPipeline() {
 
 void Zodiac::Renderer::PrepareGeometry() {
 	SimpleVertex* vertArr = new SimpleVertex[3];
-	vertArr[0] = { glm::vec3(1.0f,  1.0f, 0.0f), glm::vec3(1.0f, 0.0f, 0.0f) };
-	vertArr[1] = { glm::vec3(-1.0f,  1.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f) };
-	vertArr[2] = { glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f) };
+	vertArr[0].pos = { 1.0f,  1.0f, 0.0f };
+	vertArr[0].color = { 1.0f, 0.0f, 0.0f };
+	vertArr[1].pos = { -1.0f,  1.0f, 0.0f };
+	vertArr[1].color = { 0.0f, 1.0f, 0.0f };
+	vertArr[2].pos = { 0.0f, -1.0f, 0.0f }; 
+	vertArr[2].color = { 0.0f, 0.0f, 1.0f };
 
 	std::vector<uint32_t> indices = { 0, 1, 2 };
 
@@ -388,6 +391,7 @@ void Zodiac::Renderer::BuildCommandBuffers() {
 			// Bind descriptor sets describing shader binding points
 			vkCmdBindDescriptorSets(s_drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, s_pipelineLayout, 0, 1, &s_descriptorSet, 0, nullptr);
 
+			// Bind vertex buffer (contains position and colors)
 			VkDeviceSize offsets[1] = { 0 };
 			vkCmdBindVertexBuffers(s_drawCmdBuffers[i], 0, 1, &s_vertexBuffer->GetBuffer(), offsets);
 			vkCmdBindIndexBuffer(s_drawCmdBuffers[i], s_indexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);

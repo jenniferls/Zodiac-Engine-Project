@@ -506,7 +506,7 @@ VkVertexInputAttributeDescription Zodiac::Initializers::VertexInputAttributeDesc
 	VkVertexInputAttributeDescription info = {};
 	info.location = location;
 	info.binding = binding;
-	info.format = VK_FORMAT_R32G32B32A32_SFLOAT; //data type
+	info.format = VK_FORMAT_R32G32B32_SFLOAT; //data type
 	info.offset = offset; //byte offset
 
 	return info;
