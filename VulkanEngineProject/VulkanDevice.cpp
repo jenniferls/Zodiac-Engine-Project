@@ -110,6 +110,7 @@ void Zodiac::VulkanDevice::FlushCommandBuffer(VkCommandBuffer& cmdBuffer, VkQueu
 	VkFenceCreateInfo fenceinfo = Initializers::FenceCreateInfo();
 	VkFence fence;
 	ErrorCheck(vkCreateFence(m_device, &fenceinfo, nullptr, &fence));
+	//std::cout << (int)fence << std::endl;
 	ErrorCheck(vkQueueSubmit(submitQueue, 1, &submitInfo, fence));
 	ErrorCheck(vkWaitForFences(m_device, 1, &fence, VK_TRUE, 100000000000)); //TODO: Perhaps create a define for a default fence timeout
 

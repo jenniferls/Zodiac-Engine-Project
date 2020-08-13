@@ -27,6 +27,7 @@ uint32_t Zodiac::Renderer::s_imageIndex;
 Zodiac::VulkanBuffer* Zodiac::Renderer::s_vertexBuffer;
 Zodiac::VulkanBuffer* Zodiac::Renderer::s_indexBuffer;
 Zodiac::VulkanBuffer* Zodiac::Renderer::s_uniformBuffer;
+bool Zodiac::Renderer::s_prepared;
 
 void Zodiac::Renderer::DrawIndexed() {
 
@@ -49,6 +50,7 @@ void Zodiac::Renderer::Init(VulkanDevice* device, Settings settings, VulkanSurfa
 	s_clearValues[1].depthStencil = { 1.0f, 0 };
 
 	s_imageIndex = 0;
+	s_prepared = false;
 
 	InitInternal();
 }
@@ -58,10 +60,10 @@ Zodiac::Renderer& Zodiac::Renderer::Get() {
 }
 
 void Zodiac::Renderer::Draw() {
-	ErrorCheck(vkAcquireNextImageKHR(*s_device->GetDevice(), *s_swapchain->GetSwapchain(), UINT64_MAX, s_presentSemaphore->GetSemaphore(), VK_NULL_HANDLE, &s_imageIndex));
+	ErrorCheck(vkAcquireNextImageKHR(*s_device->GetDevice(), *s_swapchain->GetSwapchain(), UINT64_MAX, s_presentSemaphore->GetSemaphore(), (VkFence)nullptr, &s_imageIndex));
 
 	//Fences for syncronization
-	ErrorCheck(vkWaitForFences(*s_device->GetDevice(), 1, &s_waitFences[s_imageIndex]->p_fence, VK_TRUE, UINT64_MAX));
+	ErrorCheck(vkWaitForFences(*s_device->GetDevice(), 1, &s_waitFences[s_imageIndex]->p_fence, VK_TRUE, UINT64_MAX)); //Wait for all fences
 	ErrorCheck(vkResetFences(*s_device->GetDevice(), 1, &s_waitFences[s_imageIndex]->p_fence));
 
 	// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
@@ -94,6 +96,7 @@ void Zodiac::Renderer::InitInternal() {
 	SetupDescriptorPool();
 	PrepareDescriptorSet();
 	BuildCommandBuffers();
+	s_prepared = true;
 }
 
 void Zodiac::Renderer::SetupRenderPass() {
@@ -231,7 +234,7 @@ bool Zodiac::Renderer::SetupPipeline() {
 	//	VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
 	//	VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
 	//};
-	VkPipelineColorBlendAttachmentState colorBlendAttachmentState{}; //Alpha blend
+	VkPipelineColorBlendAttachmentState colorBlendAttachmentState = {}; //Alpha blend
 	colorBlendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 	colorBlendAttachmentState.blendEnable = VK_TRUE;
 	colorBlendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
@@ -405,12 +408,6 @@ void Zodiac::Renderer::BuildCommandBuffers() {
 }
 
 void Zodiac::Renderer::Shutdown() {
-	for (size_t i = 0; i < s_waitFences.size(); i++) {
-		delete s_waitFences[i];
-	}
-	delete s_presentSemaphore;
-	delete s_renderCompleteSemaphore;
-
 	for (size_t i = 0; i < s_framebuffers.size(); i++) {
 		vkDestroyFramebuffer(*s_device->GetDevice(), s_framebuffers[i], nullptr);
 	}
@@ -426,6 +423,13 @@ void Zodiac::Renderer::Shutdown() {
 	delete s_vertexBuffer;
 	delete s_indexBuffer;
 	delete s_uniformBuffer;
+
+	delete s_presentSemaphore;
+	delete s_renderCompleteSemaphore;
+
+	for (size_t i = 0; i < s_waitFences.size(); i++) {
+		delete s_waitFences[i];
+	}
 }
 
 void Zodiac::Renderer::SetClearColor(const glm::vec4 color) {

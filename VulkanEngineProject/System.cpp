@@ -52,11 +52,14 @@ bool Zodiac::System::Init() {
 void Zodiac::System::Run() {
 	while (!m_window->WindowShouldClose()) {
 		m_window->PollWindowEvents();
-		Zodiac::Renderer::Draw();
+		if (!Renderer::s_prepared) {
+			return;
+		}
+		Renderer::Draw();
 	}
 	vkDeviceWaitIdle(*m_device->GetDevice()); //Test
 
-	Zodiac::Renderer::Shutdown();
+	Renderer::Shutdown();
 	m_window->Shutdown();
 }
 

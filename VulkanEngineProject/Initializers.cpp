@@ -313,7 +313,7 @@ VkPipelineMultisampleStateCreateInfo Zodiac::Initializers::PipelineMultisampleSt
 	return info;
 }
 
-VkPipelineColorBlendStateCreateInfo Zodiac::Initializers::PipelineColorBlendStateCreateInfo(VkPipelineColorBlendAttachmentState colorBlendAttachmentState, uint32_t attachmentCount) {
+VkPipelineColorBlendStateCreateInfo Zodiac::Initializers::PipelineColorBlendStateCreateInfo(VkPipelineColorBlendAttachmentState& colorBlendAttachmentState, uint32_t attachmentCount) {
 	VkPipelineColorBlendStateCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 	info.flags = 0;

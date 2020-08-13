@@ -31,6 +31,8 @@ namespace Zodiac {
 
 		void DrawIndexed();
 
+		static bool s_prepared;
+
 	private:
 		Renderer();
 		static void InitInternal();

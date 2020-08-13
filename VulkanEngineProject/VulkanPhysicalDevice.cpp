@@ -1,6 +1,5 @@
 #include "Zodiacpch.h"
 #include "VulkanPhysicalDevice.h"
-//#include <vector>
 
 Zodiac::VulkanPhysicalDevice::VulkanPhysicalDevice(VulkanInstance* instance, VkPhysicalDevice device, QueueFamilyIndices indices) {
 	m_instance = instance;
