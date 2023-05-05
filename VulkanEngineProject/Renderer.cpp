@@ -1,5 +1,6 @@
 #include <Zodiacpch.h>
 #include "Renderer.h"
+#include "Defines.h"
 #include "Initializers.h"
 #include "Validation.h"
 #include "VulkanShaderModule.h"
