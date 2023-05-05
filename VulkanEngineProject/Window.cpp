@@ -1,7 +1,7 @@
 #include <Zodiacpch.h>
 #include "Window.h"
+#include "Defines.h"
 #include "Validation.h"
-#define new new ( _NORMAL_BLOCK , __FILE__ , __LINE__ ) //For detecting memory leaks
 
 Zodiac::Window::Window(const WindowProperties& props) {
 	Init(props);
@@ -31,6 +31,15 @@ uint32_t Zodiac::Window::GetGLFWExtCount() const {
 	return glfwExtensionCount;
 }
 
+void Zodiac::Window::glfw_resize_callback(GLFWwindow*, int w, int h) {
+	//TODO: Actually make this callback useful
+	std::cout << "Window resized!" << std::endl;
+
+	//g_SwapChainRebuild = true;
+	//g_SwapChainResizeWidth = w;
+	//g_SwapChainResizeHeight = h;
+}
+
 void Zodiac::Window::Init(const WindowProperties& props) {
 	std::cout << ">>>> Initializing GLFW <<<<" << std::endl;
 	glfwInit();
@@ -44,6 +53,8 @@ void Zodiac::Window::Init(const WindowProperties& props) {
 	m_window = glfwCreateWindow(props.Width, props.Height, props.Title.c_str(), nullptr, nullptr);
 
 	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+	glfwSetFramebufferSizeCallback(m_window, glfw_resize_callback);
 
 	std::cout << "GLFW initialization successful!" << std::endl;
 }

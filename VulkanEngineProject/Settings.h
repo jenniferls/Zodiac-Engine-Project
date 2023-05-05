@@ -5,6 +5,6 @@ namespace Zodiac {
 		bool validation = false;
 		bool fullscreen = false;
 		bool vsync = false;
-		bool overlay = false;
+		bool overlay = true;
 	};
 }

@@ -1,4 +1,8 @@
 #pragma once
+#include "Settings.h"
+#include "ImGuiLayer.h"
+#include "Window.h"
+
 #include "VulkanConfiguration.h"
 #include "VulkanInstance.h"
 #include "VulkanPhysicalDevice.h"
@@ -6,8 +10,6 @@
 #include "VulkanBuffer.h"
 #include "VulkanSurface.h"
 
-#include "Settings.h"
-#include "Window.h"
 #include "Renderer.h"
 
 //This class acts more or less as a testbed for now
@@ -36,5 +38,6 @@ namespace Zodiac {
 		VulkanSurface* m_surface;
 
 		std::unique_ptr<Window> m_window;
+		std::unique_ptr<ImGuiLayer> m_imgui;
 	};
 }

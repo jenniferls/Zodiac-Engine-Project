@@ -132,13 +132,19 @@
     <ClCompile Include="Dependencies\imgui\imgui_demo.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
-    <ClCompile Include="Dependencies\imgui\imgui_impl_glfw.cpp">
-      <Filter>ImGui</Filter>
-    </ClCompile>
     <ClCompile Include="Dependencies\imgui\imgui_widgets.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
     <ClCompile Include="Dependencies\imgui\imgui_draw.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGuiLayer.cpp">
+      <Filter>Engine\Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Dependencies\imgui\imgui_impl_glfw.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Dependencies\imgui\imgui_impl_vulkan.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
   </ItemGroup>
@@ -247,6 +253,12 @@
     </ClInclude>
     <ClInclude Include="StagingBuffer.h">
       <Filter>Vulkan\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGuiLayer.h">
+      <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Defines.h">
+      <Filter>Engine\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

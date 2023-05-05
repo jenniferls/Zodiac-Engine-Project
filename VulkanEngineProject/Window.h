@@ -27,6 +27,8 @@ namespace Zodiac {
 		const char** GetGLFWExtensions() const;
 		uint32_t GetGLFWExtCount() const;
 
+		static void glfw_resize_callback(GLFWwindow*, int w, int h);
+
 	private:
 		void Init(const WindowProperties& props);
 

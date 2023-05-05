@@ -1,5 +1,6 @@
 #include <Zodiacpch.h>
 #include "System.h"
+#include "Defines.h"
 
 #include <vulkan/vulkan.h>
 #include "Validation.h"
@@ -9,6 +10,10 @@ Zodiac::System::System(const char* applicationName) {
 	m_vulkanConfig.app_version = VK_MAKE_VERSION(0, 1, 0);
 
 	m_window = std::unique_ptr<Window>(Window::Create());
+
+	if (m_settings.overlay) {
+		m_imgui = std::unique_ptr<ImGuiLayer>(ImGuiLayer::Create());
+	}
 }
 
 Zodiac::System::~System() {
@@ -26,6 +31,8 @@ bool Zodiac::System::Init() {
 	InitVulkan();
 
 	std::cout << "Selected physical device: " << m_physical_device->GetDeviceProperties().deviceName << std::endl;
+
+	m_imgui->Init((GLFWwindow*)m_window->GetNativeWindow(), m_device);
 
 	/////// Tests ///////
 	//VkCommandBuffer* commands = new VkCommandBuffer[3]; //Command buffers test

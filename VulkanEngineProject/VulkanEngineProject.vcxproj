@@ -187,9 +187,13 @@
     <ClCompile Include="Dependencies\imgui\imgui_impl_glfw.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Dependencies\imgui\imgui_impl_vulkan.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="Dependencies\imgui\imgui_widgets.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="ImGuiLayer.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="OrthographicCamera.cpp" />
@@ -217,7 +221,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Application.h" />
+    <ClInclude Include="Defines.h" />
     <ClInclude Include="DepthStencil.h" />
+    <ClInclude Include="ImGuiLayer.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="OrthographicCamera.h" />
     <ClInclude Include="Clock.h" />

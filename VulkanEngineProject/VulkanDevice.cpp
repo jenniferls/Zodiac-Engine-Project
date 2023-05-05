@@ -58,7 +58,7 @@ VkCommandPool& Zodiac::VulkanDevice::GetComputeCommandPool() {
 	return m_compute_command_pool;
 }
 
-VkCommandPool & Zodiac::VulkanDevice::GetGraphicsCommandPool() {
+VkCommandPool& Zodiac::VulkanDevice::GetGraphicsCommandPool() {
 	return m_graphics_command_pool;
 }
 
