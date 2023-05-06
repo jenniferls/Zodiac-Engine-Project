@@ -40,7 +40,7 @@ namespace Zodiac { namespace Initializers {
 		VkPipelineLayoutCreateInfo PipelineLayoutCreateInfo(uint32_t layoutCount, VkDescriptorSetLayout& pipelineLayoutInfo);
 		VkPresentInfoKHR PresentInfo(VkSwapchainKHR& swapchain, uint32_t& index, VkSemaphore& waitSemaphore);
 		VkDescriptorSetLayoutCreateInfo DescriptorSetLayoutCreateInfo(uint32_t bindingCount, VkDescriptorSetLayoutBinding& layoutBinding);
-		VkDescriptorPoolCreateInfo DescriptorPoolCreateInfo(uint32_t count, VkDescriptorPoolSize* poolSizes);
+		VkDescriptorPoolCreateInfo DescriptorPoolCreateInfo(uint32_t count, VkDescriptorPoolSize* poolSizes, uint32_t maxSets, VkDescriptorPoolCreateFlags = 0);
 		VkDescriptorSetAllocateInfo DescriptorSetAllocateInfo(VkDescriptorPool* descriptorPool, uint32_t setCount, VkDescriptorSetLayout* setLayout);
 
 		VkDebugUtilsMessengerCreateInfoEXT DebugUtilsMessengerCreateInfo();

@@ -32,6 +32,7 @@ namespace Zodiac {
 		void DrawIndexed();
 
 		static bool s_prepared;
+		static VulkanSwapchain* s_swapchain;
 
 	private:
 		Renderer();
@@ -55,13 +56,12 @@ namespace Zodiac {
 		static VulkanDevice* s_device;
 		static VulkanSurface* s_surface;
 		static Settings s_settings;
-		static VulkanSwapchain* s_swapchain;
 		static VkRenderPass s_renderPass;
 		static VkPipeline s_pipeline;
 		static VkPipelineCache s_pipelineCache;
 		static VkPipelineLayout s_pipelineLayout;
-		static VkDescriptorSetLayout s_descriptorSetLayout;
 		static VkDescriptorPool s_descriptorPool;
+		static VkDescriptorSetLayout s_descriptorSetLayout;
 		static VkDescriptorSet s_descriptorSet;
 		static std::vector<VkFramebuffer> s_framebuffers;
 

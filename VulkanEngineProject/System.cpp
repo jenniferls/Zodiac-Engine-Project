@@ -32,7 +32,7 @@ bool Zodiac::System::Init() {
 
 	std::cout << "Selected physical device: " << m_physical_device->GetDeviceProperties().deviceName << std::endl;
 
-	m_imgui->Init((GLFWwindow*)m_window->GetNativeWindow(), m_device);
+	m_imgui->Init((GLFWwindow*)m_window->GetNativeWindow(), m_device, m_instance);
 
 	/////// Tests ///////
 	//VkCommandBuffer* commands = new VkCommandBuffer[3]; //Command buffers test
@@ -66,6 +66,7 @@ void Zodiac::System::Run() {
 	}
 	vkDeviceWaitIdle(*m_device->GetDevice()); //Test
 
+	m_imgui->Shutdown();
 	Renderer::Shutdown();
 	m_window->Shutdown();
 }

@@ -438,13 +438,14 @@ VkDescriptorSetLayoutCreateInfo Zodiac::Initializers::DescriptorSetLayoutCreateI
 	return info;
 }
 
-VkDescriptorPoolCreateInfo Zodiac::Initializers::DescriptorPoolCreateInfo(uint32_t count, VkDescriptorPoolSize* poolSizes) {
+VkDescriptorPoolCreateInfo Zodiac::Initializers::DescriptorPoolCreateInfo(uint32_t count, VkDescriptorPoolSize* poolSizes, uint32_t maxSets, VkDescriptorPoolCreateFlags flags) {
 	VkDescriptorPoolCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	info.pNext = nullptr;
+	info.flags = flags;
 	info.poolSizeCount = count;
 	info.pPoolSizes = poolSizes;
-	info.maxSets = count; //TODO: Can be changed later
+	info.maxSets = maxSets;
 
 	return info;
 }
