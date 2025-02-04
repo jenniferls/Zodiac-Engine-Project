@@ -2,6 +2,7 @@
 #include <vulkan/vulkan.h>
 #include "VulkanBuffer.h"
 #include "VulkanDevice.h"
+#include "imgui/imgui.h"
 
 #include "Window.h"
 
@@ -15,6 +16,7 @@ namespace Zodiac {
 		static void Shutdown();
 
 		bool Init(GLFWwindow* window, VulkanDevice* device, VulkanInstance* instance);
+		void Render(Window* window, VulkanInstance* instance);
 
 	private:
 		static void SetupRenderPass();
@@ -23,7 +25,7 @@ namespace Zodiac {
 		static VulkanDevice* s_device;
 		static VkRenderPass s_renderPass;
 		static VkDescriptorPool s_descriptorPool;
-
+		
 		VkSampler m_sampler;
 
 		VulkanBuffer* m_vertexBuffer;
@@ -40,6 +42,11 @@ namespace Zodiac {
 		VkDescriptorSetLayout m_descriptorSetLayout;
 		VkDescriptorSet m_descriptorSet;
 
+		glm::vec4 m_clearColor = glm::vec4(0.45f, 0.55f, 0.60f, 1.00f);
+
 		uint32_t m_minImageCount = 2; //Should be updated during main loop
+		bool m_showDemoWindow = true;
+		bool m_showAnotherWindow = true;
+		bool m_swapchainRebuild = false;
 	};
 }

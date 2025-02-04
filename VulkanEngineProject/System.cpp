@@ -63,6 +63,7 @@ void Zodiac::System::Run() {
 			return;
 		}
 		Renderer::Draw();
+		m_imgui->Render(m_window.get(), m_instance);
 	}
 	vkDeviceWaitIdle(*m_device->GetDevice()); //Test
 
