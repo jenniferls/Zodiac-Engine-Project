@@ -1,3 +1,40 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:583f9ba75366240b3f2c9cbe400e6eba315d6b0999bd7e6abb0ee6f60f2ecd40
-size 957
+/// @ref gtx_projection
+/// @file glm/gtx/projection.hpp
+///
+/// @see core (dependence)
+///
+/// @defgroup gtx_projection GLM_GTX_projection
+/// @ingroup gtx
+///
+/// Include <glm/gtx/projection.hpp> to use the features of this extension.
+///
+/// Projection of a vector to other one
+
+#pragma once
+
+// Dependency:
+#include "../geometric.hpp"
+
+#ifndef GLM_ENABLE_EXPERIMENTAL
+#	error "GLM: GLM_GTX_projection is an experimental extension and may change in the future. Use #define GLM_ENABLE_EXPERIMENTAL before including it, if you really want to use it."
+#endif
+
+#if GLM_MESSAGES == GLM_ENABLE && !defined(GLM_EXT_INCLUDED)
+#	pragma message("GLM: GLM_GTX_projection extension included")
+#endif
+
+namespace glm
+{
+	/// @addtogroup gtx_projection
+	/// @{
+
+	/// Projects x on Normal.
+	///
+	/// @see gtx_projection
+	template<typename genType>
+	GLM_FUNC_DECL genType proj(genType const& x, genType const& Normal);
+
+	/// @}
+}//namespace glm
+
+#include "projection.inl"
