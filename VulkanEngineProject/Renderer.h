@@ -49,7 +49,7 @@ namespace Zodiac {
 		static void PrepareDescriptorSet();
 		static void BuildCommandBuffers();
 
-		const int MAX_FRAMES_IN_FLIGHT = 2;
+		static const int MAX_FRAMES_IN_FLIGHT = 2;
 
 		static Renderer* s_instance;
 
@@ -70,12 +70,13 @@ namespace Zodiac {
 		static VulkanSemaphore* s_presentSemaphore;
 		static VulkanSemaphore* s_renderCompleteSemaphore;
 		static std::vector<VulkanFence*> s_waitFences;
+		static std::vector<VulkanFence*> s_imagesInFlight;
+		static size_t s_currentFrame;
 
 		static VulkanBuffer* s_vertexBuffer;
 		static VulkanBuffer* s_indexBuffer;
 		static VulkanBuffer* s_uniformBuffer;
 
 		static VkClearValue s_clearValues[2];
-		static uint32_t s_imageIndex;
 	};
 }

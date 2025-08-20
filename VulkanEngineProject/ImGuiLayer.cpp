@@ -361,7 +361,7 @@ void Zodiac::ImGuiLayer::Render(Window* window, VulkanInstance* instance)
 		//check_vk_result(err);
 		//wd->SemaphoreIndex = (wd->SemaphoreIndex + 1) % wd->ImageCount; // Now we can use the next set of semaphores
 
-		Renderer::Draw();
+		//Renderer::Draw();
 	}
 }
 

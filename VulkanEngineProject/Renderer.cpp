@@ -23,8 +23,10 @@ std::vector<VkCommandBuffer> Zodiac::Renderer::s_drawCmdBuffers;
 Zodiac::VulkanSemaphore* Zodiac::Renderer::s_presentSemaphore;
 Zodiac::VulkanSemaphore* Zodiac::Renderer::s_renderCompleteSemaphore;
 std::vector<Zodiac::VulkanFence*> Zodiac::Renderer::s_waitFences;
+std::vector<Zodiac::VulkanFence*> Zodiac::Renderer::s_imagesInFlight;
+const int Zodiac::Renderer::MAX_FRAMES_IN_FLIGHT;
+size_t Zodiac::Renderer::s_currentFrame;
 VkClearValue Zodiac::Renderer::s_clearValues[2];
-uint32_t Zodiac::Renderer::s_imageIndex;
 Zodiac::VulkanBuffer* Zodiac::Renderer::s_vertexBuffer;
 Zodiac::VulkanBuffer* Zodiac::Renderer::s_indexBuffer;
 Zodiac::VulkanBuffer* Zodiac::Renderer::s_uniformBuffer;
@@ -49,8 +51,9 @@ void Zodiac::Renderer::Init(VulkanDevice* device, Settings settings, VulkanSurfa
 
 	s_clearValues[0].color = { 0.2f, 0.0f, 0.2f, 1.0f };
 	s_clearValues[1].depthStencil = { 1.0f, 0 };
+	
+	s_currentFrame = 0;
 
-	s_imageIndex = 0;
 	s_prepared = false;
 
 	InitInternal();
@@ -61,19 +64,47 @@ Zodiac::Renderer& Zodiac::Renderer::Get() {
 }
 
 void Zodiac::Renderer::Draw() {
-	ErrorCheck(vkAcquireNextImageKHR(*s_device->GetDevice(), *s_swapchain->GetSwapchain(), UINT64_MAX, s_presentSemaphore->GetSemaphore(), (VkFence)nullptr, &s_imageIndex));
+	vkWaitForFences(*s_device->GetDevice(), 1, &s_waitFences[s_currentFrame]->p_fence, VK_TRUE, UINT64_MAX);
+
+	//TODO: Gets a validation layer error on 2nd frame until 10th frame
+	uint32_t imageIndex;
+	ErrorCheck(vkAcquireNextImageKHR(*s_device->GetDevice(), *s_swapchain->GetSwapchain(), UINT64_MAX, s_presentSemaphore->GetSemaphore(), VK_NULL_HANDLE, &imageIndex));
+
+	// TODO: from VulkanTutorial
+	//if (result == VK_ERROR_OUT_OF_DATE_KHR) {
+	//	recreateSwapChain();
+	//	return;
+	//}
+	//else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
+	//	throw std::runtime_error("failed to acquire swap chain image!");
+	//}
+
+	if (s_imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
+		ErrorCheck(vkWaitForFences(*s_device->GetDevice(), 1, &s_imagesInFlight[imageIndex]->p_fence, VK_TRUE, UINT64_MAX));
+	}
+	s_imagesInFlight[imageIndex] = s_waitFences[s_currentFrame];
 
 	//Fences for syncronization
-	ErrorCheck(vkWaitForFences(*s_device->GetDevice(), 1, &s_waitFences[s_imageIndex]->p_fence, VK_TRUE, UINT64_MAX)); //Wait for all fences
-	ErrorCheck(vkResetFences(*s_device->GetDevice(), 1, &s_waitFences[s_imageIndex]->p_fence));
+	//ErrorCheck(vkWaitForFences(*s_device->GetDevice(), 1, &s_waitFences[imageIndex]->p_fence, VK_TRUE, UINT64_MAX)); //Wait for all fences
+	ErrorCheck(vkResetFences(*s_device->GetDevice(), 1, &s_waitFences[s_currentFrame]->p_fence));
 
 	// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
 	VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	VkSubmitInfo submitInfo = Initializers::SubmitInfo(s_presentSemaphore->GetSemaphore(), s_renderCompleteSemaphore->GetSemaphore(), s_drawCmdBuffers[s_imageIndex], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-	ErrorCheck(vkQueueSubmit(*s_device->GetGraphicsQueue(), 1, &submitInfo, /*NULL*/s_waitFences[s_imageIndex]->p_fence)); //TODO: The fences help with syncronization, but I need to look into this.
+	VkSubmitInfo submitInfo = Initializers::SubmitInfo(s_presentSemaphore->GetSemaphore(), s_renderCompleteSemaphore->GetSemaphore(), s_drawCmdBuffers[imageIndex], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+	ErrorCheck(vkQueueSubmit(*s_device->GetGraphicsQueue(), 1, &submitInfo, /*NULL*/s_waitFences[s_currentFrame]->p_fence)); //TODO: The fences help with syncronization, but I need to look into this.
 
-	VkPresentInfoKHR presentInfo = Initializers::PresentInfo(*s_swapchain->GetSwapchain(),  s_imageIndex, s_renderCompleteSemaphore->GetSemaphore());
+	VkPresentInfoKHR presentInfo = Initializers::PresentInfo(*s_swapchain->GetSwapchain(), imageIndex, s_renderCompleteSemaphore->GetSemaphore());
 	ErrorCheck(vkQueuePresentKHR(*s_device->GetGraphicsQueue(), &presentInfo));
+
+	//if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
+	//	framebufferResized = false;
+	//	recreateSwapChain();
+	//}
+	//else if (result != VK_SUCCESS) {
+	//	throw std::runtime_error("failed to present swap chain image!");
+	//}
+
+	s_currentFrame = (s_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 void Zodiac::Renderer::InitInternal() {
@@ -85,10 +116,15 @@ void Zodiac::Renderer::InitInternal() {
 	s_presentSemaphore = new Zodiac::VulkanSemaphore(s_device);
 	s_renderCompleteSemaphore = new Zodiac::VulkanSemaphore(s_device);
 	s_drawCmdBuffers.resize(s_swapchain->GetImageCount());
-	s_waitFences.reserve(s_drawCmdBuffers.size());
-	for (size_t i = 0; i < s_drawCmdBuffers.size(); i++) {
-		s_waitFences.emplace_back(new VulkanFence(s_device));
+	s_waitFences.resize(MAX_FRAMES_IN_FLIGHT);
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		s_waitFences[i] = new VulkanFence(s_device);
 	}
+	s_imagesInFlight.resize(s_drawCmdBuffers.size(), VK_NULL_HANDLE);
+	//for (size_t i = 0; i < s_drawCmdBuffers.size(); i++) {
+	//	s_waitFences.emplace_back(new VulkanFence(s_device));
+	//	s_imagesInFlight.emplace_back(new VulkanFence(s_device));
+	//}
 
 	PrepareGeometry();
 	PrepareUniformBuffers();
@@ -428,9 +464,12 @@ void Zodiac::Renderer::Shutdown() {
 	delete s_presentSemaphore;
 	delete s_renderCompleteSemaphore;
 
-	for (size_t i = 0; i < s_waitFences.size(); i++) {
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		delete s_waitFences[i];
 	}
+	//for (size_t i = 0; i < s_imagesInFlight.size(); i++) {
+	//	delete s_imagesInFlight[i];
+	//}
 }
 
 void Zodiac::Renderer::SetClearColor(const glm::vec4 color) {
