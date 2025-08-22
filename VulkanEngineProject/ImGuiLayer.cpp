@@ -20,9 +20,11 @@ Zodiac::ImGuiLayer::ImGuiLayer() {
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 	ImGuiIO& io = ImGui::GetIO();
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableSetMousePos;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 	ImGui::StyleColorsDark();
+	ImGui::GetStyle().FontScaleMain = 1.5f;
 
 	std::cout << "ImGui context successfully created." << std::endl;
 }
@@ -50,8 +52,8 @@ void Zodiac::ImGuiLayer::Render(Window* window, VulkanInstance* instance)
 	//// Resize swap chain?
 	//if (m_swapchainRebuild)
 	//{
-	//	int width, height;
-	//	glfwGetFramebufferSize((GLFWwindow*)window->GetNativeWindow(), &width, &height);
+		int width, height;
+		glfwGetFramebufferSize((GLFWwindow*)window->GetNativeWindow(), &width, &height);
 	//	if (width > 0 && height > 0)
 	//	{
 	//		ImGui_ImplVulkan_SetMinImageCount(m_minImageCount);
@@ -109,7 +111,7 @@ void Zodiac::ImGuiLayer::Render(Window* window, VulkanInstance* instance)
 	const bool is_minimized = (draw_data->DisplaySize.x <= 0.0f || draw_data->DisplaySize.y <= 0.0f);
 	if (!is_minimized)
 	{
-		//// FrameRender(wd, draw_data); ////
+		//// FrameRender(wd, draw_data); //// From main.cpp in imgui examples for glfw and vulkan
 
 		// This part should be done by Renderer::Draw()
 
@@ -123,7 +125,7 @@ void Zodiac::ImGuiLayer::Render(Window* window, VulkanInstance* instance)
 		//}
 		//check_vk_result(err);
 
-		//ImGui_ImplVulkanH_Frame* fd = &wd->Frames[wd->FrameIndex];
+		//mGui_ImplVulkanH_Frame* fd = &wd->Frames[wd->FrameIndex];
 		//{
 		//	err = vkWaitForFences(g_Device, 1, &fd->Fence, VK_TRUE, UINT64_MAX);    // wait indefinitely instead of periodically checking
 		//	check_vk_result(err);
@@ -160,6 +162,7 @@ void Zodiac::ImGuiLayer::Render(Window* window, VulkanInstance* instance)
 		//
 
 		//// Record dear imgui primitives into command buffer ////
+		//ImGui_ImplVulkan_RenderDrawData(draw_data, fd->CommandBuffer);
 		//// Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
 		//int fb_width = (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
 		//int fb_height = (int)(draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
@@ -375,26 +378,30 @@ bool Zodiac::ImGuiLayer::Init(GLFWwindow* window, VulkanDevice* device, VulkanIn
 	SetupRenderPass();
 
 	ImGui_ImplVulkan_InitInfo init_info = {};
+	init_info.ApiVersion = instance->GetInstanceVersion();
 	init_info.Instance = instance->GetInstance();
 	init_info.PhysicalDevice = s_device->GetPhysicalDevice()->GetPhysicalDevice();
 	init_info.Device = *s_device->GetDevice();
 	init_info.QueueFamily = s_device->GetPhysicalDevice()->GetFamilyIndices().graphics_indices;
 	init_info.Queue = *s_device->GetGraphicsQueue();
+	init_info.RenderPass = NULL; //For dynamic rendering
 	init_info.PipelineCache = VK_NULL_HANDLE; //Should work for now
 	init_info.DescriptorPool = s_descriptorPool; //This is a imgui-specific descriptor pool
 	init_info.Allocator = nullptr;
 	init_info.MinImageCount = m_minImageCount;
 	init_info.ImageCount = Zodiac::Renderer::s_swapchain->GetImageCount();
-	//init_info.UseDynamicRendering = true;
+	init_info.UseDynamicRendering = true;
+	init_info.Subpass = 0;
+	init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 	init_info.CheckVkResultFn = ErrorCheck;
 
-	////dynamic rendering parameters for imgui to use
+	//dynamic rendering parameters for imgui to use
 	//init_info.PipelineRenderingCreateInfo = { .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO };
 	//init_info.PipelineRenderingCreateInfo.colorAttachmentCount = 1;
 	//init_info.PipelineRenderingCreateInfo.pColorAttachmentFormats = &_swapchainImageFormat;
 
-	//ImGui_ImplVulkan_Init(&init_info);
-	ImGui_ImplVulkan_Init(&init_info, s_renderPass);
+	ImGui_ImplVulkan_Init(&init_info);
+	//ImGui_ImplVulkan_Init(&init_info, s_renderPass);
 
 	VkCommandPool command_pool = device->GetGraphicsCommandPool();
 	VkCommandBuffer command_buffer = device->GetCommandBuffer(true);
@@ -402,7 +409,7 @@ bool Zodiac::ImGuiLayer::Init(GLFWwindow* window, VulkanDevice* device, VulkanIn
 	//err = vkResetCommandPool(device->GetDevice(), command_pool, 0);
 	//check_vk_result(err);
 
-	ImGui_ImplVulkan_CreateFontsTexture(command_buffer);
+	//ImGui_ImplVulkan_CreateFontsTexture(command_buffer);
 
 	// add the destroy the imgui created structures
 	//_mainDeletionQueue.push_function([=]() {
@@ -412,7 +419,7 @@ bool Zodiac::ImGuiLayer::Init(GLFWwindow* window, VulkanDevice* device, VulkanIn
 
 	device->FlushCommandBuffer(command_buffer,*device->GetGraphicsQueue(), command_pool );
 
-	ImGui_ImplVulkan_DestroyFontUploadObjects();
+	//ImGui_ImplVulkan_DestroyFontUploadObjects();
 
 	return true;
 }

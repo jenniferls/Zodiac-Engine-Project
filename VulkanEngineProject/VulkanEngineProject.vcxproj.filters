@@ -147,6 +147,9 @@
     <ClCompile Include="Dependencies\imgui\imgui_impl_vulkan.cpp">
       <Filter>ImGui</Filter>
     </ClCompile>
+    <ClCompile Include="Dependencies\imgui\imgui_tables.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Initializers.h">
@@ -259,6 +262,30 @@
     </ClInclude>
     <ClInclude Include="Defines.h">
       <Filter>Engine\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\imgui\imgui.h">
+      <Filter>Vulkan\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\imgui\imconfig.h">
+      <Filter>Vulkan\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\imgui\imgui_impl_glfw.h">
+      <Filter>Vulkan\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\imgui\imgui_impl_vulkan.h">
+      <Filter>Vulkan\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\imgui\imgui_internal.h">
+      <Filter>Vulkan\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\imgui\imstb_rectpack.h">
+      <Filter>Vulkan\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\imgui\imstb_textedit.h">
+      <Filter>Vulkan\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Dependencies\imgui\imstb_truetype.h">
+      <Filter>Vulkan\Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
