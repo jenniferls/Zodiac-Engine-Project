@@ -63,7 +63,6 @@ typedef enum {
   shaderc_glsl_default_tess_control_shader,
   shaderc_glsl_default_tess_evaluation_shader,
   shaderc_spirv_assembly,
-#ifdef NV_EXTENSIONS
   shaderc_raygen_shader,
   shaderc_anyhit_shader,
   shaderc_closesthit_shader,
@@ -88,14 +87,13 @@ typedef enum {
   shaderc_glsl_mesh_shader = shaderc_mesh_shader,
   shaderc_glsl_default_task_shader,
   shaderc_glsl_default_mesh_shader,
-#endif
 } shaderc_shader_kind;
 
 typedef enum {
   shaderc_profile_none,  // Used if and only if GLSL version did not specify
                          // profiles.
   shaderc_profile_core,
-  shaderc_profile_compatibility,
+  shaderc_profile_compatibility,  // Disabled. This generates an error
   shaderc_profile_es,
 } shaderc_profile;
 
@@ -191,6 +189,25 @@ typedef enum {
   shaderc_limit_max_cull_distances,
   shaderc_limit_max_combined_clip_and_cull_distances,
   shaderc_limit_max_samples,
+  shaderc_limit_max_mesh_output_vertices_nv,
+  shaderc_limit_max_mesh_output_primitives_nv,
+  shaderc_limit_max_mesh_work_group_size_x_nv,
+  shaderc_limit_max_mesh_work_group_size_y_nv,
+  shaderc_limit_max_mesh_work_group_size_z_nv,
+  shaderc_limit_max_task_work_group_size_x_nv,
+  shaderc_limit_max_task_work_group_size_y_nv,
+  shaderc_limit_max_task_work_group_size_z_nv,
+  shaderc_limit_max_mesh_view_count_nv,
+  shaderc_limit_max_mesh_output_vertices_ext,
+  shaderc_limit_max_mesh_output_primitives_ext,
+  shaderc_limit_max_mesh_work_group_size_x_ext,
+  shaderc_limit_max_mesh_work_group_size_y_ext,
+  shaderc_limit_max_mesh_work_group_size_z_ext,
+  shaderc_limit_max_task_work_group_size_x_ext,
+  shaderc_limit_max_task_work_group_size_y_ext,
+  shaderc_limit_max_task_work_group_size_z_ext,
+  shaderc_limit_max_mesh_view_count_ext,
+  shaderc_limit_max_dual_source_draw_buffers_ext,
 } shaderc_limit;
 
 // Uniform resource kinds.
@@ -385,6 +402,14 @@ SHADERC_EXPORT void shaderc_compile_options_set_target_env(
     shaderc_target_env target,
     uint32_t version);
 
+// Sets the target SPIR-V version. The generated module will use this version
+// of SPIR-V.  Each target environment determines what versions of SPIR-V
+// it can consume.  Defaults to the highest version of SPIR-V 1.0 which is
+// required to be supported by the target environment.  E.g. Default to SPIR-V
+// 1.0 for Vulkan 1.0 and SPIR-V 1.3 for Vulkan 1.1.
+SHADERC_EXPORT void shaderc_compile_options_set_target_spirv(
+    shaderc_compile_options_t options, shaderc_spirv_version version);
+
 // Sets the compiler mode to treat all warnings as errors. Note the
 // suppress-warnings mode overrides this option, i.e. if both
 // warning-as-errors and suppress-warnings modes are set, warnings will not
@@ -400,6 +425,11 @@ SHADERC_EXPORT void shaderc_compile_options_set_limit(
 // that aren't already explicitly bound in the shader source.
 SHADERC_EXPORT void shaderc_compile_options_set_auto_bind_uniforms(
     shaderc_compile_options_t options, bool auto_bind);
+
+// Sets whether the compiler should automatically remove sampler variables
+// and convert image variables to combined image-sampler variables.
+SHADERC_EXPORT void shaderc_compile_options_set_auto_combined_image_sampler(
+    shaderc_compile_options_t options, bool upgrade);
 
 // Sets whether the compiler should use HLSL IO mapping rules for bindings.
 // Defaults to false.
@@ -428,6 +458,11 @@ SHADERC_EXPORT void shaderc_compile_options_set_binding_base_for_stage(
     shaderc_compile_options_t options, shaderc_shader_kind shader_kind,
     shaderc_uniform_kind kind, uint32_t base);
 
+// Sets whether the compiler should preserve all bindings, even when those
+// bindings are not used.
+SHADERC_EXPORT void shaderc_compile_options_set_preserve_bindings(
+    shaderc_compile_options_t options, bool preserve_bindings);
+
 // Sets whether the compiler should automatically assign locations to
 // uniform variables that don't have explicit locations in the shader source.
 SHADERC_EXPORT void shaderc_compile_options_set_auto_map_locations(
@@ -448,6 +483,27 @@ SHADERC_EXPORT void shaderc_compile_options_set_hlsl_register_set_and_binding(
 // Sets whether the compiler should enable extension
 // SPV_GOOGLE_hlsl_functionality1.
 SHADERC_EXPORT void shaderc_compile_options_set_hlsl_functionality1(
+    shaderc_compile_options_t options, bool enable);
+
+// Sets whether 16-bit types are supported in HLSL or not.
+SHADERC_EXPORT void shaderc_compile_options_set_hlsl_16bit_types(
+    shaderc_compile_options_t options, bool enable);
+
+// Enables or disables relaxed Vulkan rules.
+//
+// This allows most OpenGL shaders to compile under Vulkan semantics.
+SHADERC_EXPORT void shaderc_compile_options_set_vulkan_rules_relaxed(
+    shaderc_compile_options_t options, bool enable);
+
+// Sets whether the compiler should invert position.Y output in vertex shader.
+SHADERC_EXPORT void shaderc_compile_options_set_invert_y(
+    shaderc_compile_options_t options, bool enable);
+
+// Sets whether the compiler generates code for max and min builtins which,
+// if given a NaN operand, will return the other operand. Similarly, the clamp
+// builtin will favour the non-NaN operands, as if clamp were implemented
+// as a composition of max and min.
+SHADERC_EXPORT void shaderc_compile_options_set_nan_clamp(
     shaderc_compile_options_t options, bool enable);
 
 // An opaque handle to the results of a call to any shaderc_compile_into_*()

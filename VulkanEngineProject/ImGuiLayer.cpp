@@ -393,15 +393,16 @@ bool Zodiac::ImGuiLayer::Init(GLFWwindow* window, VulkanDevice* device, VulkanIn
 	init_info.UseDynamicRendering = true;
 	init_info.Subpass = 0;
 	init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+	//dynamic rendering parameters for imgui to use
+	init_info.PipelineRenderingCreateInfo = {};
+	init_info.PipelineRenderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+	init_info.PipelineRenderingCreateInfo.colorAttachmentCount = 1;
+	init_info.PipelineRenderingCreateInfo.pColorAttachmentFormats = &Zodiac::Renderer::s_swapchain->GetSurfaceFormat().format;
+	init_info.PipelineRenderingCreateInfo.depthAttachmentFormat = Zodiac::Renderer::s_swapchain->GetDepthFormat();
+	init_info.PipelineRenderingCreateInfo.stencilAttachmentFormat = VK_FORMAT_UNDEFINED; // No stencil attachment
 	init_info.CheckVkResultFn = ErrorCheck;
 
-	//dynamic rendering parameters for imgui to use
-	//init_info.PipelineRenderingCreateInfo = { .sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO };
-	//init_info.PipelineRenderingCreateInfo.colorAttachmentCount = 1;
-	//init_info.PipelineRenderingCreateInfo.pColorAttachmentFormats = &_swapchainImageFormat;
-
 	ImGui_ImplVulkan_Init(&init_info);
-	//ImGui_ImplVulkan_Init(&init_info, s_renderPass);
 
 	VkCommandPool command_pool = device->GetGraphicsCommandPool();
 	VkCommandBuffer command_buffer = device->GetCommandBuffer(true);

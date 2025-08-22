@@ -203,9 +203,9 @@ class CompileOptions {
         [](void* user_data, const char* requested_source, int type,
            const char* requesting_source, size_t include_depth) {
           auto* sub_includer = static_cast<IncluderInterface*>(user_data);
-          return sub_includer->GetInclude(requested_source,
-                                      (shaderc_include_type)type,
-                                      requesting_source, include_depth);
+          return sub_includer->GetInclude(
+              requested_source, static_cast<shaderc_include_type>(type),
+              requesting_source, include_depth);
         },
         [](void* user_data, shaderc_include_result* include_result) {
           auto* sub_includer = static_cast<IncluderInterface*>(user_data);
@@ -246,6 +246,15 @@ class CompileOptions {
     shaderc_compile_options_set_target_env(options_, target, version);
   }
 
+  // Sets the target SPIR-V version.  The generated module will use this version
+  // of SPIR-V.  Each target environment determines what versions of SPIR-V
+  // it can consume.  Defaults to the highest version of SPIR-V 1.0 which is
+  // required to be supported by the target environment.  E.g. Default to SPIR-V
+  // 1.0 for Vulkan 1.0 and SPIR-V 1.3 for Vulkan 1.1.
+  void SetTargetSpirv(shaderc_spirv_version version) {
+    shaderc_compile_options_set_target_spirv(options_, version);
+  }
+
   // Sets the compiler mode to make all warnings into errors. Note the
   // suppress-warnings mode overrides this option, i.e. if both
   // warning-as-errors and suppress-warnings modes are set on, warnings will not
@@ -263,6 +272,13 @@ class CompileOptions {
   // that aren't already explicitly bound in the shader source.
   void SetAutoBindUniforms(bool auto_bind) {
     shaderc_compile_options_set_auto_bind_uniforms(options_, auto_bind);
+  }
+
+  // Sets whether the compiler should automatically remove sampler variables
+  // and convert image variables to combined image sampler variables.
+  void SetAutoSampledTextures(bool auto_sampled) {
+    shaderc_compile_options_set_auto_combined_image_sampler(options_,
+                                                            auto_sampled);
   }
 
   // Sets whether the compiler should use HLSL IO mapping rules for bindings.
@@ -295,6 +311,12 @@ class CompileOptions {
                                                        kind, base);
   }
 
+  // Sets whether the compiler should preserve all bindings, even when those
+  // bindings are not used.
+  void SetPreserveBindings(bool preserve_bindings) {
+    shaderc_compile_options_set_preserve_bindings(options_, preserve_bindings);
+  }
+
   // Sets whether the compiler automatically assigns locations to
   // uniform variables that don't have explicit locations.
   void SetAutoMapLocations(bool auto_map) {
@@ -324,6 +346,31 @@ class CompileOptions {
   // SPV_GOOGLE_hlsl_functionality1.
   void SetHlslFunctionality1(bool enable) {
     shaderc_compile_options_set_hlsl_functionality1(options_, enable);
+  }
+
+  // Sets whether 16-bit types are supported in HLSL or not.
+  void SetHlsl16BitTypes(bool enable) {
+    shaderc_compile_options_set_hlsl_16bit_types(options_, enable);
+  }
+
+  // Enables or disables relaxed Vulkan rules.
+  //
+  // This allows most OpenGL shaders to compile under Vulkan semantics.
+  void SetVulkanRulesRelaxed(bool enable) {
+    shaderc_compile_options_set_vulkan_rules_relaxed(options_, enable);
+  }
+
+  // Sets whether the compiler should invert position.Y output in vertex shader.
+  void SetInvertY(bool enable) {
+    shaderc_compile_options_set_invert_y(options_, enable);
+  }
+
+  // Sets whether the compiler should generate code for max and min which,
+  // if given a NaN operand, will return the other operand. Similarly, the
+  // clamp builtin will favour the non-NaN operands, as if clamp were
+  // implemented as a composition of max and min.
+  void SetNanClamp(bool enable) {
+    shaderc_compile_options_set_nan_clamp(options_, enable);
   }
 
  private:
