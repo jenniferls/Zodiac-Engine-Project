@@ -34,15 +34,15 @@ VkInstance& Zodiac::VulkanInstance::GetInstance() {
 }
 
 uint32_t Zodiac::VulkanInstance::GetInstanceVersion() {
-	return VK_MAKE_VERSION(m_instanceVersion.Major, m_instanceVersion.Minor, m_instanceVersion.Patch);
+	return VK_MAKE_API_VERSION(0, m_instanceVersion.Major, m_instanceVersion.Minor, m_instanceVersion.Patch);
 }
 
 void Zodiac::VulkanInstance::UpdateInstanceVersion() {
 	uint32_t InstanceVersion = 0;
 	ErrorCheck(vkEnumerateInstanceVersion(&InstanceVersion));
-	m_instanceVersion.Major = VK_VERSION_MAJOR(InstanceVersion);
-	m_instanceVersion.Minor = VK_VERSION_MINOR(InstanceVersion);
-	m_instanceVersion.Patch = VK_VERSION_PATCH(InstanceVersion);
+	m_instanceVersion.Major = VK_API_VERSION_MAJOR(InstanceVersion);
+	m_instanceVersion.Minor = VK_API_VERSION_MINOR(InstanceVersion);
+	m_instanceVersion.Patch = VK_API_VERSION_PATCH(InstanceVersion);
 
 	printf("Vulkan loader supports version %d.%d.%d\n", m_instanceVersion.Major, m_instanceVersion.Minor, m_instanceVersion.Patch);
 }
