@@ -18,11 +18,14 @@ namespace Zodiac {
 
 		static VulkanPhysicalDevice* GetPhysicalDevice(VulkanInstance* instance);
 
+		bool IsExtensionSupported(const char* extensionName) const;
+
 	private:
 		VulkanPhysicalDevice(VulkanInstance* instance, VkPhysicalDevice device, QueueFamilyIndices indices); //Private constructor only called for getting a new physical device
 		static std::vector<VkPhysicalDevice> GetAvailablePhysicalDevices(VulkanInstance* instance);
 		static bool PhysicalDeviceSupported(VkPhysicalDevice& device, QueueFamilyIndices& family_indices);
 		static bool QueueFamilySupported(VkPhysicalDevice& device, QueueFamilyIndices& family_indices);
+		void GetExtensions();
 
 		VulkanInstance* m_instance;
 		VkPhysicalDevice m_device;
@@ -30,5 +33,6 @@ namespace Zodiac {
 		VkPhysicalDeviceProperties m_device_properties;
 		VkPhysicalDeviceFeatures m_device_features;
 		VkPhysicalDeviceMemoryProperties m_device_memory_properties;
+		std::vector<VkExtensionProperties> m_extensions;
 	};
 }

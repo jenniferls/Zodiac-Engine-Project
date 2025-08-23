@@ -26,6 +26,8 @@ namespace Zodiac {
 		VkCommandBuffer GetCommandBuffer(bool begin); //Helper-function test
 		void FlushCommandBuffer(VkCommandBuffer& cmdBuffer, VkQueue& submitQueue, VkCommandPool& commandPool);
 
+		bool IsExtensionSupported(const char* extensionName) const;
+
 	private:
 		std::vector<const char*> m_extensions;
 

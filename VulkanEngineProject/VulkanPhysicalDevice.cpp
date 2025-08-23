@@ -10,6 +10,7 @@ Zodiac::VulkanPhysicalDevice::VulkanPhysicalDevice(VulkanInstance* instance, VkP
 	vkGetPhysicalDeviceProperties(device, &m_device_properties);
 	vkGetPhysicalDeviceFeatures(device, &m_device_features);
 	vkGetPhysicalDeviceMemoryProperties(device, &m_device_memory_properties);
+	GetExtensions();
 }
 
 std::vector<VkPhysicalDevice> Zodiac::VulkanPhysicalDevice::GetAvailablePhysicalDevices(VulkanInstance* instance) {
@@ -54,6 +55,20 @@ bool Zodiac::VulkanPhysicalDevice::QueueFamilySupported(VkPhysicalDevice& device
 	}
 
 	return false;
+}
+
+void Zodiac::VulkanPhysicalDevice::GetExtensions() {
+	uint32_t extensionCount;;
+	vkEnumerateDeviceExtensionProperties(m_device, NULL, &extensionCount, NULL);
+
+	m_extensions.resize(extensionCount);
+
+	vkEnumerateDeviceExtensionProperties(m_device, NULL, &extensionCount, m_extensions.data());
+
+	printf("Physical device extensions:\n");
+	for (const VkExtensionProperties& e : m_extensions) {
+		printf("    %s\n", e.extensionName);
+	}
 }
 
 Zodiac::VulkanPhysicalDevice::~VulkanPhysicalDevice() {
@@ -106,4 +121,21 @@ Zodiac::VulkanPhysicalDevice* Zodiac::VulkanPhysicalDevice::GetPhysicalDevice(Vu
 	}
 
 	return new VulkanPhysicalDevice(instance, secondary_device, secondary_queue);
+}
+
+bool Zodiac::VulkanPhysicalDevice::IsExtensionSupported(const char* extensionName) const {
+	bool res = false;
+
+	std::string requestedExtension(extensionName);
+	for (const VkExtensionProperties& e : m_extensions) {
+		std::string currentExtension(e.extensionName);
+		if (currentExtension == requestedExtension) {
+			res = true;
+			break;
+		}
+	}
+
+	printf("Extension %s %s supporterd\n", extensionName, res ? "is" : "is not");
+
+	return res;
 }
