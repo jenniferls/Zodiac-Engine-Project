@@ -23,16 +23,13 @@ namespace Zodiac {
 		static void SetupDescriptorPool();
 
 		static VulkanDevice* s_device;
-		static VkRenderPass s_renderPass;
+		//static VkRenderPass s_renderPass;
 		static VkDescriptorPool s_descriptorPool;
 		
 		VkSampler m_sampler;
 
 		VulkanBuffer* m_vertexBuffer;
 		VulkanBuffer* m_indexBuffer;
-
-		int m_framebufferWidth = 0;
-		int m_framebufferHeight = 0;
 
 		VkDeviceMemory m_fontMemory = VK_NULL_HANDLE;
 		VkImage m_fontImage = VK_NULL_HANDLE;

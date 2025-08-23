@@ -11,22 +11,11 @@
 #include "Initializers.h"
 
 Zodiac::VulkanDevice* Zodiac::ImGuiLayer::s_device;
-VkRenderPass Zodiac::ImGuiLayer::s_renderPass;
+//VkRenderPass Zodiac::ImGuiLayer::s_renderPass;
 VkDescriptorPool Zodiac::ImGuiLayer::s_descriptorPool;
-//static ImGui_ImplVulkanH_Window s_mainWindowData;
 
 
 Zodiac::ImGuiLayer::ImGuiLayer() {
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGuiIO& io = ImGui::GetIO();
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableSetMousePos;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-	ImGui::StyleColorsDark();
-	ImGui::GetStyle().FontScaleMain = 1.5f;
-
-	std::cout << "ImGui context successfully created." << std::endl;
 }
 
 Zodiac::ImGuiLayer::~ImGuiLayer() {
@@ -40,7 +29,7 @@ Zodiac::ImGuiLayer* Zodiac::ImGuiLayer::Create() {
 void Zodiac::ImGuiLayer::Shutdown()
 {
 	vkDestroyDescriptorPool(*s_device->GetDevice(), s_descriptorPool, nullptr);
-	vkDestroyRenderPass(*s_device->GetDevice(), s_renderPass, nullptr);
+	//vkDestroyRenderPass(*s_device->GetDevice(), s_renderPass, nullptr);
 	//ImGui_ImplVulkan_DestroyFontUploadObjects();
 	ImGui_ImplVulkan_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
@@ -371,6 +360,23 @@ void Zodiac::ImGuiLayer::Render(Window* window, VulkanInstance* instance)
 bool Zodiac::ImGuiLayer::Init(GLFWwindow* window, VulkanDevice* device, VulkanInstance* instance) {
 	s_device = device;
 
+	int width = 0;
+	int height = 0;
+	glfwGetWindowSize(window, &width, &height);
+
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableSetMousePos;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+	//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+	io.DisplaySize.x = (float)width;
+	io.DisplaySize.y = (float)height;
+	ImGui::StyleColorsDark();
+	ImGui::GetStyle().FontScaleMain = 1.5f;
+
+	std::cout << "ImGui context successfully created." << std::endl;
+
 	ImGui_ImplGlfw_InitForVulkan(window, true);
 
 	//Has to be done here because of initialization order
@@ -385,7 +391,7 @@ bool Zodiac::ImGuiLayer::Init(GLFWwindow* window, VulkanDevice* device, VulkanIn
 	init_info.QueueFamily = s_device->GetPhysicalDevice()->GetFamilyIndices().graphics_indices;
 	init_info.Queue = *s_device->GetGraphicsQueue();
 	init_info.DescriptorPool = s_descriptorPool; //This is a imgui-specific descriptor pool
-	init_info.RenderPass = NULL; //For dynamic rendering
+	init_info.RenderPass = VK_NULL_HANDLE; //For dynamic rendering
 	init_info.MinImageCount = m_minImageCount;
 	init_info.ImageCount = Zodiac::Renderer::s_swapchain->GetImageCount();
 	init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
@@ -429,39 +435,39 @@ bool Zodiac::ImGuiLayer::Init(GLFWwindow* window, VulkanDevice* device, VulkanIn
 
 void Zodiac::ImGuiLayer::SetupRenderPass()
 {
-	// Color attachment
-	std::vector<VkAttachmentDescription> attachments(1);
-	attachments[0].format = Zodiac::Renderer::s_swapchain->GetSurfaceFormat().format;
-	attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
-	attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-	attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-	attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	attachments[0].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	attachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	//// Color attachment
+	//std::vector<VkAttachmentDescription> attachments(1);
+	//attachments[0].format = Zodiac::Renderer::s_swapchain->GetSurfaceFormat().format;
+	//attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
+	//attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+	//attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	//attachments[0].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	//attachments[0].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	//attachments[0].initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	//attachments[0].finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-	// Setup attachment references
-	VkAttachmentReference colorReference = {};
-	colorReference.attachment = 0;													// Attachment 0 is color
-	colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;				// Attachment layout used as color during the subpass
+	//// Setup attachment references
+	//VkAttachmentReference colorReference = {};
+	//colorReference.attachment = 0;													// Attachment 0 is color
+	//colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;				// Attachment layout used as color during the subpass
 
-	// Setup a single subpass reference
-	std::vector<VkSubpassDescription> subpassDescriptions(1);
-	subpassDescriptions[0].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpassDescriptions[0].colorAttachmentCount = 1;									// Subpass uses one color attachment
-	subpassDescriptions[0].pColorAttachments = &colorReference;							// Reference to the color attachment in slot 0
+	//// Setup a single subpass reference
+	//std::vector<VkSubpassDescription> subpassDescriptions(1);
+	//subpassDescriptions[0].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	//subpassDescriptions[0].colorAttachmentCount = 1;									// Subpass uses one color attachment
+	//subpassDescriptions[0].pColorAttachments = &colorReference;							// Reference to the color attachment in slot 0
 
-	std::vector<VkSubpassDependency> dependencies(1);
-	dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-	dependencies[0].dstSubpass = 0;
-	dependencies[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependencies[0].srcAccessMask = 0;
-	dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	//std::vector<VkSubpassDependency> dependencies(1);
+	//dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+	//dependencies[0].dstSubpass = 0;
+	//dependencies[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	//dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	//dependencies[0].srcAccessMask = 0;
+	//dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-	// Create the actual renderpass
-	VkRenderPassCreateInfo renderPassInfo = Initializers::RenderPassCreateInfo(attachments, subpassDescriptions, dependencies);
-	ErrorCheck(vkCreateRenderPass(*s_device->GetDevice(), &renderPassInfo, nullptr, &s_renderPass));
+	//// Create the actual renderpass
+	//VkRenderPassCreateInfo renderPassInfo = Initializers::RenderPassCreateInfo(attachments, subpassDescriptions, dependencies);
+	//ErrorCheck(vkCreateRenderPass(*s_device->GetDevice(), &renderPassInfo, nullptr, &s_renderPass));
 }
 
 void Zodiac::ImGuiLayer::SetupDescriptorPool()

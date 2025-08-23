@@ -44,6 +44,8 @@ Zodiac::VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, SurfaceDetails& d
 		depthStencilView.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 	}
 	ErrorCheck(vkCreateImageView(*m_device, &depthStencilView, nullptr, &m_depthStencil.view));
+
+	std::cout << "Swapchain initialized." << std::endl;
 }
 
 Zodiac::VulkanSwapchain::~VulkanSwapchain() {
