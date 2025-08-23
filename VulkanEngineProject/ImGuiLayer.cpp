@@ -375,7 +375,7 @@ bool Zodiac::ImGuiLayer::Init(GLFWwindow* window, VulkanDevice* device, VulkanIn
 
 	//Has to be done here because of initialization order
 	SetupDescriptorPool();
-	SetupRenderPass();
+	//SetupRenderPass();
 
 	ImGui_ImplVulkan_InitInfo init_info = {};
 	init_info.ApiVersion = instance->GetInstanceVersion();
@@ -384,22 +384,24 @@ bool Zodiac::ImGuiLayer::Init(GLFWwindow* window, VulkanDevice* device, VulkanIn
 	init_info.Device = *s_device->GetDevice();
 	init_info.QueueFamily = s_device->GetPhysicalDevice()->GetFamilyIndices().graphics_indices;
 	init_info.Queue = *s_device->GetGraphicsQueue();
-	init_info.RenderPass = NULL; //For dynamic rendering
-	init_info.PipelineCache = VK_NULL_HANDLE; //Should work for now
 	init_info.DescriptorPool = s_descriptorPool; //This is a imgui-specific descriptor pool
-	init_info.Allocator = nullptr;
+	init_info.RenderPass = NULL; //For dynamic rendering
 	init_info.MinImageCount = m_minImageCount;
 	init_info.ImageCount = Zodiac::Renderer::s_swapchain->GetImageCount();
-	init_info.UseDynamicRendering = true;
-	init_info.Subpass = 0;
 	init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+	init_info.PipelineCache = VK_NULL_HANDLE; //Should work for now
+	init_info.Subpass = 0;
+	init_info.UseDynamicRendering = VK_TRUE;
 	//dynamic rendering parameters for imgui to use
 	init_info.PipelineRenderingCreateInfo = {};
-	init_info.PipelineRenderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+	init_info.PipelineRenderingCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO_KHR;
+	init_info.PipelineRenderingCreateInfo.pNext = NULL;
+	init_info.PipelineRenderingCreateInfo.viewMask = 0;
 	init_info.PipelineRenderingCreateInfo.colorAttachmentCount = 1;
 	init_info.PipelineRenderingCreateInfo.pColorAttachmentFormats = &Zodiac::Renderer::s_swapchain->GetSurfaceFormat().format;
 	init_info.PipelineRenderingCreateInfo.depthAttachmentFormat = Zodiac::Renderer::s_swapchain->GetDepthFormat();
 	init_info.PipelineRenderingCreateInfo.stencilAttachmentFormat = VK_FORMAT_UNDEFINED; // No stencil attachment
+	init_info.Allocator = NULL;
 	init_info.CheckVkResultFn = ErrorCheck;
 
 	ImGui_ImplVulkan_Init(&init_info);
