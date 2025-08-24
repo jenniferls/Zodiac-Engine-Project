@@ -32,6 +32,7 @@ Zodiac::VulkanBuffer* Zodiac::Renderer::s_indexBuffer;
 Zodiac::VulkanBuffer* Zodiac::Renderer::s_uniformBuffer;
 bool Zodiac::Renderer::s_prepared;
 bool Zodiac::Renderer::s_showGui = true; //Always true for now
+std::unique_ptr<Zodiac::ImGuiLayer> Zodiac::Renderer::s_imgui;
 
 void Zodiac::Renderer::DrawIndexed() {
 
@@ -45,7 +46,11 @@ Zodiac::Renderer::~Renderer() {
 
 }
 
-void Zodiac::Renderer::Init(VulkanDevice* device, Settings settings, VulkanSurface* surface) {
+void Zodiac::Renderer::Init(VulkanDevice* device, Settings settings, VulkanSurface* surface, VulkanInstance* instance, GLFWwindow* window) {
+	if (s_showGui) {
+		s_imgui = std::unique_ptr<ImGuiLayer>(ImGuiLayer::Create());
+	}
+
 	s_device = device;
 	s_settings = settings;
 	s_surface = surface;
@@ -58,6 +63,8 @@ void Zodiac::Renderer::Init(VulkanDevice* device, Settings settings, VulkanSurfa
 	s_prepared = false;
 
 	InitInternal();
+
+	s_imgui->Init(window, device, instance);
 }
 
 Zodiac::Renderer& Zodiac::Renderer::Get() {
@@ -124,6 +131,8 @@ void Zodiac::Renderer::Draw() {
 	//}
 
 	s_currentFrame = (s_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+
+	//s_imgui->Render(m_window.get(), s_instance);
 }
 
 void Zodiac::Renderer::InitInternal() {
@@ -464,6 +473,8 @@ void Zodiac::Renderer::BuildCommandBuffers() {
 }
 
 void Zodiac::Renderer::Shutdown() {
+	s_imgui->Shutdown();
+
 	for (size_t i = 0; i < s_framebuffers.size(); i++) {
 		vkDestroyFramebuffer(*s_device->GetDevice(), s_framebuffers[i], nullptr);
 	}

@@ -17,7 +17,7 @@ namespace Zodiac {
 
 		~Renderer();
 
-		static void Init(VulkanDevice* device, Settings settings, VulkanSurface* surface);
+		static void Init(VulkanDevice* device, Settings settings, VulkanSurface* surface, VulkanInstance* instance, GLFWwindow* window);
 		static Renderer& Get();
 
 		static void Draw();
@@ -81,5 +81,7 @@ namespace Zodiac {
 		static VulkanBuffer* s_uniformBuffer;
 
 		static VkClearValue s_clearValues[2];
+
+		static std::unique_ptr<ImGuiLayer> s_imgui;
 	};
 }

@@ -12,7 +12,7 @@ Zodiac::System::System(const char* applicationName) {
 	m_window = std::unique_ptr<Window>(Window::Create());
 
 	if (m_settings.overlay) {
-		m_imgui = std::unique_ptr<ImGuiLayer>(ImGuiLayer::Create());
+		Renderer::s_showGui = true;
 	}
 }
 
@@ -31,8 +31,6 @@ bool Zodiac::System::Init() {
 	InitVulkan();
 
 	std::cout << "Selected physical device: " << m_physical_device->GetDeviceProperties().deviceName << std::endl;
-
-	m_imgui->Init((GLFWwindow*)m_window->GetNativeWindow(), m_device, m_instance);
 
 	/////// Tests ///////
 	//VkCommandBuffer* commands = new VkCommandBuffer[3]; //Command buffers test
@@ -63,11 +61,9 @@ void Zodiac::System::Run() {
 			return;
 		}
 		Renderer::Draw();
-		m_imgui->Render(m_window.get(), m_instance);
 	}
 	vkDeviceWaitIdle(*m_device->GetDevice()); //Test
 
-	m_imgui->Shutdown();
 	Renderer::Shutdown();
 	m_window->Shutdown();
 }
@@ -88,7 +84,7 @@ bool Zodiac::System::InitVulkan() {
 	m_device = new Zodiac::VulkanDevice(m_instance, m_physical_device);
 	m_surface = new Zodiac::VulkanSurface(m_instance, m_physical_device, m_window->GetNativeWindow());
 
-	Zodiac::Renderer::Init(m_device, m_settings, m_surface);
+	Zodiac::Renderer::Init(m_device, m_settings, m_surface, m_instance, (GLFWwindow*)m_window->GetNativeWindow());
 
 	return true;
 }

@@ -37,6 +37,5 @@ namespace Zodiac {
 		VulkanSurface* m_surface;
 
 		std::unique_ptr<Window> m_window;
-		std::unique_ptr<ImGuiLayer> m_imgui;
 	};
 }
