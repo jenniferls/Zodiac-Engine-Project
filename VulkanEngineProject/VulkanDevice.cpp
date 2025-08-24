@@ -132,6 +132,17 @@ VkCommandBuffer Zodiac::VulkanDevice::GetCommandBuffer(bool begin) {
 	return buffer;
 }
 
+void Zodiac::VulkanDevice::CreateCommandBuffers(int count, VkCommandBuffer* buffers) {
+	VkCommandBufferAllocateInfo cmdBufAllocateInfo = Initializers::CommandBufferAllocateInfo(m_graphics_command_pool, count);
+	ErrorCheck(vkAllocateCommandBuffers(m_device, &cmdBufAllocateInfo, buffers));
+	printf("%d command buffers created\n", count);
+}
+
+void Zodiac::VulkanDevice::FreeCommandBuffers(uint32_t count, const VkCommandBuffer* buffers) {
+	vkQueueWaitIdle(m_graphics_queue); //Only graphics queue for now
+	vkFreeCommandBuffers(m_device, m_graphics_command_pool, count, buffers);
+}
+
 void Zodiac::VulkanDevice::FlushCommandBuffer(VkCommandBuffer& cmdBuffer, VkQueue& submitQueue, VkCommandPool& commandPool) {
 	assert(cmdBuffer != VK_NULL_HANDLE);
 

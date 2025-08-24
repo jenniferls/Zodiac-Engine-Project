@@ -11,8 +11,8 @@
 #include "Initializers.h"
 
 Zodiac::VulkanDevice* Zodiac::ImGuiLayer::s_device;
-//VkRenderPass Zodiac::ImGuiLayer::s_renderPass;
 VkDescriptorPool Zodiac::ImGuiLayer::s_descriptorPool;
+std::vector<VkCommandBuffer> Zodiac::ImGuiLayer::s_command_buffers;
 
 
 Zodiac::ImGuiLayer::ImGuiLayer() {
@@ -28,6 +28,7 @@ Zodiac::ImGuiLayer* Zodiac::ImGuiLayer::Create() {
 
 void Zodiac::ImGuiLayer::Shutdown()
 {
+	s_device->FreeCommandBuffers(s_command_buffers.size(), s_command_buffers.data());
 	vkDestroyDescriptorPool(*s_device->GetDevice(), s_descriptorPool, nullptr);
 	//vkDestroyRenderPass(*s_device->GetDevice(), s_renderPass, nullptr);
 	//ImGui_ImplVulkan_DestroyFontUploadObjects();
@@ -381,7 +382,6 @@ bool Zodiac::ImGuiLayer::Init(GLFWwindow* window, VulkanDevice* device, VulkanIn
 
 	//Has to be done here because of initialization order
 	SetupDescriptorPool();
-	//SetupRenderPass();
 
 	ImGui_ImplVulkan_InitInfo init_info = {};
 	init_info.ApiVersion = instance->GetInstanceVersion();
@@ -412,8 +412,9 @@ bool Zodiac::ImGuiLayer::Init(GLFWwindow* window, VulkanDevice* device, VulkanIn
 
 	ImGui_ImplVulkan_Init(&init_info);
 
-	VkCommandPool command_pool = device->GetGraphicsCommandPool();
-	VkCommandBuffer command_buffer = device->GetCommandBuffer(true);
+	//VkCommandPool command_pool = device->GetGraphicsCommandPool();
+	s_command_buffers.resize(Zodiac::Renderer::s_swapchain->GetImageCount());
+	device->CreateCommandBuffers(Zodiac::Renderer::s_swapchain->GetImageCount(), s_command_buffers.data());
 
 	//err = vkResetCommandPool(device->GetDevice(), command_pool, 0);
 	//check_vk_result(err);
@@ -426,7 +427,7 @@ bool Zodiac::ImGuiLayer::Init(GLFWwindow* window, VulkanDevice* device, VulkanIn
 	//	vkDestroyDescriptorPool(*device->GetDevice(), imguiPool, nullptr);
 	//	});
 
-	device->FlushCommandBuffer(command_buffer,*device->GetGraphicsQueue(), command_pool );
+	//device->FlushCommandBuffer(command_buffer,*device->GetGraphicsQueue(), command_pool );
 
 	//ImGui_ImplVulkan_DestroyFontUploadObjects();
 

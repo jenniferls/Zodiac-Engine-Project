@@ -31,6 +31,8 @@ VkDeviceCreateInfo Zodiac::Initializers::DeviceCreateInfo(std::vector<VkDeviceQu
 	info.pQueueCreateInfos = queue_create_info.data();
 	info.queueCreateInfoCount = (uint32_t)queue_create_info.size();
 	info.pEnabledFeatures = &physical_device_features;
+	info.enabledLayerCount = 0,			// DEPRECATED
+	info.ppEnabledLayerNames = NULL,    // DEPRECATED
 	info.ppEnabledExtensionNames = device_extensions.data();
 	info.enabledExtensionCount = (uint32_t)device_extensions.size();
 

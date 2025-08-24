@@ -19,12 +19,12 @@ namespace Zodiac {
 		void Render(Window* window, VulkanInstance* instance);
 
 	private:
-		static void SetupRenderPass();
+		static void SetupRenderPass(); //Not Used with dynamic rendering
 		static void SetupDescriptorPool();
 
 		static VulkanDevice* s_device;
-		//static VkRenderPass s_renderPass;
 		static VkDescriptorPool s_descriptorPool;
+		static std::vector<VkCommandBuffer> s_command_buffers;
 		
 		VkSampler m_sampler;
 
