@@ -24,9 +24,10 @@ VkInstanceCreateInfo Zodiac::Initializers::InstanceCreateInfo(VkApplicationInfo&
 	return info;
 }
 
-VkDeviceCreateInfo Zodiac::Initializers::DeviceCreateInfo(std::vector<VkDeviceQueueCreateInfo>& queue_create_info, VkPhysicalDeviceFeatures& physical_device_features, std::vector<const char*>& device_extensions) {
+VkDeviceCreateInfo Zodiac::Initializers::DeviceCreateInfo(std::vector<VkDeviceQueueCreateInfo>& queue_create_info, VkPhysicalDeviceFeatures& physical_device_features, std::vector<const char*>& device_extensions, const void* pNext) {
 	VkDeviceCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	info.pNext = pNext;
 	info.pQueueCreateInfos = queue_create_info.data();
 	info.queueCreateInfoCount = (uint32_t)queue_create_info.size();
 	info.pEnabledFeatures = &physical_device_features;

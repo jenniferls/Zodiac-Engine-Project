@@ -18,6 +18,13 @@ Zodiac::VulkanDevice::VulkanDevice(VulkanInstance* instance, VulkanPhysicalDevic
 		assert(0 && "Dynamic rendering not supported.");
 	}
 
+	if (physical_device->GetDeviceFeatures().geometryShader == VK_FALSE) {
+		std::cout << "The Geometry Shader is not supported!" << std::endl;
+	}
+	if (physical_device->GetDeviceFeatures().tessellationShader == VK_FALSE) {
+		std::cout << "The Tessellation Shader is not supported!" << std::endl;
+	}
+
 	m_instance = instance;
 	m_physical_device = physical_device;
 	m_priority = 1.0f;
@@ -31,7 +38,13 @@ Zodiac::VulkanDevice::VulkanDevice(VulkanInstance* instance, VulkanPhysicalDevic
 		m_physical_device->GetFamilyIndices().graphics_indices = m_physical_device->GetFamilyIndices().compute_indices;
 	}
 
-	VkDeviceCreateInfo device_info = Initializers::DeviceCreateInfo(queue_create_info, m_physical_device->GetDeviceFeatures(), m_extensions);
+	VkPhysicalDeviceDynamicRenderingFeaturesKHR dynamicRenderingFeature = {
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES_KHR,
+		.pNext = NULL,
+		.dynamicRendering = VK_TRUE
+	};
+
+	VkDeviceCreateInfo device_info = Initializers::DeviceCreateInfo(queue_create_info, m_physical_device->GetDeviceFeatures(), m_extensions, &dynamicRenderingFeature);
 	VkCommandPoolCreateInfo compute_pool_info = Initializers::CommandPoolCreateinfo(m_physical_device->GetFamilyIndices().compute_indices);
 	VkCommandPoolCreateInfo graphics_pool_info = Initializers::CommandPoolCreateinfo(m_physical_device->GetFamilyIndices().graphics_indices, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
