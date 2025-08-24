@@ -12,6 +12,9 @@ namespace Zodiac {
 
 		VkInstance& GetInstance();
 		uint32_t GetInstanceVersion();
+		const int GetMajorInstanceVersion();
+		const int GetMinorInstanceVersion();
+		bool IsInstanceVersionOrAbove(uint32_t major, uint32_t minor);
 
 	private:
 		void UpdateInstanceVersion();

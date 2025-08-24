@@ -11,8 +11,14 @@ Zodiac::VulkanDevice::VulkanDevice(VulkanInstance* instance, VulkanPhysicalDevic
 	m_extensions.push_back("VK_KHR_depth_stencil_resolve");
 
 	bool dynamicRenderingSupported = physical_device->IsExtensionSupported(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
+	int32_t instanceVersion = instance->GetInstanceVersion();
 	if (dynamicRenderingSupported) {
-		m_extensions.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
+		if (instance->IsInstanceVersionOrAbove(1, 3)) {
+			printf("The Vulkan instance and device support dynamic rendering as a core feature\n");
+		}
+		else{
+			m_extensions.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
+		}
 	}
 	else {
 		assert(0 && "Dynamic rendering not supported.");

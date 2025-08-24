@@ -37,6 +37,21 @@ uint32_t Zodiac::VulkanInstance::GetInstanceVersion() {
 	return VK_MAKE_API_VERSION(0, m_instanceVersion.Major, m_instanceVersion.Minor, m_instanceVersion.Patch);
 }
 
+const int Zodiac::VulkanInstance::GetMajorInstanceVersion()
+{
+	return m_instanceVersion.Major;
+}
+
+const int Zodiac::VulkanInstance::GetMinorInstanceVersion()
+{
+	return m_instanceVersion.Minor;
+}
+
+bool Zodiac::VulkanInstance::IsInstanceVersionOrAbove(uint32_t major, uint32_t minor)
+{
+	return (m_instanceVersion.Major > major) || (m_instanceVersion.Minor >= minor);
+}
+
 void Zodiac::VulkanInstance::UpdateInstanceVersion() {
 	uint32_t InstanceVersion = 0;
 	ErrorCheck(vkEnumerateInstanceVersion(&InstanceVersion));
