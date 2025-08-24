@@ -31,6 +31,7 @@ Zodiac::VulkanBuffer* Zodiac::Renderer::s_vertexBuffer;
 Zodiac::VulkanBuffer* Zodiac::Renderer::s_indexBuffer;
 Zodiac::VulkanBuffer* Zodiac::Renderer::s_uniformBuffer;
 bool Zodiac::Renderer::s_prepared;
+bool Zodiac::Renderer::s_showGui = true; //Always true for now
 
 void Zodiac::Renderer::DrawIndexed() {
 
@@ -79,19 +80,37 @@ void Zodiac::Renderer::Draw() {
 	//	throw std::runtime_error("failed to acquire swap chain image!");
 	//}
 
-	if (s_imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
-		ErrorCheck(vkWaitForFences(*s_device->GetDevice(), 1, &s_imagesInFlight[imageIndex]->p_fence, VK_TRUE, UINT64_MAX));
+	//This part is messy right now. Should try async instead and also make helper functions
+	if (s_showGui) {
+		if (s_imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
+			ErrorCheck(vkWaitForFences(*s_device->GetDevice(), 1, &s_imagesInFlight[imageIndex]->p_fence, VK_TRUE, UINT64_MAX));
+		}
+		s_imagesInFlight[imageIndex] = s_waitFences[s_currentFrame];
+
+		//Fences for syncronization
+		//ErrorCheck(vkWaitForFences(*s_device->GetDevice(), 1, &s_waitFences[imageIndex]->p_fence, VK_TRUE, UINT64_MAX)); //Wait for all fences
+		ErrorCheck(vkResetFences(*s_device->GetDevice(), 1, &s_waitFences[s_currentFrame]->p_fence));
+
+		// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
+		VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		VkSubmitInfo submitInfo = Initializers::SubmitInfo(s_presentSemaphore->GetSemaphore(), s_renderCompleteSemaphore->GetSemaphore(), s_drawCmdBuffers[imageIndex], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+		ErrorCheck(vkQueueSubmit(*s_device->GetGraphicsQueue(), 1, &submitInfo, /*NULL*/s_waitFences[s_currentFrame]->p_fence)); //TODO: The fences help with syncronization, but I need to look into this.
 	}
-	s_imagesInFlight[imageIndex] = s_waitFences[s_currentFrame];
+	else {
+		if (s_imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
+			ErrorCheck(vkWaitForFences(*s_device->GetDevice(), 1, &s_imagesInFlight[imageIndex]->p_fence, VK_TRUE, UINT64_MAX));
+		}
+		s_imagesInFlight[imageIndex] = s_waitFences[s_currentFrame];
 
-	//Fences for syncronization
-	//ErrorCheck(vkWaitForFences(*s_device->GetDevice(), 1, &s_waitFences[imageIndex]->p_fence, VK_TRUE, UINT64_MAX)); //Wait for all fences
-	ErrorCheck(vkResetFences(*s_device->GetDevice(), 1, &s_waitFences[s_currentFrame]->p_fence));
+		//Fences for syncronization
+		//ErrorCheck(vkWaitForFences(*s_device->GetDevice(), 1, &s_waitFences[imageIndex]->p_fence, VK_TRUE, UINT64_MAX)); //Wait for all fences
+		ErrorCheck(vkResetFences(*s_device->GetDevice(), 1, &s_waitFences[s_currentFrame]->p_fence));
 
-	// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
-	VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	VkSubmitInfo submitInfo = Initializers::SubmitInfo(s_presentSemaphore->GetSemaphore(), s_renderCompleteSemaphore->GetSemaphore(), s_drawCmdBuffers[imageIndex], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-	ErrorCheck(vkQueueSubmit(*s_device->GetGraphicsQueue(), 1, &submitInfo, /*NULL*/s_waitFences[s_currentFrame]->p_fence)); //TODO: The fences help with syncronization, but I need to look into this.
+		// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
+		VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		VkSubmitInfo submitInfo = Initializers::SubmitInfo(s_presentSemaphore->GetSemaphore(), s_renderCompleteSemaphore->GetSemaphore(), s_drawCmdBuffers[imageIndex], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+		ErrorCheck(vkQueueSubmit(*s_device->GetGraphicsQueue(), 1, &submitInfo, /*NULL*/s_waitFences[s_currentFrame]->p_fence)); //TODO: The fences help with syncronization, but I need to look into this.
+	}
 
 	VkPresentInfoKHR presentInfo = Initializers::PresentInfo(*s_swapchain->GetSwapchain(), imageIndex, s_renderCompleteSemaphore->GetSemaphore());
 	ErrorCheck(vkQueuePresentKHR(*s_device->GetGraphicsQueue(), &presentInfo));

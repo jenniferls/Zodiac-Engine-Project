@@ -1,6 +1,8 @@
 #pragma once
 #include "vulkan/vulkan.h"
 
+#include "ImGuiLayer.h"
+
 #include "VulkanSurface.h"
 #include "VulkanSwapchain.h"
 #include "VulkanSemaphore.h"
@@ -33,6 +35,7 @@ namespace Zodiac {
 
 		static bool s_prepared;
 		static VulkanSwapchain* s_swapchain;
+		static bool s_showGui;
 
 	private:
 		Renderer();

@@ -143,6 +143,11 @@ void Zodiac::VulkanDevice::FreeCommandBuffers(uint32_t count, const VkCommandBuf
 	vkFreeCommandBuffers(m_device, m_graphics_command_pool, count, buffers);
 }
 
+void Zodiac::VulkanDevice::BeginCommandBuffer(VkCommandBuffer& cmdBuffer, VkCommandBufferUsageFlags usage) {
+	VkCommandBufferBeginInfo cmdBufInfo = Initializers::CommandBufferBeginInfo(usage);
+	ErrorCheck(vkBeginCommandBuffer(cmdBuffer, &cmdBufInfo));
+}
+
 void Zodiac::VulkanDevice::FlushCommandBuffer(VkCommandBuffer& cmdBuffer, VkQueue& submitQueue, VkCommandPool& commandPool) {
 	assert(cmdBuffer != VK_NULL_HANDLE);
 

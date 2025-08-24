@@ -1,6 +1,5 @@
 #pragma once
 #include "Settings.h"
-#include "ImGuiLayer.h"
 #include "Window.h"
 
 #include "VulkanConfiguration.h"

@@ -26,6 +26,7 @@ namespace Zodiac {
 		VkCommandBuffer GetCommandBuffer(bool begin); //Helper-function test
 		void CreateCommandBuffers(int count, VkCommandBuffer* buffers);
 		void FreeCommandBuffers(uint32_t count, const VkCommandBuffer* buffers);
+		void BeginCommandBuffer(VkCommandBuffer& cmdBuffer, VkCommandBufferUsageFlags usage);
 		void FlushCommandBuffer(VkCommandBuffer& cmdBuffer, VkQueue& submitQueue, VkCommandPool& commandPool);
 
 		bool IsExtensionSupported(const char* extensionName) const;
