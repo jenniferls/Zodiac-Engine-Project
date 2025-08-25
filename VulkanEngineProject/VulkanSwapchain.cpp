@@ -95,6 +95,20 @@ VkExtent2D Zodiac::VulkanSwapchain::GetExtent2D() const {
 	return m_extent2D;
 }
 
+const VkImage& Zodiac::VulkanSwapchain::GetImage(int index) const {
+	if (index >= m_images.size()) {
+		printf("Invalid image index %d\n", index);
+		exit(1);
+	}
+
+	return m_images[index];
+}
+
+bool Zodiac::VulkanSwapchain::SurfaceHasStencilComponent(VkFormat format)
+{
+	return ((format == VK_FORMAT_D32_SFLOAT_S8_UINT) || (format == VK_FORMAT_D24_UNORM_S8_UINT));
+}
+
 void Zodiac::VulkanSwapchain::ChooseSurfaceFormat(SurfaceDetails& details) {
 	if ((details.supported_formats.size() == 1) && (details.supported_formats[0].format == VK_FORMAT_UNDEFINED)) {
 		m_surfaceFormat.format = VK_FORMAT_B8G8R8A8_UNORM;

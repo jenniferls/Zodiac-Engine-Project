@@ -2,6 +2,7 @@
 #include <vulkan/vulkan.h>
 #include "VulkanBuffer.h"
 #include "VulkanDevice.h"
+#include "VulkanSwapchain.h"
 #include "imgui/imgui.h"
 
 #include "Window.h"
@@ -17,7 +18,8 @@ namespace Zodiac {
 
 		bool Init(GLFWwindow* window, VulkanDevice* device, VulkanInstance* instance);
 		void Render(Window* window, VulkanInstance* instance);
-		VkCommandBuffer PrepareCommandBuffer(int image);
+		void UpdateGUI();
+		VkCommandBuffer PrepareCommandBuffer(int image, VulkanSwapchain* swapchain);
 
 	private:
 		static void SetupRenderPass(); //Not Used with dynamic rendering

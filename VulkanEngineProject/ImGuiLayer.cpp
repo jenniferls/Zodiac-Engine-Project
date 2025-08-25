@@ -357,8 +357,64 @@ void Zodiac::ImGuiLayer::Render(Window* window, VulkanInstance* instance)
 	}
 }
 
-VkCommandBuffer Zodiac::ImGuiLayer::PrepareCommandBuffer(int image){
+void Zodiac::ImGuiLayer::UpdateGUI() {
+	ImGuiIO& io = ImGui::GetIO();
+
+	// Start the Dear ImGui frame
+	ImGui_ImplVulkan_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+
+	//ImGui::Begin("Hello, world!", NULL, ImGuiWindowFlags_AlwaysAutoResize);   // Create a window called "Hello, world!" and append into it.
+
+	//ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+
+	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
+	if (m_showDemoWindow)
+		ImGui::ShowDemoWindow(&m_showDemoWindow);
+
+	// 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
+	{
+		static float f = 0.0f;
+		static int counter = 0;
+
+		ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+		ImGui::Checkbox("Demo Window", &m_showDemoWindow);      // Edit bools storing our window open/close state
+		ImGui::Checkbox("Another Window", &m_showAnotherWindow);
+
+		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+		ImGui::ColorEdit3("clear color", (float*)&m_clearColor); // Edit 3 floats representing a color
+
+		if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+			counter++;
+		ImGui::SameLine();
+		ImGui::Text("counter = %d", counter);
+
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::End();
+	}
+
+	// 3. Show another simple window.
+	if (m_showAnotherWindow)
+	{
+		ImGui::Begin("Another Window", &m_showAnotherWindow);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+		ImGui::Text("Hello from another window!");
+		if (ImGui::Button("Close Me"))
+			m_showAnotherWindow = false;
+		ImGui::End();
+	}
+
+	// Rendering
+	ImGui::Render();
+}
+
+// Must be called after the ImGUI frame was prepared on the application side!
+VkCommandBuffer Zodiac::ImGuiLayer::PrepareCommandBuffer(int image, VulkanSwapchain* swapchain){
 	s_device->BeginCommandBuffer(s_command_buffers[image], VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+
+	Renderer::BeginDynamicRendering(s_command_buffers[image], image, NULL, NULL);
 
 	ImDrawData* pDrawData = ImGui::GetDrawData();
 	ImGui_ImplVulkan_RenderDrawData(pDrawData, s_command_buffers[image]);
@@ -368,153 +424,154 @@ VkCommandBuffer Zodiac::ImGuiLayer::PrepareCommandBuffer(int image){
 	//Needs some sort of wrapper
 	VkImageLayout oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 	VkImageLayout newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-	//{
-	//	VkImageMemoryBarrier barrier = {
-	//	.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
-	//	.pNext = NULL,
-	//	.srcAccessMask = 0,
-	//	.dstAccessMask = 0,
-	//	.oldLayout = oldLayout,
-	//	.newLayout = newLayout,
-	//	.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-	//	.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-	//	.image = Image,
-	//	.subresourceRange = VkImageSubresourceRange {
-	//		.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
-	//		.baseMipLevel = 0,
-	//		.levelCount = 1,
-	//		.baseArrayLayer = 0,
-	//		.layerCount = 1
-	//	}
-	//	};
+	VkFormat format = swapchain->GetSurfaceFormat().format;
+	{
+		VkImageMemoryBarrier barrier = {
+		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+		.pNext = NULL,
+		.srcAccessMask = 0,
+		.dstAccessMask = 0,
+		.oldLayout = oldLayout,
+		.newLayout = newLayout,
+		.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+		.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
+		.image = swapchain->GetImage(image),
+		.subresourceRange = VkImageSubresourceRange {
+			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+			.baseMipLevel = 0,
+			.levelCount = 1,
+			.baseArrayLayer = 0,
+			.layerCount = 1
+		}
+		};
 
-	//	VkPipelineStageFlags sourceStage = VK_PIPELINE_STAGE_NONE;
-	//	VkPipelineStageFlags destinationStage = VK_PIPELINE_STAGE_NONE;
+		VkPipelineStageFlags sourceStage = VK_PIPELINE_STAGE_NONE;
+		VkPipelineStageFlags destinationStage = VK_PIPELINE_STAGE_NONE;
 
-	//	if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL ||
-	//		(Format == VK_FORMAT_D16_UNORM) ||
-	//		(Format == VK_FORMAT_X8_D24_UNORM_PACK32) ||
-	//		(Format == VK_FORMAT_D32_SFLOAT) ||
-	//		(Format == VK_FORMAT_S8_UINT) ||
-	//		(Format == VK_FORMAT_D16_UNORM_S8_UINT) ||
-	//		(Format == VK_FORMAT_D24_UNORM_S8_UINT))
-	//	{
-	//		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL ||
+			(format == VK_FORMAT_D16_UNORM) ||
+			(format == VK_FORMAT_X8_D24_UNORM_PACK32) ||
+			(format == VK_FORMAT_D32_SFLOAT) ||
+			(format == VK_FORMAT_S8_UINT) ||
+			(format == VK_FORMAT_D16_UNORM_S8_UINT) ||
+			(format == VK_FORMAT_D24_UNORM_S8_UINT))
+		{
+			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-	//		if (HasStencilComponent(Format)) {
-	//			barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-	//		}
-	//	}
-	//	else {
-	//		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	//	}
+			if (swapchain->SurfaceHasStencilComponent(format)) {
+				barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+			}
+		}
+		else {
+			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		}
 
-	//	if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-	//		barrier.srcAccessMask = 0;
-	//		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+			barrier.srcAccessMask = 0;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
-	//		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-	//		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	//	}
-	//	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_GENERAL) {
-	//		barrier.srcAccessMask = 0;
-	//		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+			destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		}
+		else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_GENERAL) {
+			barrier.srcAccessMask = 0;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
-	//		sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-	//		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	//	}
+			sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+			destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		}
 
-	//	if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
-	//		newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-	//		barrier.srcAccessMask = 0;
-	//		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED &&
+			newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+			barrier.srcAccessMask = 0;
+			barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
-	//		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-	//		destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-	//	} /* Convert back from read-only to updateable */
-	//	else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-	//		barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-	//		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+			destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		} /* Convert back from read-only to updateable */
+		else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+			barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
-	//		sourceStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	//		destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-	//	} /* Convert from updateable texture to shader read-only */
-	//	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
-	//		newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-	//		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-	//		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			sourceStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		} /* Convert from updateable texture to shader read-only */
+		else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL &&
+			newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
-	//		sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-	//		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	//	} /* Convert depth texture from undefined state to depth-stencil buffer */
-	//	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
-	//		barrier.srcAccessMask = 0;
-	//		barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+			destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		} /* Convert depth texture from undefined state to depth-stencil buffer */
+		else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+			barrier.srcAccessMask = 0;
+			barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-	//		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-	//		destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-	//	} /* Wait for render pass to complete */
-	//	else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-	//		barrier.srcAccessMask = 0; // VK_ACCESS_SHADER_READ_BIT;
-	//		barrier.dstAccessMask = 0;
-	//		/*
-	//				sourceStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	//		///		destinationStage = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
-	//				destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	//		*/
-	//		sourceStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	//		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	//	} /* Convert back from read-only to color attachment */
-	//	else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
-	//		barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-	//		barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+			destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+		} /* Wait for render pass to complete */
+		else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+			barrier.srcAccessMask = 0; // VK_ACCESS_SHADER_READ_BIT;
+			barrier.dstAccessMask = 0;
+			/*
+					sourceStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			///		destinationStage = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+					destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			*/
+			sourceStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		} /* Convert back from read-only to color attachment */
+		else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
+			barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-	//		sourceStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	//		destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	//	} /* Convert from updateable texture to shader read-only */
-	//	else if (oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-	//		barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-	//		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			sourceStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		} /* Convert from updateable texture to shader read-only */
+		else if (oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+			barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
-	//		sourceStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	//		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	//	} /* Convert back from read-only to depth attachment */
-	//	else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
-	//		barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-	//		barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			sourceStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		} /* Convert back from read-only to depth attachment */
+		else if (oldLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+			barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-	//		sourceStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	//		destinationStage = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-	//	} /* Convert from updateable depth texture to shader read-only */
-	//	else if (oldLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-	//		barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-	//		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			sourceStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			destinationStage = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+		} /* Convert from updateable depth texture to shader read-only */
+		else if (oldLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+			barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
-	//		sourceStage = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-	//		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	//	}
-	//	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
-	//		barrier.srcAccessMask = 0;
-	//		barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			sourceStage = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+			destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		}
+		else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
+			barrier.srcAccessMask = 0;
+			barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-	//		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-	//		destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	//	}
-	//	else if (oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) {
-	//		barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-	//		barrier.dstAccessMask = 0;
+			sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+			destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		}
+		else if (oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR) {
+			barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			barrier.dstAccessMask = 0;
 
-	//		sourceStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	//		destinationStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-	//	}
-	//	else {
-	//		printf("Unknown barrier case\n");
-	//		exit(1);
-	//	}
+			sourceStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			destinationStage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+		}
+		else {
+			printf("Unknown barrier case\n");
+			exit(1);
+		}
 
-	//	vkCmdPipelineBarrier(CmdBuf, sourceStage, destinationStage,
-	//		0, 0, NULL, 0, NULL, 1, &barrier);
-	//}
+		vkCmdPipelineBarrier(s_command_buffers[image], sourceStage, destinationStage,
+			0, 0, NULL, 0, NULL, 1, &barrier);
+	}
 
 	vkEndCommandBuffer(s_command_buffers[image]);
 

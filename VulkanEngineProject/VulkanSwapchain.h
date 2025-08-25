@@ -22,6 +22,8 @@ namespace Zodiac {
 		VulkanSwapChainBuffer& GetBuffer(uint32_t index);
 		DepthStencil& GetDepthStencil();
 		VkExtent2D GetExtent2D() const;
+		const VkImage& GetImage(int index) const;
+		bool SurfaceHasStencilComponent(VkFormat format);
 
 	private:
 		void ChooseSurfaceFormat(SurfaceDetails& details);

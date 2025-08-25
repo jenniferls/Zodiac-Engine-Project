@@ -22,6 +22,8 @@ namespace Zodiac {
 
 		static void Draw();
 
+		static void BeginDynamicRendering(VkCommandBuffer commandBuffer, int imageIndex, VkClearValue* pClearColor, VkClearValue* pDepthValue);
+
 		static void BeginScene();
 		static void Submit();
 		static void EndScene();

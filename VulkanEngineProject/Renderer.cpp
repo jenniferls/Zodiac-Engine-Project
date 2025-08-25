@@ -87,37 +87,30 @@ void Zodiac::Renderer::Draw() {
 	//	throw std::runtime_error("failed to acquire swap chain image!");
 	//}
 
-	//This part is messy right now. Should try async instead and also make helper functions
-	if (s_showGui) {
-		if (s_imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
-			ErrorCheck(vkWaitForFences(*s_device->GetDevice(), 1, &s_imagesInFlight[imageIndex]->p_fence, VK_TRUE, UINT64_MAX));
-		}
-		s_imagesInFlight[imageIndex] = s_waitFences[s_currentFrame];
-
-		//Fences for syncronization
-		//ErrorCheck(vkWaitForFences(*s_device->GetDevice(), 1, &s_waitFences[imageIndex]->p_fence, VK_TRUE, UINT64_MAX)); //Wait for all fences
-		ErrorCheck(vkResetFences(*s_device->GetDevice(), 1, &s_waitFences[s_currentFrame]->p_fence));
-
-		// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
-		VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		VkSubmitInfo submitInfo = Initializers::SubmitInfo(s_presentSemaphore->GetSemaphore(), s_renderCompleteSemaphore->GetSemaphore(), s_drawCmdBuffers[imageIndex], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-		ErrorCheck(vkQueueSubmit(*s_device->GetGraphicsQueue(), 1, &submitInfo, /*NULL*/s_waitFences[s_currentFrame]->p_fence)); //TODO: The fences help with syncronization, but I need to look into this.
+	if (s_imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
+		ErrorCheck(vkWaitForFences(*s_device->GetDevice(), 1, &s_imagesInFlight[imageIndex]->p_fence, VK_TRUE, UINT64_MAX));
 	}
-	else {
-		if (s_imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
-			ErrorCheck(vkWaitForFences(*s_device->GetDevice(), 1, &s_imagesInFlight[imageIndex]->p_fence, VK_TRUE, UINT64_MAX));
-		}
-		s_imagesInFlight[imageIndex] = s_waitFences[s_currentFrame];
+	s_imagesInFlight[imageIndex] = s_waitFences[s_currentFrame];
 
-		//Fences for syncronization
-		//ErrorCheck(vkWaitForFences(*s_device->GetDevice(), 1, &s_waitFences[imageIndex]->p_fence, VK_TRUE, UINT64_MAX)); //Wait for all fences
-		ErrorCheck(vkResetFences(*s_device->GetDevice(), 1, &s_waitFences[s_currentFrame]->p_fence));
+	//Fences for syncronization
+	//ErrorCheck(vkWaitForFences(*s_device->GetDevice(), 1, &s_waitFences[imageIndex]->p_fence, VK_TRUE, UINT64_MAX)); //Wait for all fences
+	ErrorCheck(vkResetFences(*s_device->GetDevice(), 1, &s_waitFences[s_currentFrame]->p_fence));
 
+	////This part is messy right now. Should try async instead and also make helper functions
+	//if (s_showGui) {
+	//	s_imgui->UpdateGUI();
+	//	VkCommandBuffer imguiCommandBuffer = s_imgui->PrepareCommandBuffer(imageIndex, s_swapchain);
+	//	VkCommandBuffer commandBuffers[] = { s_drawCmdBuffers[imageIndex], imguiCommandBuffer };
+
+	//	// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
+	//	VkSubmitInfo submitInfo = Initializers::SubmitInfo(s_presentSemaphore->GetSemaphore(), s_renderCompleteSemaphore->GetSemaphore(), &commandBuffers[0], 2, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+	//	ErrorCheck(vkQueueSubmit(*s_device->GetGraphicsQueue(), 1, &submitInfo, /*NULL*/s_waitFences[s_currentFrame]->p_fence)); //TODO: The fences help with syncronization, but I need to look into this.
+	//}
+	//else {
 		// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
-		VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		VkSubmitInfo submitInfo = Initializers::SubmitInfo(s_presentSemaphore->GetSemaphore(), s_renderCompleteSemaphore->GetSemaphore(), s_drawCmdBuffers[imageIndex], VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+		VkSubmitInfo submitInfo = Initializers::SubmitInfo(s_presentSemaphore->GetSemaphore(), s_renderCompleteSemaphore->GetSemaphore(), &s_drawCmdBuffers[imageIndex], 1, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 		ErrorCheck(vkQueueSubmit(*s_device->GetGraphicsQueue(), 1, &submitInfo, /*NULL*/s_waitFences[s_currentFrame]->p_fence)); //TODO: The fences help with syncronization, but I need to look into this.
-	}
+	//}
 
 	VkPresentInfoKHR presentInfo = Initializers::PresentInfo(*s_swapchain->GetSwapchain(), imageIndex, s_renderCompleteSemaphore->GetSemaphore());
 	ErrorCheck(vkQueuePresentKHR(*s_device->GetGraphicsQueue(), &presentInfo));
@@ -133,6 +126,53 @@ void Zodiac::Renderer::Draw() {
 	s_currentFrame = (s_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 
 	//s_imgui->Render(m_window.get(), s_instance);
+}
+
+//TODO:Create wrappers for Info structures
+void Zodiac::Renderer::BeginDynamicRendering(VkCommandBuffer commandBuffer, int imageIndex, VkClearValue* pClearColor, VkClearValue* pDepthValue) {
+	VkRenderingAttachmentInfoKHR ColorAttachment = {
+	.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR,
+	.pNext = NULL,
+	.imageView = s_swapchain->GetBuffers()[imageIndex].view,
+	.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	.resolveMode = VK_RESOLVE_MODE_NONE,
+	.resolveImageView = VK_NULL_HANDLE,
+	.resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+	.loadOp = pClearColor ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD,
+	.storeOp = VK_ATTACHMENT_STORE_OP_STORE
+	};
+
+	if (pClearColor) {
+		ColorAttachment.clearValue = *pClearColor;
+	}
+
+	VkRenderingAttachmentInfo DepthAttachment = {
+		.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+		.pNext = NULL,
+		.imageView = s_swapchain->GetDepthStencil().view, //Depth stencil is the same for all framebuffers according to earlier comment
+		.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+		.resolveMode = VK_RESOLVE_MODE_NONE,
+		.resolveImageView = VK_NULL_HANDLE,
+		.resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+		.loadOp = pDepthValue ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD,
+		.storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+	};
+
+	if (pDepthValue) {
+		DepthAttachment.clearValue = *pDepthValue;
+	}
+
+	VkRenderingInfoKHR RenderingInfo = {
+		.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR,
+		.renderArea = { {0, 0}, {(uint32_t)s_swapchain->GetExtent2D().width, (uint32_t)s_swapchain->GetExtent2D().height} },
+		.layerCount = 1,
+		.viewMask = 0,
+		.colorAttachmentCount = 1,
+		.pColorAttachments = &ColorAttachment,
+		.pDepthAttachment = &DepthAttachment
+	};
+
+	vkCmdBeginRendering(commandBuffer, &RenderingInfo);
 }
 
 void Zodiac::Renderer::InitInternal() {

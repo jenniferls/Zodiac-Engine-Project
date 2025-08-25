@@ -171,18 +171,19 @@ VkFenceCreateInfo Zodiac::Initializers::FenceCreateInfo(VkFenceCreateFlags flags
 	return info;
 }
 
-VkSubmitInfo Zodiac::Initializers::SubmitInfo(VkSemaphore& present_semaphore, VkSemaphore& render_semaphore, VkCommandBuffer& commandBuffer, VkPipelineStageFlags flags)
+VkSubmitInfo Zodiac::Initializers::SubmitInfo(VkSemaphore& present_semaphore, VkSemaphore& render_semaphore, VkCommandBuffer* commandBuffers, uint32_t bufferCount, VkPipelineStageFlags flags)
 {
 	VkSubmitInfo info = {};
 
 	info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	info.pNext = NULL;
 	info.pWaitDstStageMask = &flags;
 	info.waitSemaphoreCount = 1;
 	info.pWaitSemaphores = &present_semaphore;
 	info.signalSemaphoreCount = 1;
 	info.pSignalSemaphores = &render_semaphore;
-	info.pCommandBuffers = &commandBuffer;
-	info.commandBufferCount = 1;
+	info.pCommandBuffers = commandBuffers;
+	info.commandBufferCount = bufferCount;
 
 	return info;
 }
