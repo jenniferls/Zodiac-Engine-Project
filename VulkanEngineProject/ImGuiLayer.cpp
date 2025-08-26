@@ -29,8 +29,7 @@ Zodiac::ImGuiLayer* Zodiac::ImGuiLayer::Create() {
 void Zodiac::ImGuiLayer::Shutdown()
 {
 	s_device->FreeCommandBuffers(s_command_buffers.size(), s_command_buffers.data());
-	vkDestroyDescriptorPool(*s_device->GetDevice(), s_descriptorPool, nullptr);
-	//ImGui_ImplVulkan_DestroyFontUploadObjects();
+	vkDestroyDescriptorPool(*s_device->GetDevice(), s_descriptorPool, NULL);
 	ImGui_ImplVulkan_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();

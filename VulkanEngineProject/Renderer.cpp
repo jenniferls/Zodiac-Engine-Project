@@ -20,8 +20,8 @@ VkDescriptorPool Zodiac::Renderer::s_descriptorPool;
 VkDescriptorSet Zodiac::Renderer::s_descriptorSet;
 std::vector<VkFramebuffer> Zodiac::Renderer::s_framebuffers;
 std::vector<VkCommandBuffer> Zodiac::Renderer::s_drawCmdBuffers;
-Zodiac::VulkanSemaphore* Zodiac::Renderer::s_presentSemaphore;
-Zodiac::VulkanSemaphore* Zodiac::Renderer::s_renderCompleteSemaphore;
+std::vector<Zodiac::VulkanSemaphore*> Zodiac::Renderer::s_presentSemaphores;
+std::vector<Zodiac::VulkanSemaphore*> Zodiac::Renderer::s_renderCompleteSemaphores;
 std::vector<Zodiac::VulkanFence*> Zodiac::Renderer::s_waitFences;
 std::vector<Zodiac::VulkanFence*> Zodiac::Renderer::s_imagesInFlight;
 const int Zodiac::Renderer::MAX_FRAMES_IN_FLIGHT;
@@ -73,10 +73,11 @@ Zodiac::Renderer& Zodiac::Renderer::Get() {
 
 void Zodiac::Renderer::Draw() {
 	vkWaitForFences(*s_device->GetDevice(), 1, &s_waitFences[s_currentFrame]->p_fence, VK_TRUE, UINT64_MAX);
+	//ErrorCheck(vkResetFences(*s_device->GetDevice(), 1, &s_waitFences[s_currentFrame]->p_fence));
 
 	//TODO: Gets a validation layer error on 2nd frame until 10th frame
 	uint32_t imageIndex;
-	ErrorCheck(vkAcquireNextImageKHR(*s_device->GetDevice(), *s_swapchain->GetSwapchain(), UINT64_MAX, s_presentSemaphore->GetSemaphore(), VK_NULL_HANDLE, &imageIndex));
+	ErrorCheck(vkAcquireNextImageKHR(*s_device->GetDevice(), *s_swapchain->GetSwapchain(), UINT64_MAX, s_presentSemaphores[s_currentFrame]->GetSemaphore(), VK_NULL_HANDLE, &imageIndex));
 
 	// TODO: from VulkanTutorial
 	//if (result == VK_ERROR_OUT_OF_DATE_KHR) {
@@ -107,12 +108,12 @@ void Zodiac::Renderer::Draw() {
 	//	ErrorCheck(vkQueueSubmit(*s_device->GetGraphicsQueue(), 1, &submitInfo, /*NULL*/s_waitFences[s_currentFrame]->p_fence)); //TODO: The fences help with syncronization, but I need to look into this.
 	//}
 	//else {
-		// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
-		VkSubmitInfo submitInfo = Initializers::SubmitInfo(s_presentSemaphore->GetSemaphore(), s_renderCompleteSemaphore->GetSemaphore(), &s_drawCmdBuffers[imageIndex], 1, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+		 //Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
+		VkSubmitInfo submitInfo = Initializers::SubmitInfo(s_presentSemaphores[s_currentFrame]->GetSemaphore(), s_renderCompleteSemaphores[s_currentFrame]->GetSemaphore(), &s_drawCmdBuffers[imageIndex], 1, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 		ErrorCheck(vkQueueSubmit(*s_device->GetGraphicsQueue(), 1, &submitInfo, /*NULL*/s_waitFences[s_currentFrame]->p_fence)); //TODO: The fences help with syncronization, but I need to look into this.
 	//}
 
-	VkPresentInfoKHR presentInfo = Initializers::PresentInfo(*s_swapchain->GetSwapchain(), imageIndex, s_renderCompleteSemaphore->GetSemaphore());
+	VkPresentInfoKHR presentInfo = Initializers::PresentInfo(*s_swapchain->GetSwapchain(), imageIndex, s_renderCompleteSemaphores[s_currentFrame]->GetSemaphore());
 	ErrorCheck(vkQueuePresentKHR(*s_device->GetGraphicsQueue(), &presentInfo));
 
 	//if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
@@ -124,8 +125,6 @@ void Zodiac::Renderer::Draw() {
 	//}
 
 	s_currentFrame = (s_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-
-	//s_imgui->Render(m_window.get(), s_instance);
 }
 
 //TODO:Create wrappers for Info structures
@@ -181,11 +180,13 @@ void Zodiac::Renderer::InitInternal() {
 	SetupPipelineCache();
 	SetupFramebuffers();
 
-	s_presentSemaphore = new Zodiac::VulkanSemaphore(s_device);
-	s_renderCompleteSemaphore = new Zodiac::VulkanSemaphore(s_device);
+	s_presentSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+	s_renderCompleteSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
 	s_drawCmdBuffers.resize(s_swapchain->GetImageCount());
 	s_waitFences.resize(MAX_FRAMES_IN_FLIGHT);
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		s_presentSemaphores[i] = new VulkanSemaphore(s_device);
+		s_renderCompleteSemaphores[i] = new VulkanSemaphore(s_device);
 		s_waitFences[i] = new VulkanFence(s_device);
 	}
 	s_imagesInFlight.resize(s_drawCmdBuffers.size(), VK_NULL_HANDLE);
@@ -531,10 +532,9 @@ void Zodiac::Renderer::Shutdown() {
 	delete s_indexBuffer;
 	delete s_uniformBuffer;
 
-	delete s_presentSemaphore;
-	delete s_renderCompleteSemaphore;
-
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		delete s_presentSemaphores[i];
+		delete s_renderCompleteSemaphores[i];
 		delete s_waitFences[i];
 	}
 	//for (size_t i = 0; i < s_imagesInFlight.size(); i++) {

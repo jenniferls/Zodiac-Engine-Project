@@ -28,19 +28,10 @@ namespace Zodiac {
 		static VulkanDevice* s_device;
 		static VkDescriptorPool s_descriptorPool;
 		static std::vector<VkCommandBuffer> s_command_buffers;
-		
-		VkSampler m_sampler;
-
-		VulkanBuffer* m_vertexBuffer;
-		VulkanBuffer* m_indexBuffer;
 
 		VkDeviceMemory m_fontMemory = VK_NULL_HANDLE;
 		VkImage m_fontImage = VK_NULL_HANDLE;
 		VkImageView m_fontView = VK_NULL_HANDLE;
-
-		VkPipelineCache m_pipelineCache;
-		VkPipelineLayout m_pipelineLayout;
-		VkPipeline m_pipeline;
 
 		VkDescriptorSetLayout m_descriptorSetLayout;
 		VkDescriptorSet m_descriptorSet;

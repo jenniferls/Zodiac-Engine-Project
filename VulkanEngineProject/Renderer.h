@@ -72,8 +72,8 @@ namespace Zodiac {
 
 		static std::vector<VkCommandBuffer> s_drawCmdBuffers;
 
-		static VulkanSemaphore* s_presentSemaphore;
-		static VulkanSemaphore* s_renderCompleteSemaphore;
+		static std::vector<VulkanSemaphore*> s_presentSemaphores;
+		static std::vector<VulkanSemaphore*> s_renderCompleteSemaphores;
 		static std::vector<VulkanFence*> s_waitFences;
 		static std::vector<VulkanFence*> s_imagesInFlight;
 		static size_t s_currentFrame;
