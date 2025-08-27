@@ -88,6 +88,7 @@ void Zodiac::Renderer::Draw() {
 	//	throw std::runtime_error("failed to acquire swap chain image!");
 	//}
 
+	//Waiting here helps with syncing command buffer access TODO: Create multiple command buffers and record them during runtime
 	if (s_imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
 		ErrorCheck(vkWaitForFences(*s_device->GetDevice(), 1, &s_imagesInFlight[imageIndex]->p_fence, VK_TRUE, UINT64_MAX));
 	}
@@ -109,11 +110,11 @@ void Zodiac::Renderer::Draw() {
 	//}
 	//else {
 		 //Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
-		VkSubmitInfo submitInfo = Initializers::SubmitInfo(s_presentSemaphores[s_currentFrame]->GetSemaphore(), s_renderCompleteSemaphores[s_currentFrame]->GetSemaphore(), &s_drawCmdBuffers[imageIndex], 1, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+		VkSubmitInfo submitInfo = Initializers::SubmitInfo(s_presentSemaphores[s_currentFrame]->GetSemaphore(), s_renderCompleteSemaphores[imageIndex]->GetSemaphore(), &s_drawCmdBuffers[imageIndex], 1, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 		ErrorCheck(vkQueueSubmit(*s_device->GetGraphicsQueue(), 1, &submitInfo, /*NULL*/s_waitFences[s_currentFrame]->p_fence)); //TODO: The fences help with syncronization, but I need to look into this.
 	//}
 
-	VkPresentInfoKHR presentInfo = Initializers::PresentInfo(*s_swapchain->GetSwapchain(), imageIndex, s_renderCompleteSemaphores[s_currentFrame]->GetSemaphore());
+	VkPresentInfoKHR presentInfo = Initializers::PresentInfo(*s_swapchain->GetSwapchain(), imageIndex, s_renderCompleteSemaphores[imageIndex]->GetSemaphore());
 	ErrorCheck(vkQueuePresentKHR(*s_device->GetGraphicsQueue(), &presentInfo));
 
 	//if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
@@ -181,13 +182,15 @@ void Zodiac::Renderer::InitInternal() {
 	SetupFramebuffers();
 
 	s_presentSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-	s_renderCompleteSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+	s_renderCompleteSemaphores.resize(s_swapchain->GetImageCount());
 	s_drawCmdBuffers.resize(s_swapchain->GetImageCount());
 	s_waitFences.resize(MAX_FRAMES_IN_FLIGHT);
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		s_presentSemaphores[i] = new VulkanSemaphore(s_device);
-		s_renderCompleteSemaphores[i] = new VulkanSemaphore(s_device);
 		s_waitFences[i] = new VulkanFence(s_device);
+	}
+	for(size_t i = 0; i < s_swapchain->GetImageCount(); i++) {
+		s_renderCompleteSemaphores[i] = new VulkanSemaphore(s_device);
 	}
 	s_imagesInFlight.resize(s_drawCmdBuffers.size(), VK_NULL_HANDLE);
 	//for (size_t i = 0; i < s_drawCmdBuffers.size(); i++) {
@@ -525,6 +528,11 @@ void Zodiac::Renderer::Shutdown() {
 	vkDestroyRenderPass(*s_device->GetDevice(), s_renderPass, nullptr);
 	vkDestroyPipeline(*s_device->GetDevice(), s_pipeline, nullptr);
 	vkDestroyDescriptorPool(*s_device->GetDevice(), s_descriptorPool, nullptr);
+
+	for (size_t i = 0; i < s_swapchain->GetImageCount(); i++) {
+		delete s_renderCompleteSemaphores[i];
+	}
+
 	delete s_swapchain;
 
 	//Note to self: Keep an eye on these so that they're destroyed at the right time
@@ -534,7 +542,6 @@ void Zodiac::Renderer::Shutdown() {
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		delete s_presentSemaphores[i];
-		delete s_renderCompleteSemaphores[i];
 		delete s_waitFences[i];
 	}
 	//for (size_t i = 0; i < s_imagesInFlight.size(); i++) {
