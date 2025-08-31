@@ -19,7 +19,7 @@ namespace Zodiac {
 		bool Init(GLFWwindow* window, VulkanDevice* device, VulkanInstance* instance);
 		void Render(Window* window, VulkanInstance* instance);
 		void UpdateGUI();
-		VkCommandBuffer PrepareCommandBuffer(int image, VulkanSwapchain* swapchain);
+		VkCommandBuffer PrepareCommandBuffer(int image);
 
 	private:
 		static void SetupRenderPass(); //Not Used with dynamic rendering

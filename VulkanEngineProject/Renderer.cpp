@@ -98,21 +98,21 @@ void Zodiac::Renderer::Draw() {
 	//ErrorCheck(vkWaitForFences(*s_device->GetDevice(), 1, &s_waitFences[imageIndex]->p_fence, VK_TRUE, UINT64_MAX)); //Wait for all fences
 	ErrorCheck(vkResetFences(*s_device->GetDevice(), 1, &s_waitFences[s_currentFrame]->p_fence));
 
-	////This part is messy right now. Should try async instead and also make helper functions
-	//if (s_showGui) {
-	//	s_imgui->UpdateGUI();
-	//	VkCommandBuffer imguiCommandBuffer = s_imgui->PrepareCommandBuffer(imageIndex, s_swapchain);
-	//	VkCommandBuffer commandBuffers[] = { s_drawCmdBuffers[imageIndex], imguiCommandBuffer };
+	//This part is messy right now. Should try async instead and also make helper functions
+	if (s_showGui) {
+		s_imgui->UpdateGUI();
+		VkCommandBuffer imguiCommandBuffer = s_imgui->PrepareCommandBuffer(imageIndex);
+		VkCommandBuffer commandBuffers[] = { s_drawCmdBuffers[imageIndex], imguiCommandBuffer };
 
-	//	// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
-	//	VkSubmitInfo submitInfo = Initializers::SubmitInfo(s_presentSemaphore->GetSemaphore(), s_renderCompleteSemaphore->GetSemaphore(), &commandBuffers[0], 2, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-	//	ErrorCheck(vkQueueSubmit(*s_device->GetGraphicsQueue(), 1, &submitInfo, /*NULL*/s_waitFences[s_currentFrame]->p_fence)); //TODO: The fences help with syncronization, but I need to look into this.
-	//}
-	//else {
+		// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
+		VkSubmitInfo submitInfo = Initializers::SubmitInfo(s_presentSemaphores[s_currentFrame]->GetSemaphore(), s_renderCompleteSemaphores[imageIndex]->GetSemaphore(), &commandBuffers[0], 2, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+		ErrorCheck(vkQueueSubmit(*s_device->GetGraphicsQueue(), 1, &submitInfo, s_waitFences[s_currentFrame]->p_fence));
+	}
+	else {
 		 //Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
 		VkSubmitInfo submitInfo = Initializers::SubmitInfo(s_presentSemaphores[s_currentFrame]->GetSemaphore(), s_renderCompleteSemaphores[imageIndex]->GetSemaphore(), &s_drawCmdBuffers[imageIndex], 1, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-		ErrorCheck(vkQueueSubmit(*s_device->GetGraphicsQueue(), 1, &submitInfo, /*NULL*/s_waitFences[s_currentFrame]->p_fence)); //TODO: The fences help with syncronization, but I need to look into this.
-	//}
+		ErrorCheck(vkQueueSubmit(*s_device->GetGraphicsQueue(), 1, &submitInfo, s_waitFences[s_currentFrame]->p_fence));
+	}
 
 	VkPresentInfoKHR presentInfo = Initializers::PresentInfo(*s_swapchain->GetSwapchain(), imageIndex, s_renderCompleteSemaphores[imageIndex]->GetSemaphore());
 	ErrorCheck(vkQueuePresentKHR(*s_device->GetGraphicsQueue(), &presentInfo));

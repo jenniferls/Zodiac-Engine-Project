@@ -410,7 +410,7 @@ void Zodiac::ImGuiLayer::UpdateGUI() {
 }
 
 // Must be called after the ImGUI frame was prepared on the application side!
-VkCommandBuffer Zodiac::ImGuiLayer::PrepareCommandBuffer(int image, VulkanSwapchain* swapchain){
+VkCommandBuffer Zodiac::ImGuiLayer::PrepareCommandBuffer(int image) {
 	s_device->BeginCommandBuffer(s_command_buffers[image], VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
 	Renderer::BeginDynamicRendering(s_command_buffers[image], image, NULL, NULL);
@@ -423,7 +423,7 @@ VkCommandBuffer Zodiac::ImGuiLayer::PrepareCommandBuffer(int image, VulkanSwapch
 	//Needs some sort of wrapper
 	VkImageLayout oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 	VkImageLayout newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-	VkFormat format = swapchain->GetSurfaceFormat().format;
+	VkFormat format = Renderer::s_swapchain->GetSurfaceFormat().format;
 	{
 		VkImageMemoryBarrier barrier = {
 		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -434,7 +434,7 @@ VkCommandBuffer Zodiac::ImGuiLayer::PrepareCommandBuffer(int image, VulkanSwapch
 		.newLayout = newLayout,
 		.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
 		.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-		.image = swapchain->GetImage(image),
+		.image = Renderer::s_swapchain->GetImage(image),
 		.subresourceRange = VkImageSubresourceRange {
 			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
 			.baseMipLevel = 0,
@@ -457,7 +457,7 @@ VkCommandBuffer Zodiac::ImGuiLayer::PrepareCommandBuffer(int image, VulkanSwapch
 		{
 			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-			if (swapchain->SurfaceHasStencilComponent(format)) {
+			if (Renderer::s_swapchain->SurfaceHasStencilComponent(format)) {
 				barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 			}
 		}
