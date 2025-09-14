@@ -54,7 +54,7 @@ namespace Zodiac {
 		static void PrepareDescriptorSet();
 		static void BuildCommandBuffers();
 		static void AllocateCommandBuffers();
-		static void RecordCommandBuffer(int32_t index);
+		static void RecordCommandBuffer(int32_t index, bool secondBarrier = false);
 
 		static const int MAX_FRAMES_IN_FLIGHT = 2;
 

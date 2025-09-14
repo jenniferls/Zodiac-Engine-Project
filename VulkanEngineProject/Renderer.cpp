@@ -31,7 +31,7 @@ Zodiac::VulkanBuffer* Zodiac::Renderer::s_vertexBuffer;
 Zodiac::VulkanBuffer* Zodiac::Renderer::s_indexBuffer;
 Zodiac::VulkanBuffer* Zodiac::Renderer::s_uniformBuffer;
 bool Zodiac::Renderer::s_prepared;
-bool Zodiac::Renderer::s_showGui = true; //Always true for now
+bool Zodiac::Renderer::s_showGui = true;
 std::unique_ptr<Zodiac::ImGuiLayer> Zodiac::Renderer::s_imgui;
 
 void Zodiac::Renderer::DrawIndexed() {
@@ -47,10 +47,6 @@ Zodiac::Renderer::~Renderer() {
 }
 
 void Zodiac::Renderer::Init(VulkanDevice* device, Settings settings, VulkanSurface* surface, VulkanInstance* instance, GLFWwindow* window) {
-	if (s_showGui) {
-		s_imgui = std::unique_ptr<ImGuiLayer>(ImGuiLayer::Create());
-	}
-
 	s_device = device;
 	s_settings = settings;
 	s_surface = surface;
@@ -64,7 +60,10 @@ void Zodiac::Renderer::Init(VulkanDevice* device, Settings settings, VulkanSurfa
 
 	InitInternal();
 
-	s_imgui->Init(window, device, instance);
+	if (s_showGui) {
+		s_imgui = std::unique_ptr<ImGuiLayer>(ImGuiLayer::Create());
+		s_imgui->Init(window, device, instance);
+	}
 }
 
 Zodiac::Renderer& Zodiac::Renderer::Get() {
@@ -109,7 +108,7 @@ void Zodiac::Renderer::Draw() {
 		ErrorCheck(vkQueueSubmit(*s_device->GetGraphicsQueue(), 1, &submitInfo, s_waitFences[s_currentFrame]->p_fence));
 	}
 	else {
-		RecordCommandBuffer(imageIndex);
+		RecordCommandBuffer(imageIndex, true);
 		//Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
 		VkSubmitInfo submitInfo = Initializers::SubmitInfo(s_presentSemaphores[s_currentFrame]->GetSemaphore(), s_renderCompleteSemaphores[imageIndex]->GetSemaphore(), &s_drawCmdBuffers[imageIndex], 1, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 		ErrorCheck(vkQueueSubmit(*s_device->GetGraphicsQueue(), 1, &submitInfo, s_waitFences[s_currentFrame]->p_fence));
@@ -522,7 +521,7 @@ void Zodiac::Renderer::AllocateCommandBuffers() {
 	s_device->GetGraphicsCommand(s_drawCmdBuffers.data(), s_swapchain->GetImageCount()); //Allocates buffers
 }
 
-void Zodiac::Renderer::RecordCommandBuffer(int32_t index) {
+void Zodiac::Renderer::RecordCommandBuffer(int32_t index, bool secondBarrier) {
 	vkResetCommandBuffer(s_drawCmdBuffers[index], 0);
 
 	VkCommandBufferBeginInfo commandBufferBeginInfo = Initializers::CommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT); //Valid for re-recording the command buffer every frame
@@ -578,7 +577,7 @@ void Zodiac::Renderer::RecordCommandBuffer(int32_t index) {
 	vkCmdEndRenderPass(s_drawCmdBuffers[index]);
 
 	//This barrier should only be used without imgui, so it's disabled for now
-	if (false) {
+	if (secondBarrier) {
 		VkImageMemoryBarrier barrier{};
 		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -601,7 +600,9 @@ void Zodiac::Renderer::RecordCommandBuffer(int32_t index) {
 }
 
 void Zodiac::Renderer::Shutdown() {
-	s_imgui->Shutdown();
+	if (s_showGui) {
+		s_imgui->Shutdown();
+	}
 
 	for (size_t i = 0; i < s_framebuffers.size(); i++) {
 		vkDestroyFramebuffer(*s_device->GetDevice(), s_framebuffers[i], nullptr);
