@@ -75,7 +75,6 @@ void Zodiac::Renderer::Draw() {
 	vkWaitForFences(*s_device->GetDevice(), 1, &s_waitFences[s_currentFrame]->p_fence, VK_TRUE, UINT64_MAX);
 	//ErrorCheck(vkResetFences(*s_device->GetDevice(), 1, &s_waitFences[s_currentFrame]->p_fence));
 
-	//TODO: Gets a validation layer error on 2nd frame until 10th frame
 	uint32_t imageIndex;
 	ErrorCheck(vkAcquireNextImageKHR(*s_device->GetDevice(), *s_swapchain->GetSwapchain(), UINT64_MAX, s_presentSemaphores[s_currentFrame]->GetSemaphore(), VK_NULL_HANDLE, &imageIndex));
 
@@ -100,7 +99,7 @@ void Zodiac::Renderer::Draw() {
 
 	//This part is messy right now. Should try async instead and also make helper functions
 	if (s_showGui) {
-		//RecordCommandBuffer(imageIndex);
+		RecordCommandBuffer(imageIndex);
 		s_imgui->UpdateGUI();
 		VkCommandBuffer imguiCommandBuffer = s_imgui->PrepareCommandBuffer(imageIndex);
 		VkCommandBuffer commandBuffers[] = { s_drawCmdBuffers[imageIndex], imguiCommandBuffer };
@@ -111,7 +110,7 @@ void Zodiac::Renderer::Draw() {
 	}
 	else {
 		RecordCommandBuffer(imageIndex);
-		 //Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
+		//Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
 		VkSubmitInfo submitInfo = Initializers::SubmitInfo(s_presentSemaphores[s_currentFrame]->GetSemaphore(), s_renderCompleteSemaphores[imageIndex]->GetSemaphore(), &s_drawCmdBuffers[imageIndex], 1, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 		ErrorCheck(vkQueueSubmit(*s_device->GetGraphicsQueue(), 1, &submitInfo, s_waitFences[s_currentFrame]->p_fence));
 	}
@@ -206,8 +205,8 @@ void Zodiac::Renderer::InitInternal() {
 	SetupPipeline();
 	SetupDescriptorPool();
 	PrepareDescriptorSet();
-	BuildCommandBuffers();
-	//AllocateCommandBuffers();
+	//BuildCommandBuffers();
+	AllocateCommandBuffers();
 	s_prepared = true;
 }
 
@@ -524,16 +523,17 @@ void Zodiac::Renderer::AllocateCommandBuffers() {
 }
 
 void Zodiac::Renderer::RecordCommandBuffer(int32_t index) {
+	vkResetCommandBuffer(s_drawCmdBuffers[index], 0);
+
 	VkCommandBufferBeginInfo commandBufferBeginInfo = Initializers::CommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT); //Valid for re-recording the command buffer every frame
 	VkRenderPassBeginInfo renderPassBeginInfo = Initializers::RenderPassBeginInfo(s_renderPass, s_swapchain->GetExtent2D(), s_clearValues, 2);
 
 	renderPassBeginInfo.framebuffer = s_framebuffers[index];
 	ErrorCheck(vkBeginCommandBuffer(s_drawCmdBuffers[index], &commandBufferBeginInfo));
 
-	// Transition PRESENT_SRC_KHR -> COLOR_ATTACHMENT_OPTIMAL
 	VkImageMemoryBarrier barrier{};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	barrier.oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;  // (or UNDEFINED on very first use)
+	barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -576,6 +576,26 @@ void Zodiac::Renderer::RecordCommandBuffer(int32_t index) {
 	vkCmdDrawIndexed(s_drawCmdBuffers[index], s_indexBuffer->GetCount(), 1, 0, 0, 1);
 
 	vkCmdEndRenderPass(s_drawCmdBuffers[index]);
+
+	//This barrier should only be used without imgui, so it's disabled for now
+	if (false) {
+		VkImageMemoryBarrier barrier{};
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.image = s_swapchain->GetImage(index);
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.baseMipLevel = 0;
+		barrier.subresourceRange.levelCount = 1;
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount = 1;
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+		vkCmdPipelineBarrier(s_drawCmdBuffers[index], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+	}
 
 	ErrorCheck(vkEndCommandBuffer(s_drawCmdBuffers[index]));
 }
