@@ -29,10 +29,10 @@ Zodiac::ImGuiLayer* Zodiac::ImGuiLayer::Create() {
 void Zodiac::ImGuiLayer::Shutdown()
 {
 	s_device->FreeCommandBuffers(s_command_buffers.size(), s_command_buffers.data());
-	vkDestroyDescriptorPool(*s_device->GetDevice(), s_descriptorPool, NULL);
 	ImGui_ImplVulkan_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
+	vkDestroyDescriptorPool(*s_device->GetDevice(), s_descriptorPool, NULL);
 }
 
 void Zodiac::ImGuiLayer::Render(Window* window, VulkanInstance* instance)
