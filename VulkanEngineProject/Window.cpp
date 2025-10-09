@@ -40,6 +40,14 @@ void Zodiac::Window::glfw_resize_callback(GLFWwindow*, int w, int h) {
 	//g_SwapChainResizeHeight = h;
 }
 
+void Zodiac::Window::glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+	if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+	{
+		std::cout << "Spacebar pressed!" << std::endl;
+	}
+}
+
 void Zodiac::Window::Init(const WindowProperties& props) {
 	std::cout << ">>>> Initializing GLFW <<<<" << std::endl;
 	glfwInit();
@@ -55,6 +63,7 @@ void Zodiac::Window::Init(const WindowProperties& props) {
 	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
 	glfwSetFramebufferSizeCallback(m_window, glfw_resize_callback);
+	glfwSetKeyCallback(m_window, glfw_key_callback);
 
 	std::cout << "GLFW initialization successful!" << std::endl;
 }
