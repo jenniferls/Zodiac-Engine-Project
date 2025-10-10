@@ -13,6 +13,8 @@ namespace Zodiac {
 		}
 	};
 
+	class Renderer;
+
 	class Window {
 	public:
 		Window(const WindowProperties& props);
@@ -27,6 +29,8 @@ namespace Zodiac {
 		const char** GetGLFWExtensions() const;
 		uint32_t GetGLFWExtCount() const;
 
+		void SetRenderer(Renderer* renderer) { m_renderer = renderer; }
+
 		static void glfw_resize_callback(GLFWwindow*, int w, int h);
 		static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
@@ -34,6 +38,7 @@ namespace Zodiac {
 		void Init(const WindowProperties& props);
 
 		GLFWwindow* m_window = nullptr;
+		Renderer* m_renderer = nullptr;
 
 		bool windowShouldClose = false;
 		uint32_t glfwExtensionCount = 0;

@@ -1,5 +1,6 @@
 #include <Zodiacpch.h>
 #include "Window.h"
+#include "Renderer.h"
 #include "Defines.h"
 #include "Validation.h"
 
@@ -42,9 +43,20 @@ void Zodiac::Window::glfw_resize_callback(GLFWwindow*, int w, int h) {
 
 void Zodiac::Window::glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-	{
-		std::cout << "Spacebar pressed!" << std::endl;
+	auto win = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+	switch (key) {
+		case GLFW_KEY_SPACE:
+			if (action == GLFW_PRESS) {
+				std::cout << "Spacebar pressed!" << std::endl;
+				win->m_renderer->ToggleImGui();
+			}
+			break;
+		case GLFW_KEY_ESCAPE:
+			if (action == GLFW_PRESS) {
+				glfwSetWindowShouldClose(window, GLFW_TRUE);
+			}
+		break;
 	}
 }
 

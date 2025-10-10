@@ -30,6 +30,8 @@ namespace Zodiac {
 		static void Flush();
 		static void Shutdown();
 
+		static void ToggleImGui();
+
 		void SetClearColor(const glm::vec4 color);
 		void Clear();
 

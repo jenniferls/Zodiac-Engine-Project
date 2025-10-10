@@ -30,6 +30,8 @@ Zodiac::System::~System() {
 bool Zodiac::System::Init() {
 	InitVulkan();
 
+	m_window->SetRenderer(&Renderer::Get());
+
 	std::cout << "Selected physical device: " << m_physical_device->GetDeviceProperties().deviceName << std::endl;
 
 	/////// Tests ///////

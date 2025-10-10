@@ -634,6 +634,11 @@ void Zodiac::Renderer::Shutdown() {
 	//}
 }
 
+void Zodiac::Renderer::ToggleImGui()
+{
+	s_showGui = !s_showGui;
+}
+
 void Zodiac::Renderer::SetClearColor(const glm::vec4 color) {
 	s_clearValues[0].color = { color.r, color.g, color.b, color.a };
 }
