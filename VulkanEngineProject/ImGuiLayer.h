@@ -39,8 +39,9 @@ namespace Zodiac {
 		glm::vec4 m_clearColor = glm::vec4(0.45f, 0.55f, 0.60f, 1.00f);
 
 		uint32_t m_minImageCount = 2; //Should be updated during main loop
-		bool m_showDemoWindow = true;
-		bool m_showAnotherWindow = true;
+		bool m_showDemoWindow = false;
+		bool m_showAnotherWindow = false;
 		bool m_swapchainRebuild = false;
+		bool m_vSync = false;
 	};
 }

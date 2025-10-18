@@ -37,20 +37,6 @@ void Zodiac::ImGuiLayer::Shutdown()
 
 void Zodiac::ImGuiLayer::Render(Window* window, VulkanInstance* instance)
 {
-	//// Resize swap chain?
-	//if (m_swapchainRebuild)
-	//{
-		int width, height;
-		glfwGetFramebufferSize((GLFWwindow*)window->GetNativeWindow(), &width, &height);
-	//	if (width > 0 && height > 0)
-	//	{
-	//		ImGui_ImplVulkan_SetMinImageCount(m_minImageCount);
-	//		//ImGui_ImplVulkanH_CreateOrResizeWindow(instance->GetInstance(), s_device->GetPhysicalDevice()->GetPhysicalDevice(), *s_device->GetDevice(), &s_mainWindowData, s_device->GetPhysicalDevice()->GetFamilyIndices().graphics_indices, nullptr, width, height, m_minImageCount);
-	//		//s_mainWindowData.FrameIndex = 0;
-	//		m_swapchainRebuild = false;
-	//	}
-	//}
-
 	// Start the Dear ImGui frame
 	ImGui_ImplVulkan_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
@@ -364,9 +350,7 @@ void Zodiac::ImGuiLayer::UpdateGUI() {
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
-	//ImGui::Begin("Hello, world!", NULL, ImGuiWindowFlags_AlwaysAutoResize);   // Create a window called "Hello, world!" and append into it.
-
-	//ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+	Settings& settings = Renderer::GetSettings();
 
 	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
 	if (m_showDemoWindow)
@@ -382,6 +366,7 @@ void Zodiac::ImGuiLayer::UpdateGUI() {
 		ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
 		ImGui::Checkbox("Demo Window", &m_showDemoWindow);      // Edit bools storing our window open/close state
 		ImGui::Checkbox("Another Window", &m_showAnotherWindow);
+		ImGui::Checkbox("VSync", &settings.vsync);
 
 		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 		ImGui::ColorEdit3("clear color", (float*)&m_clearColor); // Edit 3 floats representing a color
