@@ -154,6 +154,8 @@ void Zodiac::VulkanSwapchain::ChoosePresentMode(SurfaceDetails& details, Setting
 		}
 	}
 
+	PRINT_PRESENT_MODE(m_presentMode);
+
 	//VkPresentModeKHR bestPresentMode = VK_PRESENT_MODE_FIFO_KHR; //Should be always available
 	//if (!settings.vsync) {
 	//	for (const auto& presentMode : details.supported_present_modes) {
@@ -257,6 +259,7 @@ void Zodiac::VulkanSwapchain::Cleanup()
 	};
 	vkDestroySwapchainKHR(*m_device, m_swapchain, nullptr);
 	m_swapchain = VK_NULL_HANDLE;
+	//m_buffers.clear();
 }
 
 uint32_t Zodiac::VulkanSwapchain::GetMemoryTypeIndex(VkPhysicalDeviceMemoryProperties physDeviceMemProps, uint32_t memTypeBits, VkMemoryPropertyFlagBits flags) {

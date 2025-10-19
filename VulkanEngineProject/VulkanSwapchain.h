@@ -7,6 +7,14 @@
 #include "DepthStencil.h"
 
 namespace Zodiac {
+#define PRINT_PRESENT_MODE(mode) \
+    std::cout << "Selected present mode: " << ( \
+        (mode) == VK_PRESENT_MODE_IMMEDIATE_KHR ? "IMMEDIATE" : \
+        (mode) == VK_PRESENT_MODE_MAILBOX_KHR   ? "MAILBOX"   : \
+        (mode) == VK_PRESENT_MODE_FIFO_KHR      ? "FIFO"      : \
+        (mode) == VK_PRESENT_MODE_FIFO_RELAXED_KHR ? "FIFO_RELAXED" : \
+        "UNKNOWN") << std::endl;
+
 	class VulkanSwapchain {
 	public:
 		VulkanSwapchain(VulkanDevice* device, SurfaceDetails& details, VkSurfaceKHR& surface, Settings& settings);

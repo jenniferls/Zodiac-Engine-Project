@@ -96,8 +96,7 @@ void Zodiac::Renderer::Draw() {
 	}
 	s_imagesInFlight[imageIndex] = s_waitFences[s_currentFrame];
 
-	//Fences for syncronization
-	//ErrorCheck(vkWaitForFences(*s_device->GetDevice(), 1, &s_waitFences[imageIndex]->p_fence, VK_TRUE, UINT64_MAX)); //Wait for all fences
+	//Syncronization
 	ErrorCheck(vkResetFences(*s_device->GetDevice(), 1, &s_waitFences[s_currentFrame]->p_fence));
 
 	//This part is messy right now. Should try async instead and also make helper functions
@@ -637,6 +636,9 @@ void Zodiac::Renderer::CleanupSyncObjects()
 		delete s_presentSemaphores[i];
 		delete s_waitFences[i];
 	}
+	//for (size_t i = 0; i < s_imagesInFlight.size(); i++) {
+	//delete s_imagesInFlight[i];
+	//}
 	s_renderCompleteSemaphores.clear();
 	s_presentSemaphores.clear();
 	s_waitFences.clear();
@@ -664,10 +666,6 @@ void Zodiac::Renderer::Shutdown() {
 	delete s_vertexBuffer;
 	delete s_indexBuffer;
 	delete s_uniformBuffer;
-
-	//for (size_t i = 0; i < s_imagesInFlight.size(); i++) {
-	//	delete s_imagesInFlight[i];
-	//}
 }
 
 void Zodiac::Renderer::ToggleImGui()
