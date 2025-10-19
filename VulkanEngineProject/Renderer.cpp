@@ -606,7 +606,7 @@ void Zodiac::Renderer::RecreateSwapChain()
 	}
 
 	vkDeviceWaitIdle(*s_device->GetDevice());
-	CleanupSwapchain();
+	CleanupFramebuffers();
 	s_surface->QuerySurfaceDetails(s_device->GetPhysicalDevice());
 	s_swapchain->Recreate(s_surface->GetSurfaceDetails(), s_surface->GetSurface(), s_settings, s_device);
 
