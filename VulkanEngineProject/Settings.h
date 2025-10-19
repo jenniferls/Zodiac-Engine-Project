@@ -4,7 +4,7 @@ namespace Zodiac {
 	struct Settings {
 		bool validation = false;
 		bool fullscreen = false;
-		bool vsync = true;
+		bool vsync = false;
 		bool overlay = true;
 	};
 }

@@ -6,6 +6,7 @@
 
 Zodiac::Window::Window(const WindowProperties& props) {
 	Init(props);
+	m_windowProps = props;
 }
 
 Zodiac::Window::~Window() {
@@ -32,13 +33,20 @@ uint32_t Zodiac::Window::GetGLFWExtCount() const {
 	return glfwExtensionCount;
 }
 
-void Zodiac::Window::glfw_resize_callback(GLFWwindow*, int w, int h) {
-	//TODO: Actually make this callback useful
-	std::cout << "Window resized!" << std::endl;
+const Zodiac::WindowProperties& Zodiac::Window::GetWindowProperties() const
+{
+	return m_windowProps;
+}
 
-	//g_SwapChainRebuild = true;
-	//g_SwapChainResizeWidth = w;
-	//g_SwapChainResizeHeight = h;
+void Zodiac::Window::glfw_resize_callback(GLFWwindow* window, int w, int h) {
+	auto win = static_cast<Window*>(glfwGetWindowUserPointer(window));
+
+	win->m_renderer->SetFramebufferResized(true);
+	win->m_windowProps.Width = w;
+	win->m_windowProps.Height = h;
+
+	std::cout << "Window resized!" << std::endl;
+	std::cout << "New Width: " << w << " New Height: " << h << std::endl;
 }
 
 void Zodiac::Window::glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
@@ -71,6 +79,7 @@ void Zodiac::Window::Init(const WindowProperties& props) {
 		throw std::runtime_error("GLFW ERROR: VULKAN IS NOT SUPPORTED!");
 	}
 	m_window = glfwCreateWindow(props.Width, props.Height, props.Title.c_str(), nullptr, nullptr);
+	glfwSetWindowUserPointer(m_window, this);
 
 	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
@@ -83,6 +92,11 @@ void Zodiac::Window::Init(const WindowProperties& props) {
 void Zodiac::Window::Shutdown() {
 	glfwDestroyWindow(m_window);
 	glfwTerminate();
+}
+
+void Zodiac::Window::WaitEvents()
+{
+	glfwWaitEvents();
 }
 
 bool Zodiac::Window::WindowShouldClose() {

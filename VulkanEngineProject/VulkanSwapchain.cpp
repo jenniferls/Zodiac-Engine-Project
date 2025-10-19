@@ -14,53 +14,32 @@ Zodiac::VulkanSwapchain::VulkanSwapchain(VulkanDevice* device, SurfaceDetails& d
 	ChooseUsageFlags(details);
 	assert(m_usageFlags != -1);
 
-	VkSwapchainCreateInfoKHR swapchainCreateInfo = Initializers::SwapchainCreateInfo(m_swapchain, surface, m_presentMode, &details, m_usageFlags, m_surfaceFormat, m_extent2D);
-
-	ErrorCheck(vkCreateSwapchainKHR(*m_device, &swapchainCreateInfo, nullptr, &m_swapchain));
-	ErrorCheck(vkGetSwapchainImagesKHR(*m_device, m_swapchain, &m_imageCount, NULL)); //Obtain number of images
-	m_images.resize(m_imageCount);
-	ErrorCheck(vkGetSwapchainImagesKHR(*m_device, m_swapchain, &m_imageCount, m_images.data())); //
-	m_buffers.resize(m_imageCount);
-	VkImageSubresourceRange subResourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-	for (uint32_t i = 0; i < m_imageCount; i++) {
-		m_buffers[i].image = m_images[i];
-		VkImageViewCreateInfo colorAttachmentView = Initializers::ImageViewCreateInfo(m_surfaceFormat.format, m_images[i], subResourceRange);
-		ErrorCheck(vkCreateImageView(*m_device, &colorAttachmentView, nullptr, &m_buffers[i].view));
-	}
-
-	//Depth attachment
-	VkImageCreateInfo image = Initializers::ImageCreateInfo(m_depthFormat, VkExtent3D({ m_extent2D.width, m_extent2D.height, 1 }), VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
-	ErrorCheck(vkCreateImage(*m_device, &image, nullptr, &m_depthStencil.image));
-	VkMemoryRequirements mem_reqs;
-	vkGetImageMemoryRequirements(*m_device, m_depthStencil.image, &mem_reqs);
-	VkMemoryAllocateInfo allocateInfo = Initializers::MemoryAllocateInfo(mem_reqs.size, GetMemoryTypeIndex(device->GetPhysicalDevice()->GetDeviceMemoryProperties(), mem_reqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT));
-	ErrorCheck(vkAllocateMemory(*m_device, &allocateInfo, nullptr, &m_depthStencil.mem));
-	ErrorCheck(vkBindImageMemory(*m_device, m_depthStencil.image, m_depthStencil.mem, 0));
-	//Image view for depth attachment
-	VkImageSubresourceRange subResourceRangeDepth = { VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 0, 1, 0, 1 };
-	VkImageViewCreateInfo depthStencilView = Initializers::ImageViewCreateInfo(m_depthFormat, m_depthStencil.image, subResourceRangeDepth);
-	// Stencil aspect should only be set on depth + stencil formats (VK_FORMAT_D16_UNORM_S8_UINT..VK_FORMAT_D32_SFLOAT_S8_UINT
-	if (depthStencilView.format >= VK_FORMAT_D16_UNORM_S8_UINT) {
-		depthStencilView.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-	}
-	ErrorCheck(vkCreateImageView(*m_device, &depthStencilView, nullptr, &m_depthStencil.view));
+	CreateSwapchain(details, surface, settings);
+	CreateImageViews();
+	CreateDepthResources(device);
 
 	std::cout << "Swapchain initialized." << std::endl;
 }
 
 Zodiac::VulkanSwapchain::~VulkanSwapchain() {
-	vkFreeMemory(*m_device, m_depthStencil.mem, nullptr);
-	vkDestroyImage(*m_device, m_depthStencil.image, nullptr);
-	vkDestroyImageView(*m_device, m_depthStencil.view, nullptr);
-
-	for (uint32_t i = 0; i < m_imageCount; i++) {
-		vkDestroyImageView(*m_device, m_buffers[i].view, nullptr);
-	};
-	vkDestroySwapchainKHR(*m_device, m_swapchain, nullptr);
+	Cleanup();
 }
 
 uint32_t Zodiac::VulkanSwapchain::GetImageCount() const {
 	return m_imageCount;
+}
+
+void Zodiac::VulkanSwapchain::Recreate(SurfaceDetails& details, VkSurfaceKHR& surface, Settings& settings, VulkanDevice* device)
+{
+	ChooseSurfaceFormat(details);
+	ChoosePresentMode(details, settings);
+	ChooseExtent(details);
+	ChooseUsageFlags(details);
+	assert(m_usageFlags != -1);
+
+	CreateSwapchain(details, surface, settings);
+	CreateImageViews();
+	CreateDepthResources(device);
 }
 
 VkSwapchainKHR* Zodiac::VulkanSwapchain::GetSwapchain() {
@@ -175,25 +154,18 @@ void Zodiac::VulkanSwapchain::ChoosePresentMode(SurfaceDetails& details, Setting
 }
 
 void Zodiac::VulkanSwapchain::ChooseExtent(SurfaceDetails& details) {
-	if (details.capabilities.currentExtent.width == -1) {
-		VkExtent2D swap_chain_extent = { 640, 480 };
-		if (swap_chain_extent.width < details.capabilities.minImageExtent.width) {
-			swap_chain_extent.width = details.capabilities.minImageExtent.width;
-		}
-		if (swap_chain_extent.height < details.capabilities.minImageExtent.height) {
-			swap_chain_extent.height = details.capabilities.minImageExtent.height;
-		}
-		if (swap_chain_extent.width > details.capabilities.maxImageExtent.width) {
-			swap_chain_extent.width = details.capabilities.maxImageExtent.width;
-		}
-		if (swap_chain_extent.height > details.capabilities.maxImageExtent.height) {
-			swap_chain_extent.height = details.capabilities.maxImageExtent.height;
-		}
+	if (details.capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
+		//Get from window size
+		m_extent2D = details.capabilities.currentExtent;
+	}
+	else {
+		VkExtent2D swap_chain_extent = { 640, 480 }; //Default
+
+		swap_chain_extent.width = glm::clamp(swap_chain_extent.width, details.capabilities.minImageExtent.width, details.capabilities.maxImageExtent.width);
+		swap_chain_extent.height = glm::clamp(swap_chain_extent.height, details.capabilities.minImageExtent.height, details.capabilities.maxImageExtent.height);
+
 		m_extent2D = swap_chain_extent;
 	}
-
-	// Most of the cases we define size of the swap_chain images equal to current window's size
-	m_extent2D = details.capabilities.currentExtent;
 }
 
 void Zodiac::VulkanSwapchain::ChooseUsageFlags(SurfaceDetails& details) {
@@ -214,6 +186,59 @@ void Zodiac::VulkanSwapchain::ChooseUsageFlags(SurfaceDetails& details) {
 			<< std::endl;
 		m_usageFlags = static_cast<VkImageUsageFlags>(-1);
 	}
+}
+
+void Zodiac::VulkanSwapchain::CreateSwapchain(SurfaceDetails& details, VkSurfaceKHR& surface, Settings& settings)
+{
+	VkSwapchainCreateInfoKHR swapchainCreateInfo = Initializers::SwapchainCreateInfo(m_swapchain, surface, m_presentMode, &details, m_usageFlags, m_surfaceFormat, m_extent2D);
+
+	ErrorCheck(vkCreateSwapchainKHR(*m_device, &swapchainCreateInfo, nullptr, &m_swapchain));
+	ErrorCheck(vkGetSwapchainImagesKHR(*m_device, m_swapchain, &m_imageCount, NULL)); //Obtain number of images
+	m_images.resize(m_imageCount);
+	ErrorCheck(vkGetSwapchainImagesKHR(*m_device, m_swapchain, &m_imageCount, m_images.data()));
+	m_buffers.resize(m_imageCount);
+}
+
+void Zodiac::VulkanSwapchain::CreateImageViews()
+{
+	VkImageSubresourceRange subResourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
+	for (uint32_t i = 0; i < m_imageCount; i++) {
+		m_buffers[i].image = m_images[i];
+		VkImageViewCreateInfo colorAttachmentView = Initializers::ImageViewCreateInfo(m_surfaceFormat.format, m_images[i], subResourceRange);
+		ErrorCheck(vkCreateImageView(*m_device, &colorAttachmentView, nullptr, &m_buffers[i].view));
+	}
+}
+
+void Zodiac::VulkanSwapchain::CreateDepthResources(VulkanDevice* device)
+{
+	//Depth attachment
+	VkImageCreateInfo image = Initializers::ImageCreateInfo(m_depthFormat, VkExtent3D({ m_extent2D.width, m_extent2D.height, 1 }), VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
+	ErrorCheck(vkCreateImage(*m_device, &image, nullptr, &m_depthStencil.image));
+	VkMemoryRequirements mem_reqs;
+	vkGetImageMemoryRequirements(*m_device, m_depthStencil.image, &mem_reqs);
+	VkMemoryAllocateInfo allocateInfo = Initializers::MemoryAllocateInfo(mem_reqs.size, GetMemoryTypeIndex(device->GetPhysicalDevice()->GetDeviceMemoryProperties(), mem_reqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT));
+	ErrorCheck(vkAllocateMemory(*m_device, &allocateInfo, nullptr, &m_depthStencil.mem));
+	ErrorCheck(vkBindImageMemory(*m_device, m_depthStencil.image, m_depthStencil.mem, 0));
+	//Image view for depth attachment
+	VkImageSubresourceRange subResourceRangeDepth = { VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT, 0, 1, 0, 1 };
+	VkImageViewCreateInfo depthStencilView = Initializers::ImageViewCreateInfo(m_depthFormat, m_depthStencil.image, subResourceRangeDepth);
+	// Stencil aspect should only be set on depth + stencil formats (VK_FORMAT_D16_UNORM_S8_UINT..VK_FORMAT_D32_SFLOAT_S8_UINT
+	if (depthStencilView.format >= VK_FORMAT_D16_UNORM_S8_UINT) {
+		depthStencilView.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+	}
+	ErrorCheck(vkCreateImageView(*m_device, &depthStencilView, nullptr, &m_depthStencil.view));
+}
+
+void Zodiac::VulkanSwapchain::Cleanup()
+{
+	vkFreeMemory(*m_device, m_depthStencil.mem, nullptr);
+	vkDestroyImage(*m_device, m_depthStencil.image, nullptr);
+	vkDestroyImageView(*m_device, m_depthStencil.view, nullptr);
+
+	for (uint32_t i = 0; i < m_imageCount; i++) {
+		vkDestroyImageView(*m_device, m_buffers[i].view, nullptr);
+	};
+	vkDestroySwapchainKHR(*m_device, m_swapchain, nullptr);
 }
 
 uint32_t Zodiac::VulkanSwapchain::GetMemoryTypeIndex(VkPhysicalDeviceMemoryProperties physDeviceMemProps, uint32_t memTypeBits, VkMemoryPropertyFlagBits flags) {

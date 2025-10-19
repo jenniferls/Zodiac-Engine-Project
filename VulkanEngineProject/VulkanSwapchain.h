@@ -14,6 +14,8 @@ namespace Zodiac {
 
 		uint32_t GetImageCount() const;
 
+		void Recreate(SurfaceDetails& details, VkSurfaceKHR& surface, Settings& settings, VulkanDevice* device);
+
 		VkSwapchainKHR* GetSwapchain();
 		VkPresentModeKHR& GetPresentMode();
 		VkSurfaceFormatKHR& GetSurfaceFormat();
@@ -31,6 +33,12 @@ namespace Zodiac {
 		void ChoosePresentMode(SurfaceDetails& details, Settings& settings);
 		void ChooseExtent(SurfaceDetails& details);
 		void ChooseUsageFlags(SurfaceDetails& details);
+
+		void CreateSwapchain(SurfaceDetails& details, VkSurfaceKHR& surface, Settings& settings);
+		void CreateImageViews();
+		void CreateDepthResources(VulkanDevice* device);
+
+		void Cleanup();
 
 		uint32_t GetMemoryTypeIndex(VkPhysicalDeviceMemoryProperties physDeviceMemProps, uint32_t memTypeBits, VkMemoryPropertyFlagBits flags);
 

@@ -7,6 +7,7 @@
 #include "Vertex.h"
 
 Zodiac::Renderer* Zodiac::Renderer::s_instance = nullptr;
+Zodiac::Window* Zodiac::Renderer::s_window = nullptr;
 Zodiac::VulkanDevice* Zodiac::Renderer::s_device;
 Zodiac::VulkanSurface* Zodiac::Renderer::s_surface;
 Zodiac::Settings Zodiac::Renderer::s_settings;
@@ -32,6 +33,7 @@ Zodiac::VulkanBuffer* Zodiac::Renderer::s_indexBuffer;
 Zodiac::VulkanBuffer* Zodiac::Renderer::s_uniformBuffer;
 bool Zodiac::Renderer::s_prepared;
 bool Zodiac::Renderer::s_showGui = true;
+bool Zodiac::Renderer::s_framebufferResized = false;
 std::unique_ptr<Zodiac::ImGuiLayer> Zodiac::Renderer::s_imgui;
 
 void Zodiac::Renderer::DrawIndexed() {
@@ -46,10 +48,12 @@ Zodiac::Renderer::~Renderer() {
 
 }
 
-void Zodiac::Renderer::Init(VulkanDevice* device, Settings settings, VulkanSurface* surface, VulkanInstance* instance, GLFWwindow* window) {
+void Zodiac::Renderer::Init(VulkanDevice* device, Settings settings, VulkanSurface* surface, VulkanInstance* instance, Window* window) {
 	s_device = device;
 	s_settings = settings;
 	s_surface = surface;
+
+	s_window = window;
 
 	s_clearValues[0].color = { 0.2f, 0.0f, 0.2f, 1.0f };
 	s_clearValues[1].depthStencil = { 1.0f, 0 };
@@ -62,7 +66,7 @@ void Zodiac::Renderer::Init(VulkanDevice* device, Settings settings, VulkanSurfa
 
 	if (s_showGui) {
 		s_imgui = std::unique_ptr<ImGuiLayer>(ImGuiLayer::Create());
-		s_imgui->Init(window, device, instance);
+		s_imgui->Init((GLFWwindow*)window->GetNativeWindow(), device, instance);
 	}
 }
 
@@ -75,16 +79,16 @@ void Zodiac::Renderer::Draw() {
 	//ErrorCheck(vkResetFences(*s_device->GetDevice(), 1, &s_waitFences[s_currentFrame]->p_fence));
 
 	uint32_t imageIndex;
-	ErrorCheck(vkAcquireNextImageKHR(*s_device->GetDevice(), *s_swapchain->GetSwapchain(), UINT64_MAX, s_presentSemaphores[s_currentFrame]->GetSemaphore(), VK_NULL_HANDLE, &imageIndex));
+	VkResult res = vkAcquireNextImageKHR(*s_device->GetDevice(), *s_swapchain->GetSwapchain(), UINT64_MAX, s_presentSemaphores[s_currentFrame]->GetSemaphore(), VK_NULL_HANDLE, &imageIndex);
 
-	// TODO: from VulkanTutorial
-	//if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-	//	recreateSwapChain();
-	//	return;
-	//}
-	//else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
-	//	throw std::runtime_error("failed to acquire swap chain image!");
-	//}
+	// From VulkanTutorial
+	if (res == VK_ERROR_OUT_OF_DATE_KHR) {
+		RecreateSwapChain();
+		return;
+	}
+	else if (res != VK_SUCCESS && res != VK_SUBOPTIMAL_KHR) {
+		throw std::runtime_error("failed to acquire swap chain image!");
+	}
 
 	//Waiting here helps with syncing command buffer access TODO: Create multiple command buffers and record them during runtime
 	if (s_imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
@@ -115,15 +119,11 @@ void Zodiac::Renderer::Draw() {
 	}
 
 	VkPresentInfoKHR presentInfo = Initializers::PresentInfo(*s_swapchain->GetSwapchain(), imageIndex, s_renderCompleteSemaphores[imageIndex]->GetSemaphore());
-	ErrorCheck(vkQueuePresentKHR(*s_device->GetGraphicsQueue(), &presentInfo));
-
-	//if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || framebufferResized) {
-	//	framebufferResized = false;
-	//	recreateSwapChain();
-	//}
-	//else if (result != VK_SUCCESS) {
-	//	throw std::runtime_error("failed to present swap chain image!");
-	//}
+	res = vkQueuePresentKHR(*s_device->GetGraphicsQueue(), &presentInfo);
+	if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR || s_framebufferResized) {
+		s_framebufferResized = false;
+		RecreateSwapChain();
+	}
 
 	s_currentFrame = (s_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
@@ -599,24 +599,49 @@ void Zodiac::Renderer::RecordCommandBuffer(int32_t index, bool secondBarrier) {
 	ErrorCheck(vkEndCommandBuffer(s_drawCmdBuffers[index]));
 }
 
+void Zodiac::Renderer::RecreateSwapChain()
+{
+	while (s_window->GetWidth() == 0 || s_window->GetHeight() == 0) {
+		s_window->WaitEvents();
+	}
+
+	vkDeviceWaitIdle(*s_device->GetDevice());
+	CleanupSwapchain();
+	s_surface->QuerySurfaceDetails(s_device->GetPhysicalDevice());
+	s_swapchain->Recreate(s_surface->GetSurfaceDetails(), s_surface->GetSurface(), s_settings, s_device);
+
+	SetupFramebuffers();
+}
+
+void Zodiac::Renderer::CleanupFramebuffers()
+{
+	for (size_t i = 0; i < s_framebuffers.size(); i++) {
+		vkDestroyFramebuffer(*s_device->GetDevice(), s_framebuffers[i], nullptr);
+	}
+	s_framebuffers.clear();
+}
+
+void Zodiac::Renderer::CleanupSwapchain()
+{
+	
+}
+
 void Zodiac::Renderer::Shutdown() {
 	if (s_showGui) {
 		s_imgui->Shutdown();
 	}
 
-	for (size_t i = 0; i < s_framebuffers.size(); i++) {
-		vkDestroyFramebuffer(*s_device->GetDevice(), s_framebuffers[i], nullptr);
+	CleanupFramebuffers();
+	for (size_t i = 0; i < s_swapchain->GetImageCount(); i++) {
+		delete s_renderCompleteSemaphores[i];
 	}
+
 	vkDestroyPipelineCache(*s_device->GetDevice(), s_pipelineCache, nullptr);
 	vkDestroyDescriptorSetLayout(*s_device->GetDevice(), s_descriptorSetLayout, nullptr);
 	vkDestroyPipelineLayout(*s_device->GetDevice(), s_pipelineLayout, nullptr);
 	vkDestroyRenderPass(*s_device->GetDevice(), s_renderPass, nullptr);
 	vkDestroyPipeline(*s_device->GetDevice(), s_pipeline, nullptr);
 	vkDestroyDescriptorPool(*s_device->GetDevice(), s_descriptorPool, nullptr);
-
-	for (size_t i = 0; i < s_swapchain->GetImageCount(); i++) {
-		delete s_renderCompleteSemaphores[i];
-	}
 
 	delete s_swapchain;
 
@@ -637,6 +662,16 @@ void Zodiac::Renderer::Shutdown() {
 void Zodiac::Renderer::ToggleImGui()
 {
 	s_showGui = !s_showGui;
+}
+
+void Zodiac::Renderer::SetFramebufferResized(bool resized)
+{
+	s_framebufferResized = resized;
+}
+
+Zodiac::Settings& Zodiac::Renderer::GetSettings()
+{
+	return s_settings;
 }
 
 void Zodiac::Renderer::SetClearColor(const glm::vec4 color) {

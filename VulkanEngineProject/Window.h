@@ -24,14 +24,19 @@ namespace Zodiac {
 		bool WindowShouldClose();
 		void PollWindowEvents();
 		void Shutdown();
+		void WaitEvents();
 
 		void* GetNativeWindow() const;
 		const char** GetGLFWExtensions() const;
 		uint32_t GetGLFWExtCount() const;
+		const WindowProperties& GetWindowProperties() const;
+
+		unsigned int GetWidth() const { return m_windowProps.Width; }
+		unsigned int GetHeight() const { return m_windowProps.Height; }
 
 		void SetRenderer(Renderer* renderer) { m_renderer = renderer; }
 
-		static void glfw_resize_callback(GLFWwindow*, int w, int h);
+		static void glfw_resize_callback(GLFWwindow* window, int w, int h);
 		static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 	private:
@@ -39,6 +44,7 @@ namespace Zodiac {
 
 		GLFWwindow* m_window = nullptr;
 		Renderer* m_renderer = nullptr;
+		WindowProperties m_windowProps;
 
 		bool windowShouldClose = false;
 		uint32_t glfwExtensionCount = 0;

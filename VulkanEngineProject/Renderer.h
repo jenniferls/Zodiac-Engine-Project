@@ -17,7 +17,7 @@ namespace Zodiac {
 
 		~Renderer();
 
-		static void Init(VulkanDevice* device, Settings settings, VulkanSurface* surface, VulkanInstance* instance, GLFWwindow* window);
+		static void Init(VulkanDevice* device, Settings settings, VulkanSurface* surface, VulkanInstance* instance, Window* window);
 		static Renderer& Get();
 
 		static void Draw();
@@ -31,6 +31,9 @@ namespace Zodiac {
 		static void Shutdown();
 
 		static void ToggleImGui();
+		static void SetFramebufferResized(bool resized);
+
+		static Settings& GetSettings();
 
 		void SetClearColor(const glm::vec4 color);
 		void Clear();
@@ -57,10 +60,14 @@ namespace Zodiac {
 		static void BuildCommandBuffers();
 		static void AllocateCommandBuffers();
 		static void RecordCommandBuffer(int32_t index, bool secondBarrier = false);
+		static void RecreateSwapChain();
+		static void CleanupFramebuffers();
+		static void CleanupSwapchain();
 
 		static const int MAX_FRAMES_IN_FLIGHT = 2;
 
 		static Renderer* s_instance;
+		static Window* s_window;
 
 		static VulkanDevice* s_device;
 		static VulkanSurface* s_surface;
@@ -89,5 +96,7 @@ namespace Zodiac {
 		static VkClearValue s_clearValues[2];
 
 		static std::unique_ptr<ImGuiLayer> s_imgui;
+
+		static bool s_framebufferResized;
 	};
 }
