@@ -31,6 +31,8 @@ uint32_t Zodiac::VulkanSwapchain::GetImageCount() const {
 
 void Zodiac::VulkanSwapchain::Recreate(SurfaceDetails& details, VkSurfaceKHR& surface, Settings& settings, VulkanDevice* device)
 {
+	Cleanup();
+
 	ChooseSurfaceFormat(details);
 	ChoosePresentMode(details, settings);
 	ChooseExtent(details);
@@ -239,6 +241,7 @@ void Zodiac::VulkanSwapchain::Cleanup()
 		vkDestroyImageView(*m_device, m_buffers[i].view, nullptr);
 	};
 	vkDestroySwapchainKHR(*m_device, m_swapchain, nullptr);
+	m_swapchain = VK_NULL_HANDLE;
 }
 
 uint32_t Zodiac::VulkanSwapchain::GetMemoryTypeIndex(VkPhysicalDeviceMemoryProperties physDeviceMemProps, uint32_t memTypeBits, VkMemoryPropertyFlagBits flags) {
