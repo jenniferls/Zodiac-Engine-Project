@@ -180,23 +180,7 @@ void Zodiac::Renderer::InitInternal() {
 	SetupRenderPass();
 	SetupPipelineCache();
 	SetupFramebuffers();
-
-	s_presentSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-	s_renderCompleteSemaphores.resize(s_swapchain->GetImageCount());
-	s_drawCmdBuffers.resize(s_swapchain->GetImageCount());
-	s_waitFences.resize(MAX_FRAMES_IN_FLIGHT);
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-		s_presentSemaphores[i] = new VulkanSemaphore(s_device);
-		s_waitFences[i] = new VulkanFence(s_device);
-	}
-	for(size_t i = 0; i < s_swapchain->GetImageCount(); i++) {
-		s_renderCompleteSemaphores[i] = new VulkanSemaphore(s_device);
-	}
-	s_imagesInFlight.resize(s_drawCmdBuffers.size(), VK_NULL_HANDLE);
-	//for (size_t i = 0; i < s_drawCmdBuffers.size(); i++) {
-	//	s_waitFences.emplace_back(new VulkanFence(s_device));
-	//	s_imagesInFlight.emplace_back(new VulkanFence(s_device));
-	//}
+	CreateSyncObjects();
 
 	PrepareGeometry();
 	PrepareUniformBuffers();
@@ -607,10 +591,12 @@ void Zodiac::Renderer::RecreateSwapChain()
 
 	vkDeviceWaitIdle(*s_device->GetDevice());
 	CleanupFramebuffers();
+	CleanupSyncObjects();
 	s_surface->QuerySurfaceDetails(s_device->GetPhysicalDevice());
 	s_swapchain->Recreate(s_surface->GetSurfaceDetails(), s_surface->GetSurface(), s_settings, s_device);
 
 	SetupFramebuffers();
+	CreateSyncObjects();
 }
 
 void Zodiac::Renderer::CleanupFramebuffers()
@@ -626,15 +612,44 @@ void Zodiac::Renderer::CleanupSwapchain()
 	
 }
 
+void Zodiac::Renderer::CreateSyncObjects()
+{
+	s_presentSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+	s_renderCompleteSemaphores.resize(s_swapchain->GetImageCount());
+	s_drawCmdBuffers.resize(s_swapchain->GetImageCount());
+	s_waitFences.resize(MAX_FRAMES_IN_FLIGHT);
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		s_presentSemaphores[i] = new VulkanSemaphore(s_device);
+		s_waitFences[i] = new VulkanFence(s_device);
+	}
+	for (size_t i = 0; i < s_swapchain->GetImageCount(); i++) {
+		s_renderCompleteSemaphores[i] = new VulkanSemaphore(s_device);
+	}
+	s_imagesInFlight.resize(s_drawCmdBuffers.size(), VK_NULL_HANDLE);
+}
+
+void Zodiac::Renderer::CleanupSyncObjects()
+{
+	for (size_t i = 0; i < s_swapchain->GetImageCount(); i++) {
+		delete s_renderCompleteSemaphores[i];
+	}
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+		delete s_presentSemaphores[i];
+		delete s_waitFences[i];
+	}
+	s_renderCompleteSemaphores.clear();
+	s_presentSemaphores.clear();
+	s_waitFences.clear();
+	s_imagesInFlight.clear();
+}
+
 void Zodiac::Renderer::Shutdown() {
 	if (s_showGui) {
 		s_imgui->Shutdown();
 	}
 
 	CleanupFramebuffers();
-	for (size_t i = 0; i < s_swapchain->GetImageCount(); i++) {
-		delete s_renderCompleteSemaphores[i];
-	}
+	CleanupSyncObjects();
 
 	vkDestroyPipelineCache(*s_device->GetDevice(), s_pipelineCache, nullptr);
 	vkDestroyDescriptorSetLayout(*s_device->GetDevice(), s_descriptorSetLayout, nullptr);
@@ -650,10 +665,6 @@ void Zodiac::Renderer::Shutdown() {
 	delete s_indexBuffer;
 	delete s_uniformBuffer;
 
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-		delete s_presentSemaphores[i];
-		delete s_waitFences[i];
-	}
 	//for (size_t i = 0; i < s_imagesInFlight.size(); i++) {
 	//	delete s_imagesInFlight[i];
 	//}

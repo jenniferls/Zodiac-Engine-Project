@@ -51,6 +51,7 @@ namespace Zodiac {
 		static void SetupRenderPass();
 		static void SetupPipelineCache();
 		static void SetupFramebuffers();
+		static void CreateSyncObjects();
 
 		static bool SetupPipeline();
 		static void PrepareGeometry();
@@ -64,6 +65,7 @@ namespace Zodiac {
 		static void RecreateSwapChain();
 		static void CleanupFramebuffers();
 		static void CleanupSwapchain();
+		static void CleanupSyncObjects();
 
 		static const int MAX_FRAMES_IN_FLIGHT = 2;
 

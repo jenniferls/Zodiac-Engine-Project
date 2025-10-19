@@ -153,6 +153,21 @@ void Zodiac::VulkanSwapchain::ChoosePresentMode(SurfaceDetails& details, Setting
 			m_presentMode = VK_PRESENT_MODE_FIFO_KHR;
 		}
 	}
+
+	//VkPresentModeKHR bestPresentMode = VK_PRESENT_MODE_FIFO_KHR; //Should be always available
+	//if (!settings.vsync) {
+	//	for (const auto& presentMode : details.supported_present_modes) {
+	//		if (presentMode == /*VK_PRESENT_MODE_IMMEDIATE_KHR*/VK_PRESENT_MODE_MAILBOX_KHR) {
+	//			bestPresentMode = presentMode;
+	//			break;
+	//		}
+	//		if (presentMode == /*VK_PRESENT_MODE_MAILBOX_KHR*/VK_PRESENT_MODE_IMMEDIATE_KHR) {
+	//			bestPresentMode = presentMode; //Fallback
+	//		}
+	//	}
+	//}
+
+	//m_presentMode = bestPresentMode;
 }
 
 void Zodiac::VulkanSwapchain::ChooseExtent(SurfaceDetails& details) {
