@@ -33,7 +33,7 @@ Zodiac::VulkanBuffer* Zodiac::Renderer::s_indexBuffer;
 Zodiac::VulkanBuffer* Zodiac::Renderer::s_uniformBuffer;
 bool Zodiac::Renderer::s_prepared;
 bool Zodiac::Renderer::s_showGui = true;
-bool Zodiac::Renderer::s_framebufferResized = false;
+bool Zodiac::Renderer::s_swapchainDirty = false;
 std::unique_ptr<Zodiac::ImGuiLayer> Zodiac::Renderer::s_imgui;
 
 void Zodiac::Renderer::DrawIndexed() {
@@ -120,8 +120,8 @@ void Zodiac::Renderer::Draw() {
 
 	VkPresentInfoKHR presentInfo = Initializers::PresentInfo(*s_swapchain->GetSwapchain(), imageIndex, s_renderCompleteSemaphores[imageIndex]->GetSemaphore());
 	res = vkQueuePresentKHR(*s_device->GetGraphicsQueue(), &presentInfo);
-	if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR || s_framebufferResized) {
-		s_framebufferResized = false;
+	if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR || s_swapchainDirty) {
+		s_swapchainDirty = false;
 		RecreateSwapChain();
 	}
 
@@ -666,7 +666,7 @@ void Zodiac::Renderer::ToggleImGui()
 
 void Zodiac::Renderer::SetFramebufferResized(bool resized)
 {
-	s_framebufferResized = resized;
+	s_swapchainDirty = resized;
 }
 
 Zodiac::Settings& Zodiac::Renderer::GetSettings()
@@ -676,4 +676,9 @@ Zodiac::Settings& Zodiac::Renderer::GetSettings()
 
 void Zodiac::Renderer::SetClearColor(const glm::vec4 color) {
 	s_clearValues[0].color = { color.r, color.g, color.b, color.a };
+}
+
+void Zodiac::Renderer::SetSwapchainDirty()
+{
+	s_swapchainDirty = true;
 }

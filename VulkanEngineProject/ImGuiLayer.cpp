@@ -360,6 +360,7 @@ void Zodiac::ImGuiLayer::UpdateGUI() {
 	{
 		static float f = 0.0f;
 		static int counter = 0;
+		bool vsync = settings.vsync;
 
 		ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
@@ -367,6 +368,9 @@ void Zodiac::ImGuiLayer::UpdateGUI() {
 		ImGui::Checkbox("Demo Window", &m_showDemoWindow);      // Edit bools storing our window open/close state
 		ImGui::Checkbox("Another Window", &m_showAnotherWindow);
 		ImGui::Checkbox("VSync", &settings.vsync);
+		if (vsync != settings.vsync) {
+			Renderer::SetSwapchainDirty();
+		}
 
 		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 		ImGui::ColorEdit3("clear color", (float*)&m_clearColor); // Edit 3 floats representing a color

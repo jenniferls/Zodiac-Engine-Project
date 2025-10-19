@@ -32,6 +32,7 @@ namespace Zodiac {
 
 		static void ToggleImGui();
 		static void SetFramebufferResized(bool resized);
+		static void SetSwapchainDirty();
 
 		static Settings& GetSettings();
 
@@ -97,6 +98,6 @@ namespace Zodiac {
 
 		static std::unique_ptr<ImGuiLayer> s_imgui;
 
-		static bool s_framebufferResized;
+		static bool s_swapchainDirty;
 	};
 }

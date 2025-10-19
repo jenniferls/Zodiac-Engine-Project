@@ -41,7 +41,5 @@ namespace Zodiac {
 		uint32_t m_minImageCount = 2; //Should be updated during main loop
 		bool m_showDemoWindow = false;
 		bool m_showAnotherWindow = false;
-		bool m_swapchainRebuild = false;
-		bool m_vSync = false;
 	};
 }
