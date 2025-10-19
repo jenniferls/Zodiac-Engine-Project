@@ -13,12 +13,12 @@ namespace Zodiac {
 		VulkanSurface(VulkanInstance* instance, VulkanPhysicalDevice* physicalDevice, void* window);
 		~VulkanSurface();
 
+		void QuerySurfaceDetails(VulkanPhysicalDevice* physicalDevice);
+
 		SurfaceDetails& GetSurfaceDetails();
 		VkSurfaceKHR& GetSurface();
 
 	private:
-		void QuerySurfaceDetails(VulkanPhysicalDevice* physicalDevice);
-
 		VulkanInstance* m_instance;
 		VkSurfaceKHR m_surface;
 		SurfaceDetails m_surfaceDetails;
