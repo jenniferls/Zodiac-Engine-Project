@@ -4,6 +4,8 @@ Project(ZodiacEngine LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ZodiacEngine)
+
 add_subdirectory(ZodiacEngine)
 add_subdirectory(ZodiacApplication)
 
