@@ -288,8 +288,8 @@ void Zodiac::Renderer::SetupFramebuffers() {
 }
 
 bool Zodiac::Renderer::SetupPipeline() {
-	VulkanShaderModule vertexShader(s_device, "Shaders/triangle.vert.spv");
-	VulkanShaderModule fragmentShader(s_device, "Shaders/triangle.frag.spv");
+	VulkanShaderModule vertexShader(s_device, (std::string(SHADERS_DIR) + "/triangle.vert.spv").c_str());
+	VulkanShaderModule fragmentShader(s_device, (std::string(SHADERS_DIR) + "/triangle.frag.spv").c_str());
 
 	if ((vertexShader.GetShaderModule() == nullptr) || (fragmentShader.GetShaderModule() == nullptr)) {
 		return false;

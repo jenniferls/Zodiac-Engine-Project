@@ -33,6 +33,10 @@ target_link_libraries(${PROJECT_NAME}
 )
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_directory "../ZodiacEngine/shaders" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/shaders"
-	COMMAND ${CMAKE_COMMAND} -E copy_directory "../ZodiacEngine/resources" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/resources"
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+		"${CMAKE_SOURCE_DIR}/ZodiacEngine/Shaders"
+		"$<TARGET_FILE_DIR:${PROJECT_NAME}>/Shaders"
+	COMMAND ${CMAKE_COMMAND} -E copy_directory
+		"${CMAKE_SOURCE_DIR}/ZodiacEngine/Resources"
+		"$<TARGET_FILE_DIR:${PROJECT_NAME}>/Resources"
 )
