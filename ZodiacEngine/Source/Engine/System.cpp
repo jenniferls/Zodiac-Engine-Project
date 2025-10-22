@@ -24,7 +24,7 @@ Zodiac::System::~System() {
 	delete m_physical_device;
 	delete m_instance;
 
-	system("pause"); //Debug
+	//system("pause"); //Debug
 }
 
 bool Zodiac::System::Init() {
