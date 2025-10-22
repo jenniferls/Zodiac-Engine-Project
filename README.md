@@ -1,6 +1,9 @@
 # Zodiac-Engine-Project
 A Vulkan engine project to teach myself about Vulkan. The project was started using Vulkan 1.2 but have since then been upgraded to support newer vulkan features.
 
+## Cmake version
+Requires CMake 3.20 minimum
+
 ## Vulkan usage
 Vulkan version: 1.4
 
