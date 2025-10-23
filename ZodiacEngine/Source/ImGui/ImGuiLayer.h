@@ -17,7 +17,6 @@ namespace Zodiac {
 		static void Shutdown();
 
 		bool Init(GLFWwindow* window, VulkanDevice* device, VulkanInstance* instance);
-		void Render(Window* window, VulkanInstance* instance);
 		void UpdateGUI();
 		VkCommandBuffer PrepareCommandBuffer(int image);
 

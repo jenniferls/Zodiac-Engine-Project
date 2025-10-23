@@ -29,6 +29,12 @@ endforeach()
 # Build as executable for now, change to library later
 add_executable(${PROJECT_NAME} ${ENGINE_SOURCES})
 
+# Precompiled header
+target_precompile_headers(ZodiacEngine
+	PRIVATE
+		"${CMAKE_CURRENT_SOURCE_DIR}/Source/Engine/Zodiacpch.h"
+)
+
 # Find vulkan package
 find_package(Vulkan REQUIRED)
 
