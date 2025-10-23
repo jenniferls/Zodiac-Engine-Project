@@ -54,6 +54,9 @@ void Zodiac::ImGuiLayer::UpdateGUI() {
 		static float f = 0.0f;
 		static int counter = 0;
 		bool vsync = settings.vsync;
+		glm::vec4 clear_color = m_clearColor;
+
+		Renderer& renderer = Renderer::Get();
 
 		ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
@@ -62,11 +65,14 @@ void Zodiac::ImGuiLayer::UpdateGUI() {
 		ImGui::Checkbox("Another Window", &m_showAnotherWindow);
 		ImGui::Checkbox("VSync", &settings.vsync);
 		if (vsync != settings.vsync) {
-			Renderer::SetSwapchainDirty();
+			renderer.SetSwapchainDirty();
 		}
 
 		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
 		ImGui::ColorEdit3("clear color", (float*)&m_clearColor); // Edit 3 floats representing a color
+		if (clear_color != m_clearColor) {
+			renderer.SetClearColor(m_clearColor);
+		}
 
 		if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
 			counter++;

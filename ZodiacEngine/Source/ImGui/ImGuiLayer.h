@@ -35,7 +35,7 @@ namespace Zodiac {
 		VkDescriptorSetLayout m_descriptorSetLayout;
 		VkDescriptorSet m_descriptorSet;
 
-		glm::vec4 m_clearColor = glm::vec4(0.45f, 0.55f, 0.60f, 1.00f);
+		glm::vec4 m_clearColor = glm::vec4(0.2f, 0.0f, 0.2f, 1.0f);
 
 		uint32_t m_minImageCount = 2; //Should be updated during main loop
 		bool m_showDemoWindow = false;
