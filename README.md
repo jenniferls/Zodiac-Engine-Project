@@ -12,4 +12,4 @@ Uses dynamic rendering for imgui but render passes for the main render.
 ## Third party libraries
 - glfw
 - glm
-- inGui
+- ImGui
