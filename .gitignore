@@ -260,6 +260,7 @@ paket-files/
 CMakeFiles/
 *.cmake
 CMakeCache.txt
+build/
 
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
