@@ -57,17 +57,18 @@ bool Zodiac::System::Init() {
 }
 
 void Zodiac::System::Run() {
+	Renderer& renderer = Renderer::Get();
 	while (!m_window->WindowShouldClose()) {
 		m_clock.Tick();
 		m_window->PollWindowEvents();
-		if (!Renderer::s_prepared) {
+		if (!renderer.s_prepared) {
 			return;
 		}
-		Renderer::Draw();
+		renderer.Draw();
 	}
 	vkDeviceWaitIdle(*m_device->GetDevice()); //Test
 
-	Renderer::Shutdown();
+	Renderer::Get().Shutdown();
 	m_window->Shutdown();
 }
 
@@ -87,7 +88,7 @@ bool Zodiac::System::InitVulkan() {
 	m_device = new Zodiac::VulkanDevice(m_instance, m_physical_device);
 	m_surface = new Zodiac::VulkanSurface(m_instance, m_physical_device, m_window->GetNativeWindow());
 
-	Zodiac::Renderer::Init(m_device, m_settings, m_surface, m_instance, m_window.get());
+	Zodiac::Renderer::Get().Init(m_device, m_settings, m_surface, m_instance, m_window.get());
 
 	return true;
 }

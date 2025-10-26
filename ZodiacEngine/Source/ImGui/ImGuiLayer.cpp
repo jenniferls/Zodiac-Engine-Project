@@ -101,7 +101,7 @@ void Zodiac::ImGuiLayer::UpdateGUI() {
 VkCommandBuffer Zodiac::ImGuiLayer::PrepareCommandBuffer(int image) {
 	s_device->BeginCommandBuffer(s_command_buffers[image], VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 
-	Renderer::BeginDynamicRendering(s_command_buffers[image], image, NULL, NULL);
+	Renderer::Get().BeginDynamicRendering(s_command_buffers[image], image, NULL, NULL);
 
 	ImDrawData* pDrawData = ImGui::GetDrawData();
 	ImGui_ImplVulkan_RenderDrawData(pDrawData, s_command_buffers[image]);

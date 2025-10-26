@@ -17,22 +17,22 @@ namespace Zodiac {
 
 		~Renderer();
 
-		static void Init(VulkanDevice* device, Settings settings, VulkanSurface* surface, VulkanInstance* instance, Window* window);
+		void Init(VulkanDevice* device, Settings settings, VulkanSurface* surface, VulkanInstance* instance, Window* window);
 		static Renderer& Get();
 
-		static void Draw();
+		void Draw();
 
-		static void BeginDynamicRendering(VkCommandBuffer commandBuffer, int imageIndex, VkClearValue* pClearColor, VkClearValue* pDepthValue);
+		void BeginDynamicRendering(VkCommandBuffer commandBuffer, int imageIndex, VkClearValue* pClearColor, VkClearValue* pDepthValue);
 
-		static void BeginScene();
-		static void Submit();
-		static void EndScene();
-		static void Flush();
-		static void Shutdown();
+		void BeginScene();
+		void Submit();
+		void EndScene();
+		void Flush();
+		void Shutdown();
 
-		static void ToggleImGui();
-		static void SetFramebufferResized(bool resized);
-		static void SetSwapchainDirty();
+		void ToggleImGui();
+		void SetFramebufferResized(bool resized);
+		void SetSwapchainDirty();
 
 		static Settings& GetSettings();
 
@@ -47,32 +47,31 @@ namespace Zodiac {
 
 	private:
 		Renderer();
-		static void InitInternal();
-		static void SetupRenderPass();
-		static void SetupPipelineCache();
-		static void SetupFramebuffers();
-		static void CreateSyncObjects();
+		void InitInternal();
+		void SetupRenderPass();
+		void SetupPipelineCache();
+		void SetupFramebuffers();
+		void CreateSyncObjects();
 
-		static bool SetupPipeline();
-		static void PrepareGeometry();
-		static void PrepareUniformBuffers();
-		static void SetupDescriptorSets();
-		static void SetupDescriptorPool();
-		static void PrepareDescriptorSet();
-		static void BuildCommandBuffers();
-		static void AllocateCommandBuffers();
-		static void RecordCommandBuffer(int32_t index, bool secondBarrier = false);
-		static void RecreateSwapChain();
-		static void CleanupFramebuffers();
-		static void CleanupSwapchain();
-		static void CleanupSyncObjects();
+		bool SetupPipeline();
+		void PrepareGeometry();
+		void PrepareUniformBuffers();
+		void SetupDescriptorSets();
+		void SetupDescriptorPool();
+		void PrepareDescriptorSet();
+		void BuildCommandBuffers();
+		void AllocateCommandBuffers();
+		void RecordCommandBuffer(int32_t index, bool secondBarrier = false);
+		void RecreateSwapChain();
+		void CleanupFramebuffers();
+		void CleanupSwapchain();
+		void CleanupSyncObjects();
 
 		static const int MAX_FRAMES_IN_FLIGHT = 2;
 
-		static Renderer* s_instance;
-		static Window* s_window;
+		Window* m_window;
 
-		static VulkanDevice* s_device;
+		VulkanDevice* m_device;
 		static VulkanSurface* s_surface;
 		static Settings s_settings;
 		static VkRenderPass s_renderPass;
