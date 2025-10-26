@@ -43,7 +43,8 @@ void Zodiac::ImGuiLayer::UpdateGUI() {
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
-	Settings& settings = Renderer::GetSettings();
+	Renderer& renderer = Renderer::Get();
+	Settings& settings = renderer.GetSettings();
 
 	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
 	if (m_showDemoWindow)
@@ -55,8 +56,6 @@ void Zodiac::ImGuiLayer::UpdateGUI() {
 		static int counter = 0;
 		bool vsync = settings.vsync;
 		glm::vec4 clear_color = m_clearColor;
-
-		Renderer& renderer = Renderer::Get();
 
 		ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
@@ -99,9 +98,11 @@ void Zodiac::ImGuiLayer::UpdateGUI() {
 
 // Must be called after the ImGUI frame was prepared on the application side!
 VkCommandBuffer Zodiac::ImGuiLayer::PrepareCommandBuffer(int image) {
-	s_device->BeginCommandBuffer(s_command_buffers[image], VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+	Renderer& renderer = Renderer::Get();
 
-	Renderer::Get().BeginDynamicRendering(s_command_buffers[image], image, NULL, NULL);
+	s_device->BeginCommandBuffer(s_command_buffers[image], VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+	
+	renderer.BeginDynamicRendering(s_command_buffers[image], image, NULL, NULL);
 
 	ImDrawData* pDrawData = ImGui::GetDrawData();
 	ImGui_ImplVulkan_RenderDrawData(pDrawData, s_command_buffers[image]);
@@ -111,7 +112,7 @@ VkCommandBuffer Zodiac::ImGuiLayer::PrepareCommandBuffer(int image) {
 	//Needs some sort of wrapper
 	VkImageLayout oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 	VkImageLayout newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-	VkFormat format = Renderer::s_swapchain->GetSurfaceFormat().format;
+	VkFormat format = renderer.m_swapchain->GetSurfaceFormat().format;
 	{
 		VkImageMemoryBarrier barrier = {
 		.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
@@ -122,7 +123,7 @@ VkCommandBuffer Zodiac::ImGuiLayer::PrepareCommandBuffer(int image) {
 		.newLayout = newLayout,
 		.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
 		.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-		.image = Renderer::s_swapchain->GetImage(image),
+		.image = renderer.m_swapchain->GetImage(image),
 		.subresourceRange = VkImageSubresourceRange {
 			.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
 			.baseMipLevel = 0,
@@ -145,7 +146,7 @@ VkCommandBuffer Zodiac::ImGuiLayer::PrepareCommandBuffer(int image) {
 		{
 			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-			if (Renderer::s_swapchain->SurfaceHasStencilComponent(format)) {
+			if (renderer.m_swapchain->SurfaceHasStencilComponent(format)) {
 				barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 			}
 		}
@@ -267,6 +268,7 @@ VkCommandBuffer Zodiac::ImGuiLayer::PrepareCommandBuffer(int image) {
 
 bool Zodiac::ImGuiLayer::Init(GLFWwindow* window, VulkanDevice* device, VulkanInstance* instance) {
 	s_device = device;
+	Renderer& renderer = Renderer::Get();
 
 	int width = 0;
 	int height = 0;
@@ -300,7 +302,7 @@ bool Zodiac::ImGuiLayer::Init(GLFWwindow* window, VulkanDevice* device, VulkanIn
 	init_info.DescriptorPool = s_descriptorPool; //This is a imgui-specific descriptor pool
 	init_info.RenderPass = VK_NULL_HANDLE; //For dynamic rendering
 	init_info.MinImageCount = m_minImageCount;
-	init_info.ImageCount = Zodiac::Renderer::s_swapchain->GetImageCount();
+	init_info.ImageCount = renderer.m_swapchain->GetImageCount();
 	init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 	init_info.PipelineCache = VK_NULL_HANDLE; //Should work for now
 	init_info.Subpass = 0;
@@ -311,8 +313,8 @@ bool Zodiac::ImGuiLayer::Init(GLFWwindow* window, VulkanDevice* device, VulkanIn
 	init_info.PipelineRenderingCreateInfo.pNext = NULL;
 	init_info.PipelineRenderingCreateInfo.viewMask = 0;
 	init_info.PipelineRenderingCreateInfo.colorAttachmentCount = 1;
-	init_info.PipelineRenderingCreateInfo.pColorAttachmentFormats = &Zodiac::Renderer::s_swapchain->GetSurfaceFormat().format;
-	init_info.PipelineRenderingCreateInfo.depthAttachmentFormat = Zodiac::Renderer::s_swapchain->GetDepthFormat();
+	init_info.PipelineRenderingCreateInfo.pColorAttachmentFormats = &renderer.m_swapchain->GetSurfaceFormat().format;
+	init_info.PipelineRenderingCreateInfo.depthAttachmentFormat = renderer.m_swapchain->GetDepthFormat();
 	init_info.PipelineRenderingCreateInfo.stencilAttachmentFormat = VK_FORMAT_UNDEFINED; // No stencil attachment
 	init_info.Allocator = NULL;
 	init_info.CheckVkResultFn = ErrorCheck;
@@ -320,8 +322,8 @@ bool Zodiac::ImGuiLayer::Init(GLFWwindow* window, VulkanDevice* device, VulkanIn
 	ImGui_ImplVulkan_Init(&init_info);
 
 	//VkCommandPool command_pool = device->GetGraphicsCommandPool();
-	s_command_buffers.resize(Zodiac::Renderer::s_swapchain->GetImageCount());
-	device->CreateCommandBuffers(Zodiac::Renderer::s_swapchain->GetImageCount(), s_command_buffers.data());
+	s_command_buffers.resize(renderer.m_swapchain->GetImageCount());
+	device->CreateCommandBuffers(renderer.m_swapchain->GetImageCount(), s_command_buffers.data());
 
 	//err = vkResetCommandPool(device->GetDevice(), command_pool, 0);
 	//check_vk_result(err);

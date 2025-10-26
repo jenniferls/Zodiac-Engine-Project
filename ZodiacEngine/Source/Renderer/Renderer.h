@@ -34,19 +34,19 @@ namespace Zodiac {
 		void SetFramebufferResized(bool resized);
 		void SetSwapchainDirty();
 
-		static Settings& GetSettings();
+		Settings& GetSettings();
 
 		void SetClearColor(const glm::vec4 color);
 		void Clear();
 
 		void DrawIndexed();
 
-		static bool s_prepared;
-		static VulkanSwapchain* s_swapchain;
-		static bool s_showGui;
+		VulkanSwapchain* m_swapchain = nullptr;
+		bool m_prepared = false;
+		bool m_showGui = true;
 
 	private:
-		Renderer();
+		Renderer() = default;
 		void InitInternal();
 		void SetupRenderPass();
 		void SetupPipelineCache();
@@ -69,18 +69,18 @@ namespace Zodiac {
 
 		static const int MAX_FRAMES_IN_FLIGHT = 2;
 
-		Window* m_window;
+		Window* m_window = nullptr;
 
-		VulkanDevice* m_device;
-		static VulkanSurface* s_surface;
-		static Settings s_settings;
-		static VkRenderPass s_renderPass;
-		static VkPipeline s_pipeline;
-		static VkPipelineCache s_pipelineCache;
-		static VkPipelineLayout s_pipelineLayout;
-		static VkDescriptorPool s_descriptorPool;
-		static VkDescriptorSetLayout s_descriptorSetLayout;
-		static VkDescriptorSet s_descriptorSet;
+		VulkanDevice* m_device = nullptr;
+		VulkanSurface* m_surface = nullptr;
+		Settings m_settings;
+		VkRenderPass m_renderPass;
+		VkPipeline m_pipeline;
+		VkPipelineCache m_pipelineCache;
+		VkPipelineLayout m_pipelineLayout;
+		VkDescriptorPool m_descriptorPool;
+		VkDescriptorSetLayout m_descriptorSetLayout;
+		VkDescriptorSet m_descriptorSet;
 		static std::vector<VkFramebuffer> s_framebuffers;
 
 		static std::vector<VkCommandBuffer> s_drawCmdBuffers;
@@ -89,16 +89,16 @@ namespace Zodiac {
 		static std::vector<VulkanSemaphore*> s_renderCompleteSemaphores;
 		static std::vector<VulkanFence*> s_waitFences;
 		static std::vector<VulkanFence*> s_imagesInFlight;
-		static size_t s_currentFrame;
+		size_t m_currentFrame = 0;
 
-		static VulkanBuffer* s_vertexBuffer;
-		static VulkanBuffer* s_indexBuffer;
-		static VulkanBuffer* s_uniformBuffer;
+		VulkanBuffer* m_vertexBuffer = nullptr;
+		VulkanBuffer* m_indexBuffer = nullptr;
+		VulkanBuffer* m_uniformBuffer = nullptr;
 
 		static VkClearValue s_clearValues[2];
 
 		static std::unique_ptr<ImGuiLayer> s_imgui;
 
-		static bool s_swapchainDirty;
+		bool m_swapchainDirty = false;
 	};
 }

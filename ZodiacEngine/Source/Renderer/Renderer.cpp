@@ -6,16 +6,6 @@
 #include "VulkanShaderModule.h"
 #include "Vertex.h"
 
-Zodiac::VulkanSurface* Zodiac::Renderer::s_surface;
-Zodiac::Settings Zodiac::Renderer::s_settings;
-Zodiac::VulkanSwapchain* Zodiac::Renderer::s_swapchain;
-VkRenderPass Zodiac::Renderer::s_renderPass;
-VkPipeline Zodiac::Renderer::s_pipeline;
-VkPipelineCache Zodiac::Renderer::s_pipelineCache;
-VkPipelineLayout Zodiac::Renderer::s_pipelineLayout;
-VkDescriptorSetLayout Zodiac::Renderer::s_descriptorSetLayout;
-VkDescriptorPool Zodiac::Renderer::s_descriptorPool;
-VkDescriptorSet Zodiac::Renderer::s_descriptorSet;
 std::vector<VkFramebuffer> Zodiac::Renderer::s_framebuffers;
 std::vector<VkCommandBuffer> Zodiac::Renderer::s_drawCmdBuffers;
 std::vector<Zodiac::VulkanSemaphore*> Zodiac::Renderer::s_presentSemaphores;
@@ -23,22 +13,11 @@ std::vector<Zodiac::VulkanSemaphore*> Zodiac::Renderer::s_renderCompleteSemaphor
 std::vector<Zodiac::VulkanFence*> Zodiac::Renderer::s_waitFences;
 std::vector<Zodiac::VulkanFence*> Zodiac::Renderer::s_imagesInFlight;
 const int Zodiac::Renderer::MAX_FRAMES_IN_FLIGHT;
-size_t Zodiac::Renderer::s_currentFrame;
 VkClearValue Zodiac::Renderer::s_clearValues[2];
-Zodiac::VulkanBuffer* Zodiac::Renderer::s_vertexBuffer;
-Zodiac::VulkanBuffer* Zodiac::Renderer::s_indexBuffer;
-Zodiac::VulkanBuffer* Zodiac::Renderer::s_uniformBuffer;
-bool Zodiac::Renderer::s_prepared;
-bool Zodiac::Renderer::s_showGui = true;
-bool Zodiac::Renderer::s_swapchainDirty = false;
 std::unique_ptr<Zodiac::ImGuiLayer> Zodiac::Renderer::s_imgui;
 
 void Zodiac::Renderer::DrawIndexed() {
 
-}
-
-Zodiac::Renderer::Renderer() {
-	m_window = nullptr;
 }
 
 Zodiac::Renderer::~Renderer() {
@@ -47,21 +26,21 @@ Zodiac::Renderer::~Renderer() {
 
 void Zodiac::Renderer::Init(VulkanDevice* device, Settings settings, VulkanSurface* surface, VulkanInstance* instance, Window* window) {
 	m_device = device;
-	s_settings = settings;
-	s_surface = surface;
+	m_settings = settings;
+	m_surface = surface;
 
 	m_window = window;
 
 	s_clearValues[0].color = { 0.2f, 0.0f, 0.2f, 1.0f };
 	s_clearValues[1].depthStencil = { 1.0f, 0 };
 	
-	s_currentFrame = 0;
+	m_currentFrame = 0;
 
-	s_prepared = false;
+	m_prepared = false;
 
 	InitInternal();
 
-	if (s_showGui) {
+	if (m_showGui) {
 		s_imgui = std::unique_ptr<ImGuiLayer>(ImGuiLayer::Create());
 		s_imgui->Init((GLFWwindow*)window->GetNativeWindow(), device, instance);
 	}
@@ -73,11 +52,11 @@ Zodiac::Renderer& Zodiac::Renderer::Get() {
 }
 
 void Zodiac::Renderer::Draw() {
-	vkWaitForFences(*m_device->GetDevice(), 1, &s_waitFences[s_currentFrame]->p_fence, VK_TRUE, UINT64_MAX);
+	vkWaitForFences(*m_device->GetDevice(), 1, &s_waitFences[m_currentFrame]->p_fence, VK_TRUE, UINT64_MAX);
 	//ErrorCheck(vkResetFences(*s_device->GetDevice(), 1, &s_waitFences[s_currentFrame]->p_fence));
 
 	uint32_t imageIndex;
-	VkResult res = vkAcquireNextImageKHR(*m_device->GetDevice(), *s_swapchain->GetSwapchain(), UINT64_MAX, s_presentSemaphores[s_currentFrame]->GetSemaphore(), VK_NULL_HANDLE, &imageIndex);
+	VkResult res = vkAcquireNextImageKHR(*m_device->GetDevice(), *m_swapchain->GetSwapchain(), UINT64_MAX, s_presentSemaphores[m_currentFrame]->GetSemaphore(), VK_NULL_HANDLE, &imageIndex);
 
 	// From VulkanTutorial
 	if (res == VK_ERROR_OUT_OF_DATE_KHR) {
@@ -92,37 +71,37 @@ void Zodiac::Renderer::Draw() {
 	if (s_imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
 		ErrorCheck(vkWaitForFences(*m_device->GetDevice(), 1, &s_imagesInFlight[imageIndex]->p_fence, VK_TRUE, UINT64_MAX));
 	}
-	s_imagesInFlight[imageIndex] = s_waitFences[s_currentFrame];
+	s_imagesInFlight[imageIndex] = s_waitFences[m_currentFrame];
 
 	//Syncronization
-	ErrorCheck(vkResetFences(*m_device->GetDevice(), 1, &s_waitFences[s_currentFrame]->p_fence));
+	ErrorCheck(vkResetFences(*m_device->GetDevice(), 1, &s_waitFences[m_currentFrame]->p_fence));
 
 	//This part is messy right now. Should try async instead and also make helper functions
-	if (s_showGui) {
+	if (m_showGui) {
 		RecordCommandBuffer(imageIndex);
 		s_imgui->UpdateGUI();
 		VkCommandBuffer imguiCommandBuffer = s_imgui->PrepareCommandBuffer(imageIndex);
 		VkCommandBuffer commandBuffers[] = { s_drawCmdBuffers[imageIndex], imguiCommandBuffer };
 
 		// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
-		VkSubmitInfo submitInfo = Initializers::SubmitInfo(s_presentSemaphores[s_currentFrame]->GetSemaphore(), s_renderCompleteSemaphores[imageIndex]->GetSemaphore(), &commandBuffers[0], 2, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-		ErrorCheck(vkQueueSubmit(*m_device->GetGraphicsQueue(), 1, &submitInfo, s_waitFences[s_currentFrame]->p_fence));
+		VkSubmitInfo submitInfo = Initializers::SubmitInfo(s_presentSemaphores[m_currentFrame]->GetSemaphore(), s_renderCompleteSemaphores[imageIndex]->GetSemaphore(), &commandBuffers[0], 2, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+		ErrorCheck(vkQueueSubmit(*m_device->GetGraphicsQueue(), 1, &submitInfo, s_waitFences[m_currentFrame]->p_fence));
 	}
 	else {
 		RecordCommandBuffer(imageIndex, true);
 		//Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
-		VkSubmitInfo submitInfo = Initializers::SubmitInfo(s_presentSemaphores[s_currentFrame]->GetSemaphore(), s_renderCompleteSemaphores[imageIndex]->GetSemaphore(), &s_drawCmdBuffers[imageIndex], 1, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
-		ErrorCheck(vkQueueSubmit(*m_device->GetGraphicsQueue(), 1, &submitInfo, s_waitFences[s_currentFrame]->p_fence));
+		VkSubmitInfo submitInfo = Initializers::SubmitInfo(s_presentSemaphores[m_currentFrame]->GetSemaphore(), s_renderCompleteSemaphores[imageIndex]->GetSemaphore(), &s_drawCmdBuffers[imageIndex], 1, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+		ErrorCheck(vkQueueSubmit(*m_device->GetGraphicsQueue(), 1, &submitInfo, s_waitFences[m_currentFrame]->p_fence));
 	}
 
-	VkPresentInfoKHR presentInfo = Initializers::PresentInfo(*s_swapchain->GetSwapchain(), imageIndex, s_renderCompleteSemaphores[imageIndex]->GetSemaphore());
+	VkPresentInfoKHR presentInfo = Initializers::PresentInfo(*m_swapchain->GetSwapchain(), imageIndex, s_renderCompleteSemaphores[imageIndex]->GetSemaphore());
 	res = vkQueuePresentKHR(*m_device->GetGraphicsQueue(), &presentInfo);
-	if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR || s_swapchainDirty) {
-		s_swapchainDirty = false;
+	if (res == VK_ERROR_OUT_OF_DATE_KHR || res == VK_SUBOPTIMAL_KHR || m_swapchainDirty) {
+		m_swapchainDirty = false;
 		RecreateSwapChain();
 	}
 
-	s_currentFrame = (s_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+	m_currentFrame = (m_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 //TODO:Create wrappers for Info structures
@@ -130,7 +109,7 @@ void Zodiac::Renderer::BeginDynamicRendering(VkCommandBuffer commandBuffer, int 
 	VkRenderingAttachmentInfoKHR ColorAttachment = {
 	.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO_KHR,
 	.pNext = NULL,
-	.imageView = s_swapchain->GetBuffers()[imageIndex].view,
+	.imageView = m_swapchain->GetBuffers()[imageIndex].view,
 	.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 	.resolveMode = VK_RESOLVE_MODE_NONE,
 	.resolveImageView = VK_NULL_HANDLE,
@@ -146,7 +125,7 @@ void Zodiac::Renderer::BeginDynamicRendering(VkCommandBuffer commandBuffer, int 
 	VkRenderingAttachmentInfo DepthAttachment = {
 		.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
 		.pNext = NULL,
-		.imageView = s_swapchain->GetDepthStencil().view, //Depth stencil is the same for all framebuffers according to earlier comment
+		.imageView = m_swapchain->GetDepthStencil().view, //Depth stencil is the same for all framebuffers according to earlier comment
 		.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
 		.resolveMode = VK_RESOLVE_MODE_NONE,
 		.resolveImageView = VK_NULL_HANDLE,
@@ -161,7 +140,7 @@ void Zodiac::Renderer::BeginDynamicRendering(VkCommandBuffer commandBuffer, int 
 
 	VkRenderingInfoKHR RenderingInfo = {
 		.sType = VK_STRUCTURE_TYPE_RENDERING_INFO_KHR,
-		.renderArea = { {0, 0}, {(uint32_t)s_swapchain->GetExtent2D().width, (uint32_t)s_swapchain->GetExtent2D().height} },
+		.renderArea = { {0, 0}, {(uint32_t)m_swapchain->GetExtent2D().width, (uint32_t)m_swapchain->GetExtent2D().height} },
 		.layerCount = 1,
 		.viewMask = 0,
 		.colorAttachmentCount = 1,
@@ -173,7 +152,7 @@ void Zodiac::Renderer::BeginDynamicRendering(VkCommandBuffer commandBuffer, int 
 }
 
 void Zodiac::Renderer::InitInternal() {
-	s_swapchain = new Zodiac::VulkanSwapchain(m_device, s_surface->GetSurfaceDetails(), s_surface->GetSurface(), s_settings);
+	m_swapchain = new Zodiac::VulkanSwapchain(m_device, m_surface->GetSurfaceDetails(), m_surface->GetSurface(), m_settings);
 	SetupRenderPass();
 	SetupPipelineCache();
 	SetupFramebuffers();
@@ -187,7 +166,7 @@ void Zodiac::Renderer::InitInternal() {
 	PrepareDescriptorSet();
 	//BuildCommandBuffers();
 	AllocateCommandBuffers();
-	s_prepared = true;
+	m_prepared = true;
 }
 
 void Zodiac::Renderer::SetupRenderPass() {
@@ -195,7 +174,7 @@ void Zodiac::Renderer::SetupRenderPass() {
 	std::vector<VkAttachmentDescription> attachments(2);
 
 	// Color attachment
-	attachments[0].format = s_swapchain->GetSurfaceFormat().format;					// Use the color format selected by the swapchain
+	attachments[0].format = m_swapchain->GetSurfaceFormat().format;					// Use the color format selected by the swapchain
 	attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;									// We don't use multi sampling
 	attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;							// Clear this attachment at the start of the render pass
 	attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;							// Keep it's contents after the render pass is finished (for displaying it)
@@ -205,7 +184,7 @@ void Zodiac::Renderer::SetupRenderPass() {
 	attachments[0].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;			// Layout to which the attachment is transitioned when the render pass is finished
 																					// As we want to present the color buffer to the swapchain, we transition to PRESENT_KHR
 	// Depth attachment
-	attachments[1].format = s_swapchain->GetDepthFormat();
+	attachments[1].format = m_swapchain->GetDepthFormat();
 	attachments[1].samples = VK_SAMPLE_COUNT_1_BIT;
 	attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;							// Clear depth at start of first subpass
 	attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;						// We don't need depth after render pass has finished (DONT_CARE may result in better performance)
@@ -265,22 +244,22 @@ void Zodiac::Renderer::SetupRenderPass() {
 
 	// Create the actual renderpass
 	VkRenderPassCreateInfo renderPassInfo = Initializers::RenderPassCreateInfo(attachments, subpassDescriptions, dependencies);
-	ErrorCheck(vkCreateRenderPass(*m_device->GetDevice(), &renderPassInfo, nullptr, &s_renderPass));
+	ErrorCheck(vkCreateRenderPass(*m_device->GetDevice(), &renderPassInfo, nullptr, &m_renderPass));
 }
 
 void Zodiac::Renderer::SetupPipelineCache() {
 	VkPipelineCacheCreateInfo pipelineCacheInfo = Initializers::PipelineCacheCreateInfo();
-	ErrorCheck(vkCreatePipelineCache(*m_device->GetDevice(), &pipelineCacheInfo, nullptr, &s_pipelineCache));
+	ErrorCheck(vkCreatePipelineCache(*m_device->GetDevice(), &pipelineCacheInfo, nullptr, &m_pipelineCache));
 }
 
 void Zodiac::Renderer::SetupFramebuffers() {
-	s_framebuffers.resize(s_swapchain->GetImageCount());
+	s_framebuffers.resize(m_swapchain->GetImageCount());
 	for (size_t i = 0; i < s_framebuffers.size(); i++) {
 		std::vector<VkImageView> attachments(2);
-		attachments[0] = s_swapchain->GetBuffers()[i].view;							// Color attachment is the view of the swapchain image			
-		attachments[1] = s_swapchain->GetDepthStencil().view;						// Depth/Stencil attachment is the same for all frame buffers
+		attachments[0] = m_swapchain->GetBuffers()[i].view;							// Color attachment is the view of the swapchain image			
+		attachments[1] = m_swapchain->GetDepthStencil().view;						// Depth/Stencil attachment is the same for all frame buffers
 
-		VkFramebufferCreateInfo framebufferInfo = Initializers::FramebufferCreateInfo(s_renderPass, attachments, s_swapchain->GetExtent2D().width, s_swapchain->GetExtent2D().height);
+		VkFramebufferCreateInfo framebufferInfo = Initializers::FramebufferCreateInfo(m_renderPass, attachments, m_swapchain->GetExtent2D().width, m_swapchain->GetExtent2D().height);
 		ErrorCheck(vkCreateFramebuffer(*m_device->GetDevice(), &framebufferInfo, nullptr, &s_framebuffers[i]));
 	}
 }
@@ -341,8 +320,8 @@ bool Zodiac::Renderer::SetupPipeline() {
 	std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 	VkPipelineDynamicStateCreateInfo dynamicStateCreateInfo = Initializers::PipelineDynamicStateCreateInfo(dynamicStates);
 
-	VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo = Initializers::GraphicsPipelineCreateInfo(shaderStageCreateInfos, vertexInputStateCreateInfo, inputAssemblyStateCreateInfo, viewportStateCreateInfo, rasterizationStateCreateInfo, multisampleStateCreateInfo, colorBlendStateCreateInfo, dynamicStateCreateInfo, s_pipelineLayout, s_renderPass, depthStencilStateCreateInfo);
-	ErrorCheck(vkCreateGraphicsPipelines(*m_device->GetDevice(), s_pipelineCache, 1, &graphicsPipelineCreateInfo, nullptr, &s_pipeline));
+	VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo = Initializers::GraphicsPipelineCreateInfo(shaderStageCreateInfos, vertexInputStateCreateInfo, inputAssemblyStateCreateInfo, viewportStateCreateInfo, rasterizationStateCreateInfo, multisampleStateCreateInfo, colorBlendStateCreateInfo, dynamicStateCreateInfo, m_pipelineLayout, m_renderPass, depthStencilStateCreateInfo);
+	ErrorCheck(vkCreateGraphicsPipelines(*m_device->GetDevice(), m_pipelineCache, 1, &graphicsPipelineCreateInfo, nullptr, &m_pipeline));
 
 	return true;
 }
@@ -365,18 +344,18 @@ void Zodiac::Renderer::PrepareGeometry() {
 	stagingBuffer->UnmapMemory();
 
 	//Device local buffer
-	s_vertexBuffer = new Zodiac::VulkanBuffer(m_device, vertArr, sizeof(SimpleVertex), 3, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	m_vertexBuffer = new Zodiac::VulkanBuffer(m_device, vertArr, sizeof(SimpleVertex), 3, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 	VulkanBuffer* indexBuffer_staging = new Zodiac::VulkanBuffer(m_device, indices.data(), sizeof(uint32_t), 3, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	indexBuffer_staging->MapMemory();
 	indexBuffer_staging->SetData();
 	indexBuffer_staging->UnmapMemory();
 
-	s_indexBuffer = new Zodiac::VulkanBuffer(m_device, indices.data(), sizeof(uint32_t), 3, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	m_indexBuffer = new Zodiac::VulkanBuffer(m_device, indices.data(), sizeof(uint32_t), 3, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 	VkCommandBuffer copyCommand = m_device->GetCommandBuffer(true);
-	s_vertexBuffer->CopyFrom(copyCommand, stagingBuffer);
-	s_indexBuffer->CopyFrom(copyCommand, indexBuffer_staging);
+	m_vertexBuffer->CopyFrom(copyCommand, stagingBuffer);
+	m_indexBuffer->CopyFrom(copyCommand, indexBuffer_staging);
 	m_device->FlushCommandBuffer(copyCommand, *m_device->GetGraphicsQueue(), m_device->GetGraphicsCommandPool()); //TODO: Might change this a bit
 
 	delete stagingBuffer;
@@ -391,12 +370,12 @@ void Zodiac::Renderer::PrepareUniformBuffers() {
 		glm::mat4 viewMatrix;
 	} uboVS;
 
-	s_uniformBuffer = new VulkanBuffer(m_device, &uboVS, sizeof(uboVS), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-	s_uniformBuffer->p_descriptor.buffer = s_uniformBuffer->GetBuffer();
-	s_uniformBuffer->p_descriptor.offset = 0;
-	s_uniformBuffer->p_descriptor.range = sizeof(uboVS);
+	m_uniformBuffer = new VulkanBuffer(m_device, &uboVS, sizeof(uboVS), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	m_uniformBuffer->p_descriptor.buffer = m_uniformBuffer->GetBuffer();
+	m_uniformBuffer->p_descriptor.offset = 0;
+	m_uniformBuffer->p_descriptor.range = sizeof(uboVS);
 
-	uboVS.projectionMatrix = glm::perspective(glm::radians(60.0f), (float)s_swapchain->GetExtent2D().width / (float)s_swapchain->GetExtent2D().height, 0.1f, 256.0f);
+	uboVS.projectionMatrix = glm::perspective(glm::radians(60.0f), (float)m_swapchain->GetExtent2D().width / (float)m_swapchain->GetExtent2D().height, 0.1f, 256.0f);
 	uboVS.viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -2.5)); //Last parameter is zoom
 	
 	uboVS.modelMatrix = glm::mat4(1.0f);
@@ -404,9 +383,9 @@ void Zodiac::Renderer::PrepareUniformBuffers() {
 	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3().y, glm::vec3(0.0f, 1.0f, 0.0f));
 	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3().z, glm::vec3(0.0f, 0.0f, 1.0f));
 
-	s_uniformBuffer->MapMemory();
-	s_uniformBuffer->SetData(); //Since the buffer has been passed a pointer at creation, it should technically be okay to do this without passing anything else
-	s_uniformBuffer->UnmapMemory();
+	m_uniformBuffer->MapMemory();
+	m_uniformBuffer->SetData(); //Since the buffer has been passed a pointer at creation, it should technically be okay to do this without passing anything else
+	m_uniformBuffer->UnmapMemory();
 }
 
 void Zodiac::Renderer::SetupDescriptorSets() {
@@ -418,10 +397,10 @@ void Zodiac::Renderer::SetupDescriptorSets() {
 	layoutBinding.pImmutableSamplers = nullptr;
 
 	VkDescriptorSetLayoutCreateInfo layoutCreateInfo = Initializers::DescriptorSetLayoutCreateInfo(1, layoutBinding);
-	ErrorCheck(vkCreateDescriptorSetLayout(*m_device->GetDevice(), &layoutCreateInfo, nullptr, &s_descriptorSetLayout));
+	ErrorCheck(vkCreateDescriptorSetLayout(*m_device->GetDevice(), &layoutCreateInfo, nullptr, &m_descriptorSetLayout));
 
-	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = Initializers::PipelineLayoutCreateInfo(1, s_descriptorSetLayout);
-	ErrorCheck(vkCreatePipelineLayout(*m_device->GetDevice(), &pipelineLayoutCreateInfo, nullptr, &s_pipelineLayout));
+	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = Initializers::PipelineLayoutCreateInfo(1, m_descriptorSetLayout);
+	ErrorCheck(vkCreatePipelineLayout(*m_device->GetDevice(), &pipelineLayoutCreateInfo, nullptr, &m_pipelineLayout));
 }
 
 void Zodiac::Renderer::SetupDescriptorPool() {
@@ -435,21 +414,21 @@ void Zodiac::Renderer::SetupDescriptorPool() {
 	// typeCounts[1].descriptorCount = 2;
 
 	VkDescriptorPoolCreateInfo descriptorPoolInfo = Initializers::DescriptorPoolCreateInfo(typeCounts->descriptorCount, typeCounts, typeCounts->descriptorCount);
-	ErrorCheck(vkCreateDescriptorPool(*m_device->GetDevice(), &descriptorPoolInfo, nullptr, &s_descriptorPool));
+	ErrorCheck(vkCreateDescriptorPool(*m_device->GetDevice(), &descriptorPoolInfo, nullptr, &m_descriptorPool));
 }
 
 void Zodiac::Renderer::PrepareDescriptorSet() {
-	VkDescriptorSetAllocateInfo descriptorSetAllocInfo = Initializers::DescriptorSetAllocateInfo(&s_descriptorPool, 1, &s_descriptorSetLayout);
-	ErrorCheck(vkAllocateDescriptorSets(*m_device->GetDevice(), &descriptorSetAllocInfo, &s_descriptorSet));
+	VkDescriptorSetAllocateInfo descriptorSetAllocInfo = Initializers::DescriptorSetAllocateInfo(&m_descriptorPool, 1, &m_descriptorSetLayout);
+	ErrorCheck(vkAllocateDescriptorSets(*m_device->GetDevice(), &descriptorSetAllocInfo, &m_descriptorSet));
 
 	VkWriteDescriptorSet writeDescriptorSet = {};
 
 	// Binding 0 : Uniform buffer
 	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	writeDescriptorSet.dstSet = s_descriptorSet;
+	writeDescriptorSet.dstSet = m_descriptorSet;
 	writeDescriptorSet.descriptorCount = 1;
 	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	writeDescriptorSet.pBufferInfo = &s_uniformBuffer->p_descriptor;
+	writeDescriptorSet.pBufferInfo = &m_uniformBuffer->p_descriptor;
 	// Binds this uniform buffer to binding point 0
 	writeDescriptorSet.dstBinding = 0;
 
@@ -457,10 +436,10 @@ void Zodiac::Renderer::PrepareDescriptorSet() {
 }
 
 void Zodiac::Renderer::BuildCommandBuffers() {
-	m_device->GetGraphicsCommand(s_drawCmdBuffers.data(), s_swapchain->GetImageCount()); //Allocates buffers
+	m_device->GetGraphicsCommand(s_drawCmdBuffers.data(), m_swapchain->GetImageCount()); //Allocates buffers
 
 	VkCommandBufferBeginInfo commandBufferBeginInfo = Initializers::CommandBufferBeginInfo(0);
-	VkRenderPassBeginInfo renderPassBeginInfo = Initializers::RenderPassBeginInfo(s_renderPass, s_swapchain->GetExtent2D(), s_clearValues, 2);
+	VkRenderPassBeginInfo renderPassBeginInfo = Initializers::RenderPassBeginInfo(m_renderPass, m_swapchain->GetExtent2D(), s_clearValues, 2);
 
 	for (int32_t i = 0; i < s_drawCmdBuffers.size(); i++) {
 		renderPassBeginInfo.framebuffer = s_framebuffers[i];
@@ -470,28 +449,28 @@ void Zodiac::Renderer::BuildCommandBuffers() {
 		vkCmdBeginRenderPass(s_drawCmdBuffers[i], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 			// Update dynamic viewport state
 			VkViewport viewport = {};
-			viewport.width = (float)s_swapchain->GetExtent2D().width;
-			viewport.height = (float)s_swapchain->GetExtent2D().height;
+			viewport.width = (float)m_swapchain->GetExtent2D().width;
+			viewport.height = (float)m_swapchain->GetExtent2D().height;
 			viewport.minDepth = 0.0f;
 			viewport.maxDepth = 1.0f;
 			vkCmdSetViewport(s_drawCmdBuffers[i], 0, 1, &viewport);
 			// Update dynamic scissor state
 			VkRect2D scissor = {};
-			scissor.extent = s_swapchain->GetExtent2D();
+			scissor.extent = m_swapchain->GetExtent2D();
 			scissor.offset.x = 0;
 			scissor.offset.y = 0;
 			vkCmdSetScissor(s_drawCmdBuffers[i], 0, 1, &scissor);
 
 			// Bind descriptor sets describing shader binding points
-			vkCmdBindDescriptorSets(s_drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, s_pipelineLayout, 0, 1, &s_descriptorSet, 0, nullptr);
+			vkCmdBindDescriptorSets(s_drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
 
 			// Bind vertex buffer (contains position and colors)
 			VkDeviceSize offsets[1] = { 0 };
-			vkCmdBindVertexBuffers(s_drawCmdBuffers[i], 0, 1, &s_vertexBuffer->GetBuffer(), offsets);
-			vkCmdBindIndexBuffer(s_drawCmdBuffers[i], s_indexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
+			vkCmdBindVertexBuffers(s_drawCmdBuffers[i], 0, 1, &m_vertexBuffer->GetBuffer(), offsets);
+			vkCmdBindIndexBuffer(s_drawCmdBuffers[i], m_indexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
-			vkCmdBindPipeline(s_drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, s_pipeline);
-			vkCmdDrawIndexed(s_drawCmdBuffers[i], s_indexBuffer->GetCount(), 1, 0, 0, 1);
+			vkCmdBindPipeline(s_drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
+			vkCmdDrawIndexed(s_drawCmdBuffers[i], m_indexBuffer->GetCount(), 1, 0, 0, 1);
 		vkCmdEndRenderPass(s_drawCmdBuffers[i]);
 
 		ErrorCheck(vkEndCommandBuffer(s_drawCmdBuffers[i]));
@@ -499,14 +478,14 @@ void Zodiac::Renderer::BuildCommandBuffers() {
 }
 
 void Zodiac::Renderer::AllocateCommandBuffers() {
-	m_device->GetGraphicsCommand(s_drawCmdBuffers.data(), s_swapchain->GetImageCount()); //Allocates buffers
+	m_device->GetGraphicsCommand(s_drawCmdBuffers.data(), m_swapchain->GetImageCount()); //Allocates buffers
 }
 
 void Zodiac::Renderer::RecordCommandBuffer(int32_t index, bool secondBarrier) {
 	vkResetCommandBuffer(s_drawCmdBuffers[index], 0);
 
 	VkCommandBufferBeginInfo commandBufferBeginInfo = Initializers::CommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT); //Valid for re-recording the command buffer every frame
-	VkRenderPassBeginInfo renderPassBeginInfo = Initializers::RenderPassBeginInfo(s_renderPass, s_swapchain->GetExtent2D(), s_clearValues, 2);
+	VkRenderPassBeginInfo renderPassBeginInfo = Initializers::RenderPassBeginInfo(m_renderPass, m_swapchain->GetExtent2D(), s_clearValues, 2);
 
 	renderPassBeginInfo.framebuffer = s_framebuffers[index];
 	ErrorCheck(vkBeginCommandBuffer(s_drawCmdBuffers[index], &commandBufferBeginInfo));
@@ -517,7 +496,7 @@ void Zodiac::Renderer::RecordCommandBuffer(int32_t index, bool secondBarrier) {
 	barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.image = s_swapchain->GetImage(index);
+	barrier.image = m_swapchain->GetImage(index);
 	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	barrier.subresourceRange.baseMipLevel = 0;
 	barrier.subresourceRange.levelCount = 1;
@@ -532,28 +511,28 @@ void Zodiac::Renderer::RecordCommandBuffer(int32_t index, bool secondBarrier) {
 
 	// Update dynamic viewport state
 	VkViewport viewport = {};
-	viewport.width = (float)s_swapchain->GetExtent2D().width;
-	viewport.height = (float)s_swapchain->GetExtent2D().height;
+	viewport.width = (float)m_swapchain->GetExtent2D().width;
+	viewport.height = (float)m_swapchain->GetExtent2D().height;
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 	vkCmdSetViewport(s_drawCmdBuffers[index], 0, 1, &viewport);
 	// Update dynamic scissor state
 	VkRect2D scissor = {};
-	scissor.extent = s_swapchain->GetExtent2D();
+	scissor.extent = m_swapchain->GetExtent2D();
 	scissor.offset.x = 0;
 	scissor.offset.y = 0;
 	vkCmdSetScissor(s_drawCmdBuffers[index], 0, 1, &scissor);
 
 	// Bind descriptor sets describing shader binding points
-	vkCmdBindDescriptorSets(s_drawCmdBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, s_pipelineLayout, 0, 1, &s_descriptorSet, 0, nullptr);
+	vkCmdBindDescriptorSets(s_drawCmdBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
 
 	// Bind vertex buffer (contains position and colors)
 	VkDeviceSize offsets[1] = { 0 };
-	vkCmdBindVertexBuffers(s_drawCmdBuffers[index], 0, 1, &s_vertexBuffer->GetBuffer(), offsets);
-	vkCmdBindIndexBuffer(s_drawCmdBuffers[index], s_indexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
+	vkCmdBindVertexBuffers(s_drawCmdBuffers[index], 0, 1, &m_vertexBuffer->GetBuffer(), offsets);
+	vkCmdBindIndexBuffer(s_drawCmdBuffers[index], m_indexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
-	vkCmdBindPipeline(s_drawCmdBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, s_pipeline);
-	vkCmdDrawIndexed(s_drawCmdBuffers[index], s_indexBuffer->GetCount(), 1, 0, 0, 1);
+	vkCmdBindPipeline(s_drawCmdBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
+	vkCmdDrawIndexed(s_drawCmdBuffers[index], m_indexBuffer->GetCount(), 1, 0, 0, 1);
 
 	vkCmdEndRenderPass(s_drawCmdBuffers[index]);
 
@@ -565,7 +544,7 @@ void Zodiac::Renderer::RecordCommandBuffer(int32_t index, bool secondBarrier) {
 		barrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.image = s_swapchain->GetImage(index);
+		barrier.image = m_swapchain->GetImage(index);
 		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		barrier.subresourceRange.baseMipLevel = 0;
 		barrier.subresourceRange.levelCount = 1;
@@ -589,8 +568,8 @@ void Zodiac::Renderer::RecreateSwapChain()
 	vkDeviceWaitIdle(*m_device->GetDevice());
 	CleanupFramebuffers();
 	CleanupSyncObjects();
-	s_surface->QuerySurfaceDetails(m_device->GetPhysicalDevice());
-	s_swapchain->Recreate(s_surface->GetSurfaceDetails(), s_surface->GetSurface(), s_settings, m_device);
+	m_surface->QuerySurfaceDetails(m_device->GetPhysicalDevice());
+	m_swapchain->Recreate(m_surface->GetSurfaceDetails(), m_surface->GetSurface(), m_settings, m_device);
 
 	SetupFramebuffers();
 	CreateSyncObjects();
@@ -612,14 +591,14 @@ void Zodiac::Renderer::CleanupSwapchain()
 void Zodiac::Renderer::CreateSyncObjects()
 {
 	s_presentSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-	s_renderCompleteSemaphores.resize(s_swapchain->GetImageCount());
-	s_drawCmdBuffers.resize(s_swapchain->GetImageCount());
+	s_renderCompleteSemaphores.resize(m_swapchain->GetImageCount());
+	s_drawCmdBuffers.resize(m_swapchain->GetImageCount());
 	s_waitFences.resize(MAX_FRAMES_IN_FLIGHT);
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		s_presentSemaphores[i] = new VulkanSemaphore(m_device);
 		s_waitFences[i] = new VulkanFence(m_device);
 	}
-	for (size_t i = 0; i < s_swapchain->GetImageCount(); i++) {
+	for (size_t i = 0; i < m_swapchain->GetImageCount(); i++) {
 		s_renderCompleteSemaphores[i] = new VulkanSemaphore(m_device);
 	}
 	s_imagesInFlight.resize(s_drawCmdBuffers.size(), VK_NULL_HANDLE);
@@ -627,7 +606,7 @@ void Zodiac::Renderer::CreateSyncObjects()
 
 void Zodiac::Renderer::CleanupSyncObjects()
 {
-	for (size_t i = 0; i < s_swapchain->GetImageCount(); i++) {
+	for (size_t i = 0; i < m_swapchain->GetImageCount(); i++) {
 		delete s_renderCompleteSemaphores[i];
 	}
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
@@ -644,41 +623,41 @@ void Zodiac::Renderer::CleanupSyncObjects()
 }
 
 void Zodiac::Renderer::Shutdown() {
-	if (s_showGui) {
+	if (m_showGui) {
 		s_imgui->Shutdown();
 	}
 
 	CleanupFramebuffers();
 	CleanupSyncObjects();
 
-	vkDestroyPipelineCache(*m_device->GetDevice(), s_pipelineCache, nullptr);
-	vkDestroyDescriptorSetLayout(*m_device->GetDevice(), s_descriptorSetLayout, nullptr);
-	vkDestroyPipelineLayout(*m_device->GetDevice(), s_pipelineLayout, nullptr);
-	vkDestroyRenderPass(*m_device->GetDevice(), s_renderPass, nullptr);
-	vkDestroyPipeline(*m_device->GetDevice(), s_pipeline, nullptr);
-	vkDestroyDescriptorPool(*m_device->GetDevice(), s_descriptorPool, nullptr);
+	vkDestroyPipelineCache(*m_device->GetDevice(), m_pipelineCache, nullptr);
+	vkDestroyDescriptorSetLayout(*m_device->GetDevice(), m_descriptorSetLayout, nullptr);
+	vkDestroyPipelineLayout(*m_device->GetDevice(), m_pipelineLayout, nullptr);
+	vkDestroyRenderPass(*m_device->GetDevice(), m_renderPass, nullptr);
+	vkDestroyPipeline(*m_device->GetDevice(), m_pipeline, nullptr);
+	vkDestroyDescriptorPool(*m_device->GetDevice(), m_descriptorPool, nullptr);
 
-	delete s_swapchain;
+	delete m_swapchain;
 
 	//Note to self: Keep an eye on these so that they're destroyed at the right time
-	delete s_vertexBuffer;
-	delete s_indexBuffer;
-	delete s_uniformBuffer;
+	delete m_vertexBuffer;
+	delete m_indexBuffer;
+	delete m_uniformBuffer;
 }
 
 void Zodiac::Renderer::ToggleImGui()
 {
-	s_showGui = !s_showGui;
+	m_showGui = !m_showGui;
 }
 
 void Zodiac::Renderer::SetFramebufferResized(bool resized)
 {
-	s_swapchainDirty = resized;
+	m_swapchainDirty = resized;
 }
 
 Zodiac::Settings& Zodiac::Renderer::GetSettings()
 {
-	return s_settings;
+	return m_settings;
 }
 
 void Zodiac::Renderer::SetClearColor(const glm::vec4 color) {
@@ -687,5 +666,5 @@ void Zodiac::Renderer::SetClearColor(const glm::vec4 color) {
 
 void Zodiac::Renderer::SetSwapchainDirty()
 {
-	s_swapchainDirty = true;
+	m_swapchainDirty = true;
 }

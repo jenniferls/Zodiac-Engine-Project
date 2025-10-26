@@ -12,7 +12,7 @@ Zodiac::System::System(const char* applicationName) {
 	m_window = std::unique_ptr<Window>(Window::Create());
 
 	if (m_settings.overlay) {
-		Renderer::s_showGui = true;
+		Renderer::Get().m_showGui = true;
 	}
 }
 
@@ -61,7 +61,7 @@ void Zodiac::System::Run() {
 	while (!m_window->WindowShouldClose()) {
 		m_clock.Tick();
 		m_window->PollWindowEvents();
-		if (!renderer.s_prepared) {
+		if (!renderer.m_prepared) {
 			return;
 		}
 		renderer.Draw();
