@@ -1,7 +1,8 @@
 #pragma once
+#include "Camera.h"
 
 namespace Zodiac {
-	class OrthographicCamera {
+	class OrthographicCamera : public Camera {
 	public:
 		OrthographicCamera(float left, float right, float bottom, float top);
 		~OrthographicCamera();

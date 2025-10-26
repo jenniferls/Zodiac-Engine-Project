@@ -1,7 +1,8 @@
 #pragma once
+#include "Camera.h"
 
 namespace Zodiac {
-	class PerspectiveCamera {
+	class PerspectiveCamera : public Camera {
 	public:
 		PerspectiveCamera();
 		~PerspectiveCamera();

@@ -58,6 +58,7 @@ bool Zodiac::System::Init() {
 
 void Zodiac::System::Run() {
 	while (!m_window->WindowShouldClose()) {
+		m_clock.Tick();
 		m_window->PollWindowEvents();
 		if (!Renderer::s_prepared) {
 			return;

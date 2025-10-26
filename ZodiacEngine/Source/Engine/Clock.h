@@ -1,4 +1,5 @@
 #pragma once
+#include <chrono>
 
 namespace Zodiac {
 	class Clock {
@@ -7,9 +8,12 @@ namespace Zodiac {
 		~Clock();
 
 		void Tick();
-		double GetDeltaTime();
+		float GetDeltaTime() const;
+		double GetElapsedTime() const;
 
 	private:
-
+		float m_deltaTime;
+		double m_elapsedTime;
+		double m_lastTime;
 	};
 }

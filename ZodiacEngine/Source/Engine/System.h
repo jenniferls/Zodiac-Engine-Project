@@ -1,6 +1,7 @@
 #pragma once
 #include "Settings.h"
 #include "Window.h"
+#include "Clock.h"
 
 #include "VulkanConfiguration.h"
 #include "VulkanInstance.h"
@@ -28,6 +29,7 @@ namespace Zodiac {
 		bool InitVulkan();
 
 		Settings m_settings;
+		Clock m_clock;
 
 		VulkanConfiguration m_vulkanConfig;
 		VulkanInstance* m_instance;
