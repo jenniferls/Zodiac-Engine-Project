@@ -81,23 +81,23 @@ namespace Zodiac {
 		VkDescriptorPool m_descriptorPool;
 		VkDescriptorSetLayout m_descriptorSetLayout;
 		VkDescriptorSet m_descriptorSet;
-		static std::vector<VkFramebuffer> s_framebuffers;
+		std::vector<VkFramebuffer> m_framebuffers;
 
-		static std::vector<VkCommandBuffer> s_drawCmdBuffers;
+		std::vector<VkCommandBuffer> m_drawCmdBuffers;
 
-		static std::vector<VulkanSemaphore*> s_presentSemaphores;
-		static std::vector<VulkanSemaphore*> s_renderCompleteSemaphores;
-		static std::vector<VulkanFence*> s_waitFences;
-		static std::vector<VulkanFence*> s_imagesInFlight;
+		std::vector<VulkanSemaphore*> m_presentSemaphores;
+		std::vector<VulkanSemaphore*> m_renderCompleteSemaphores;
+		std::vector<VulkanFence*> m_waitFences;
+		std::vector<VulkanFence*> m_imagesInFlight;
 		size_t m_currentFrame = 0;
 
 		VulkanBuffer* m_vertexBuffer = nullptr;
 		VulkanBuffer* m_indexBuffer = nullptr;
 		VulkanBuffer* m_uniformBuffer = nullptr;
 
-		static VkClearValue s_clearValues[2];
+		VkClearValue m_clearValues[2];
 
-		static std::unique_ptr<ImGuiLayer> s_imgui;
+		std::unique_ptr<ImGuiLayer> m_imgui = nullptr;
 
 		bool m_swapchainDirty = false;
 	};
