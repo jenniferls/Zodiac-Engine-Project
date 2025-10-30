@@ -3,12 +3,11 @@
 #include "Validation.h"
 #include "Initializers.h"
 
-Zodiac::VulkanBuffer::VulkanBuffer(VulkanDevice* device, void* ptr, unsigned int elementSize, unsigned int count, VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryFlags) {
+Zodiac::VulkanBuffer::VulkanBuffer(VulkanDevice* device, unsigned int elementSize, unsigned int count, VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryFlags) {
 	m_device = device;
-	m_ptr = ptr;
 	m_elementSize = elementSize;
 	m_count = count;
-	m_totalSize = m_count * m_elementSize;
+	m_totalSize = count * elementSize;
 	m_usageFlags = usageFlags;
 	CreateBuffer(memoryFlags);
 }
@@ -19,16 +18,17 @@ Zodiac::VulkanBuffer::~VulkanBuffer() {
 	vkFreeMemory(*m_device->GetDevice(), m_deviceMemory, nullptr);
 }
 
-void Zodiac::VulkanBuffer::SetData() {
-	memcpy(m_mappedMemory, m_ptr, (unsigned int)m_totalSize);
+void Zodiac::VulkanBuffer::SetData(void* ptr) {
+	memcpy(m_mappedMemory, ptr, (unsigned int)m_totalSize);
 }
 
-void Zodiac::VulkanBuffer::SetData(unsigned int count) { //Should not be set to more data than originally allocated
-	memcpy(m_mappedMemory, m_ptr, m_elementSize * count);
+void Zodiac::VulkanBuffer::SetData(void* ptr, unsigned int count) { //Should not be set to more data than originally allocated
+	assert(count <= m_count && "Trying to set more data than initially allocated in buffer!");
+	memcpy(m_mappedMemory, ptr, m_elementSize * count);
 }
 
-void Zodiac::VulkanBuffer::SetData(unsigned int startIndex, unsigned int count) { //Should not be set to more data than originally allocated
-	memcpy(((char*)m_mappedMemory) + (startIndex * m_elementSize), ((char*)m_ptr) + (startIndex * m_elementSize), m_elementSize * count);
+void Zodiac::VulkanBuffer::SetData(void* ptr, unsigned int startIndex, unsigned int count) { //Should not be set to more data than originally allocated
+	memcpy(((char*)m_mappedMemory) + (startIndex * m_elementSize), ((char*)ptr) + (startIndex * m_elementSize), m_elementSize * count);
 }
 
 void Zodiac::VulkanBuffer::MapMemory() {

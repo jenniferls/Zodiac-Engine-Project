@@ -4,18 +4,17 @@
 namespace Zodiac {
 	class PerspectiveCamera : public Camera {
 	public:
-		PerspectiveCamera();
+		PerspectiveCamera(float FoV = 60.0f, float aspectRatio = 16.0f / 9.0f);
 		~PerspectiveCamera();
 
 	private:
-		glm::vec3 m_pos;
-		glm::vec3 m_front;
-		glm::vec3 m_up;
 		float m_fov;
+		float m_aspectRatio;
+
 		float m_yaw;
 		float m_pitch;
-		glm::vec3 m_worldUp;
-		float m_aspectRatio;
+		float m_roll;
+
 		float m_nearClip;
 		float m_farClip;
 

@@ -6,12 +6,12 @@
 namespace Zodiac {
 	class VulkanBuffer {
 	public:
-		VulkanBuffer(VulkanDevice* device, void* ptr, unsigned int elementSize, unsigned int count = 1, VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VkMemoryPropertyFlags memoryFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+		VulkanBuffer(VulkanDevice* device, unsigned int elementSize, unsigned int count = 1, VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VkMemoryPropertyFlags memoryFlags = VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 		~VulkanBuffer();
 
-		virtual void SetData();
-		virtual void SetData(unsigned int count);
-		virtual void SetData(unsigned int startIndex, unsigned int count);
+		virtual void SetData(void* ptr);
+		virtual void SetData(void* ptr, unsigned int count);
+		virtual void SetData(void* ptr, unsigned int startIndex, unsigned int count);
 
 		void MapMemory(); //TODO: This could be improved in several ways
 		void UnmapMemory();
@@ -36,7 +36,6 @@ namespace Zodiac {
 
 		VulkanDevice* m_device;
 		VkBuffer m_buffer;
-		void* m_ptr;
 		unsigned int m_elementSize;
 		unsigned int m_count;
 		VkDeviceSize m_totalSize;

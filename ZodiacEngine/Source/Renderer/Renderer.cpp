@@ -43,12 +43,14 @@ Zodiac::Renderer& Zodiac::Renderer::Get() {
 	return instance;
 }
 
-void Zodiac::Renderer::Draw() {
+void Zodiac::Renderer::Draw(float dt) {
 	vkWaitForFences(*m_device->GetDevice(), 1, &m_waitFences[m_currentFrame]->p_fence, VK_TRUE, UINT64_MAX);
 	//ErrorCheck(vkResetFences(*s_device->GetDevice(), 1, &s_waitFences[s_currentFrame]->p_fence));
 
 	uint32_t imageIndex;
 	VkResult res = vkAcquireNextImageKHR(*m_device->GetDevice(), *m_swapchain->GetSwapchain(), UINT64_MAX, m_presentSemaphores[m_currentFrame]->GetSemaphore(), VK_NULL_HANDLE, &imageIndex);
+
+	UpdateUniformBuffers(imageIndex, dt);
 
 	// From VulkanTutorial
 	if (res == VK_ERROR_OUT_OF_DATE_KHR) {
@@ -330,20 +332,20 @@ void Zodiac::Renderer::PrepareGeometry() {
 	std::vector<uint32_t> indices = { 0, 1, 2 };
 
 	//Staging buffer
-	VulkanBuffer* stagingBuffer = new Zodiac::VulkanBuffer(m_device, vertArr, sizeof(SimpleVertex), 3, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	VulkanBuffer* stagingBuffer = new Zodiac::VulkanBuffer(m_device, sizeof(SimpleVertex), 3, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	stagingBuffer->MapMemory();
-	stagingBuffer->SetData();
+	stagingBuffer->SetData(vertArr);
 	stagingBuffer->UnmapMemory();
 
 	//Device local buffer
-	m_vertexBuffer = new Zodiac::VulkanBuffer(m_device, vertArr, sizeof(SimpleVertex), 3, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	m_vertexBuffer = new Zodiac::VulkanBuffer(m_device, sizeof(SimpleVertex), 3, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-	VulkanBuffer* indexBuffer_staging = new Zodiac::VulkanBuffer(m_device, indices.data(), sizeof(uint32_t), 3, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	VulkanBuffer* indexBuffer_staging = new Zodiac::VulkanBuffer(m_device, sizeof(uint32_t), 3, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	indexBuffer_staging->MapMemory();
-	indexBuffer_staging->SetData();
+	indexBuffer_staging->SetData(indices.data());
 	indexBuffer_staging->UnmapMemory();
 
-	m_indexBuffer = new Zodiac::VulkanBuffer(m_device, indices.data(), sizeof(uint32_t), 3, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	m_indexBuffer = new Zodiac::VulkanBuffer(m_device, sizeof(uint32_t), 3, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 	VkCommandBuffer copyCommand = m_device->GetCommandBuffer(true);
 	m_vertexBuffer->CopyFrom(copyCommand, stagingBuffer);
@@ -362,7 +364,7 @@ void Zodiac::Renderer::PrepareUniformBuffers() {
 		glm::mat4 viewMatrix;
 	} uboVS;
 
-	m_uniformBuffer = new VulkanBuffer(m_device, &uboVS, sizeof(uboVS), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	m_uniformBuffer = new VulkanBuffer(m_device, sizeof(uboVS), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	m_uniformBuffer->p_descriptor.buffer = m_uniformBuffer->GetBuffer();
 	m_uniformBuffer->p_descriptor.offset = 0;
 	m_uniformBuffer->p_descriptor.range = sizeof(uboVS);
@@ -376,7 +378,7 @@ void Zodiac::Renderer::PrepareUniformBuffers() {
 	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3().z, glm::vec3(0.0f, 0.0f, 1.0f));
 
 	m_uniformBuffer->MapMemory();
-	m_uniformBuffer->SetData(); //Since the buffer has been passed a pointer at creation, it should technically be okay to do this without passing anything else
+	m_uniformBuffer->SetData(&uboVS); //Since the buffer has been passed a pointer at creation, it should technically be okay to do this without passing anything else
 	m_uniformBuffer->UnmapMemory();
 }
 
@@ -575,11 +577,6 @@ void Zodiac::Renderer::CleanupFramebuffers()
 	m_framebuffers.clear();
 }
 
-void Zodiac::Renderer::CleanupSwapchain()
-{
-	
-}
-
 void Zodiac::Renderer::CreateSyncObjects()
 {
 	m_presentSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -612,6 +609,31 @@ void Zodiac::Renderer::CleanupSyncObjects()
 	m_presentSemaphores.clear();
 	m_waitFences.clear();
 	m_imagesInFlight.clear();
+}
+
+void Zodiac::Renderer::UpdateUniformBuffers(uint32_t currentImage, float dt)
+{
+	struct {
+		glm::mat4 projectionMatrix;
+		glm::mat4 modelMatrix;
+		glm::mat4 viewMatrix;
+	} uboVS;
+
+	m_uniformBuffer->p_descriptor.range = sizeof(uboVS);
+
+	testVal += 0.5f * dt;
+
+	uboVS.projectionMatrix = glm::perspective(glm::radians(60.0f), (float)m_swapchain->GetExtent2D().width / (float)m_swapchain->GetExtent2D().height, 0.1f, 256.0f);
+	uboVS.viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -2.5)); //Last parameter is zoom
+
+	uboVS.modelMatrix = glm::mat4(1.0f);
+	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3(testVal).x, glm::vec3(1.0f, 0.0f, 0.0f)); //TODO: Add changable parameters
+	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3().y, glm::vec3(0.0f, 1.0f, 0.0f));
+	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3().z, glm::vec3(0.0f, 0.0f, 1.0f));
+
+	m_uniformBuffer->MapMemory();
+	m_uniformBuffer->SetData(&uboVS); //Since the buffer has been passed a pointer at creation, it should technically be okay to do this without passing anything else
+	m_uniformBuffer->UnmapMemory();
 }
 
 void Zodiac::Renderer::Shutdown() {

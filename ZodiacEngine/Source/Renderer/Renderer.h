@@ -20,7 +20,7 @@ namespace Zodiac {
 		void Init(VulkanDevice* device, Settings settings, VulkanSurface* surface, VulkanInstance* instance, Window* window);
 		static Renderer& Get();
 
-		void Draw();
+		void Draw(float dt); //Delta time for test purposes
 
 		void BeginDynamicRendering(VkCommandBuffer commandBuffer, int imageIndex, VkClearValue* pClearColor, VkClearValue* pDepthValue);
 
@@ -64,8 +64,9 @@ namespace Zodiac {
 		void RecordCommandBuffer(int32_t index, bool secondBarrier = false);
 		void RecreateSwapChain();
 		void CleanupFramebuffers();
-		void CleanupSwapchain();
 		void CleanupSyncObjects();
+
+		void UpdateUniformBuffers(uint32_t currentImage, float dt); //Delta time for test purposes
 
 		static const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -100,5 +101,7 @@ namespace Zodiac {
 		std::unique_ptr<ImGuiLayer> m_imgui = nullptr;
 
 		bool m_swapchainDirty = false;
+
+		float testVal = 0.0f; //For testing updating uniform buffers
 	};
 }
