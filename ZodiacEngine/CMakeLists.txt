@@ -4,6 +4,7 @@ project(ZodiacEngine LANGUAGES CXX)
 file(GLOB_RECURSE ENGINE_SOURCES
 	"${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/*.h"
+	"${CMAKE_CURRENT_SOURCE_DIR}/*.hpp"
 )
 
 # Automatically create Visual Studio filters based on folder + file type
@@ -56,6 +57,7 @@ target_include_directories(${PROJECT_NAME}
 		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/GLFW/include
 		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glm
 		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui
+		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/entt
 		"$ENV{VULKAN_SDK}/Include"
 	PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/GLFW/lib-vc2015
