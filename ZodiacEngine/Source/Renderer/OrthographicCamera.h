@@ -4,27 +4,19 @@
 namespace Zodiac {
 	class OrthographicCamera : public Camera {
 	public:
-		OrthographicCamera(float left, float right, float bottom, float top);
+		OrthographicCamera(float left, float right, float bottom, float top, float nearClip = -1.0f, float farClip = 1.0f);
 		~OrthographicCamera();
 
-		void setPosition(const glm::vec3& pos);
-		void setRotation(float rotation);
-
-		const glm::vec3& getPosition() const;
-		const float getRotation() const;
-
-		const glm::mat4& getProjectionMatrix() const;
-		const glm::mat4& getViewMatrix() const;
-		const glm::mat4& getModelMatrix() const;
+		const glm::mat4& GetProjection() const override;
 
 	private:
-		void RecalculateViewMatrix();
+		float m_left = 0.0f;
+		float m_right = 0.0f;
+		float m_bottom = 0.0f;
+		float m_top = 0.0f;
+		float m_nearClip = -1.0f;
+		float m_farClip = 1.0f;
 
 		glm::mat4 m_projMat;
-		glm::mat4 m_viewMat;
-		glm::mat4 m_modelMat;
-
-		glm::vec3 m_position;
-		float m_rotation;
 	};
 }

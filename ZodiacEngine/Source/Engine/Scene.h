@@ -10,5 +10,6 @@ namespace Zodiac {
 
 	private:
 		PerspectiveCamera m_mainCamera;
+		entt::registry m_registry;
 	};
 }

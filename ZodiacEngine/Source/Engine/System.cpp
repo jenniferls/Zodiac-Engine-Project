@@ -4,6 +4,7 @@
 
 #include <vulkan/vulkan.h>
 #include "Validation.h"
+#include "PerspectiveCamera.h"
 
 Zodiac::System::System(const char* applicationName) {
 	m_vulkanConfig.app_name = applicationName;
@@ -19,6 +20,8 @@ Zodiac::System::System(const char* applicationName) {
 Zodiac::System::~System() {
 	delete m_surface; //Has to be deleted after swapchains associated to it
 
+	delete m_mainCamera;
+
 	delete m_buffer;
 	delete m_device;
 	delete m_physical_device;
@@ -33,6 +36,8 @@ bool Zodiac::System::Init() {
 	m_window->SetRenderer(&Renderer::Get());
 
 	std::cout << "Selected physical device: " << m_physical_device->GetDeviceProperties().deviceName << std::endl;
+
+	m_mainCamera = new PerspectiveCamera(60.0f, (float)m_window->GetWidth() / (float)m_window->GetHeight(), 0.1f, 100.0f);
 
 	/////// Tests ///////
 	//VkCommandBuffer* commands = new VkCommandBuffer[3]; //Command buffers test

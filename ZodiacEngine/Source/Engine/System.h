@@ -11,6 +11,7 @@
 #include "VulkanSurface.h"
 
 #include "Renderer.h"
+#include "Camera.h"
 
 //This class acts more or less as a testbed for now
 namespace Zodiac {
@@ -30,6 +31,7 @@ namespace Zodiac {
 
 		Settings m_settings;
 		Clock m_clock;
+		Camera* m_mainCamera;
 
 		VulkanConfiguration m_vulkanConfig;
 		VulkanInstance* m_instance;
