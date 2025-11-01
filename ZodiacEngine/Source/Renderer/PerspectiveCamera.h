@@ -9,14 +9,16 @@ namespace Zodiac {
 
 		const glm::mat4& GetProjection() const override;
 
+		void SetFoV(float fov);
+
 	private:
+		void RecalculateProjectionMatrix();
+
 		float m_fov;
 		float m_aspectRatio;
 		float m_nearClip;
 		float m_farClip;
 
 		glm::mat4 m_projMat;
-
-		float m_camSpeed;
 	};
 }

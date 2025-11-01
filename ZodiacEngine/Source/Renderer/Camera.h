@@ -12,7 +12,12 @@ namespace Zodiac {
 		const glm::vec3& GetRotation() const { return m_rotation; }
 		const glm::mat4& GetView() const { return m_view; }
 
+		void SetPosition(const glm::vec3& position);
+		void SetRotation(const glm::vec3& rotation);
+
 	protected: 
+		void RecalculateViewMatrix();
+
 		glm::mat4 m_view = glm::mat4(1.0f);
 		glm::vec3 m_position = glm::vec3(0.0f);
 		glm::vec3 m_rotation = glm::vec3(0.0f);
