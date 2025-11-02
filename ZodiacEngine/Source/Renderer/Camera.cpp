@@ -1,6 +1,11 @@
 #include <Zodiacpch.h>
 #include "Camera.h"
 
+Zodiac::Camera::Camera()
+{
+	RecalculateViewMatrix();
+}
+
 void Zodiac::Camera::SetPosition(const glm::vec3& position)
 {
 	m_position = position;
@@ -19,5 +24,5 @@ void Zodiac::Camera::RecalculateViewMatrix()
 		glm::rotate(glm::mat4(1.0f), glm::radians(m_rotation.x), glm::vec3(1, 0, 0)) *
 		glm::rotate(glm::mat4(1.0f), glm::radians(m_rotation.y), glm::vec3(0, 1, 0)) *
 		glm::rotate(glm::mat4(1.0f), glm::radians(m_rotation.z), glm::vec3(0, 0, 1));
-	m_view = glm::inverse(transform);
+	m_view = transform;
 }

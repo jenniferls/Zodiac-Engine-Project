@@ -43,16 +43,14 @@ Zodiac::Renderer& Zodiac::Renderer::Get() {
 	return instance;
 }
 
-void Zodiac::Renderer::Draw(float dt) {
+void Zodiac::Renderer::Draw(float dt, Camera* mainCamera) {
 	vkWaitForFences(*m_device->GetDevice(), 1, &m_waitFences[m_currentFrame]->p_fence, VK_TRUE, UINT64_MAX);
-	//ErrorCheck(vkResetFences(*s_device->GetDevice(), 1, &s_waitFences[s_currentFrame]->p_fence));
 
 	uint32_t imageIndex;
 	VkResult res = vkAcquireNextImageKHR(*m_device->GetDevice(), *m_swapchain->GetSwapchain(), UINT64_MAX, m_presentSemaphores[m_currentFrame]->GetSemaphore(), VK_NULL_HANDLE, &imageIndex);
 
-	UpdateUniformBuffers(imageIndex, dt);
+	UpdateUniformBuffers(imageIndex, dt, mainCamera);
 
-	// From VulkanTutorial
 	if (res == VK_ERROR_OUT_OF_DATE_KHR) {
 		RecreateSwapChain();
 		return;
@@ -73,7 +71,7 @@ void Zodiac::Renderer::Draw(float dt) {
 	//This part is messy right now. Should try async instead and also make helper functions
 	if (m_showGui) {
 		RecordCommandBuffer(imageIndex);
-		m_imgui->UpdateGUI();
+		m_imgui->UpdateGUI(mainCamera);
 		VkCommandBuffer imguiCommandBuffer = m_imgui->PrepareCommandBuffer(imageIndex);
 		VkCommandBuffer commandBuffers[] = { m_drawCmdBuffers[imageIndex], imguiCommandBuffer };
 
@@ -611,7 +609,7 @@ void Zodiac::Renderer::CleanupSyncObjects()
 	m_imagesInFlight.clear();
 }
 
-void Zodiac::Renderer::UpdateUniformBuffers(uint32_t currentImage, float dt)
+void Zodiac::Renderer::UpdateUniformBuffers(uint32_t currentImage, float dt, Camera* mainCamera)
 {
 	struct {
 		glm::mat4 projectionMatrix;
@@ -623,8 +621,8 @@ void Zodiac::Renderer::UpdateUniformBuffers(uint32_t currentImage, float dt)
 
 	testVal += 0.5f * dt;
 
-	uboVS.projectionMatrix = glm::perspective(glm::radians(60.0f), (float)m_swapchain->GetExtent2D().width / (float)m_swapchain->GetExtent2D().height, 0.1f, 256.0f);
-	uboVS.viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -2.5)); //Last parameter is zoom
+	uboVS.projectionMatrix = mainCamera->GetProjection();
+	uboVS.viewMatrix = mainCamera->GetView();
 
 	uboVS.modelMatrix = glm::mat4(1.0f);
 	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3(testVal).x, glm::vec3(1.0f, 0.0f, 0.0f)); //TODO: Add changable parameters

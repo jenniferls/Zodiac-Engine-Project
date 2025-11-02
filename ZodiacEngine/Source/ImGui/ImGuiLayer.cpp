@@ -9,6 +9,7 @@
 #include "Validation.h"
 #include "Renderer.h"
 #include "Initializers.h"
+#include "PerspectiveCamera.h"
 
 Zodiac::VulkanDevice* Zodiac::ImGuiLayer::s_device;
 VkDescriptorPool Zodiac::ImGuiLayer::s_descriptorPool;
@@ -35,7 +36,7 @@ void Zodiac::ImGuiLayer::Shutdown()
 	vkDestroyDescriptorPool(*s_device->GetDevice(), s_descriptorPool, NULL);
 }
 
-void Zodiac::ImGuiLayer::UpdateGUI() {
+void Zodiac::ImGuiLayer::UpdateGUI(Camera* camera) {
 	ImGuiIO& io = ImGui::GetIO();
 
 	// Start the Dear ImGui frame
@@ -45,6 +46,7 @@ void Zodiac::ImGuiLayer::UpdateGUI() {
 
 	Renderer& renderer = Renderer::Get();
 	Settings& settings = renderer.GetSettings();
+	PerspectiveCamera* cam = static_cast<PerspectiveCamera*>(camera);
 
 	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
 	if (m_showDemoWindow)
@@ -52,7 +54,7 @@ void Zodiac::ImGuiLayer::UpdateGUI() {
 
 	// 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
 	{
-		static float f = 0.0f;
+		static float fov = cam->GetFoV();
 		static int counter = 0;
 		bool vsync = settings.vsync;
 		glm::vec4 clear_color = m_clearColor;
@@ -67,7 +69,10 @@ void Zodiac::ImGuiLayer::UpdateGUI() {
 			renderer.SetSwapchainDirty();
 		}
 
-		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+		ImGui::SliderFloat("FoV", &fov, 0.0f, 180.0f);
+		if (fov != cam->GetFoV()) {
+			cam->SetFoV(fov);
+		}
 		ImGui::ColorEdit3("clear color", (float*)&m_clearColor); // Edit 3 floats representing a color
 		if (clear_color != m_clearColor) {
 			renderer.SetClearColor(m_clearColor);

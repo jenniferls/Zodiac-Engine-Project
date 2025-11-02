@@ -3,7 +3,7 @@
 namespace Zodiac {
 	class Camera {
 	public:
-		Camera() = default;
+		Camera();
 		virtual ~Camera() = default;
 
 		virtual const glm::mat4& GetProjection() const = 0;
@@ -19,7 +19,7 @@ namespace Zodiac {
 		void RecalculateViewMatrix();
 
 		glm::mat4 m_view = glm::mat4(1.0f);
-		glm::vec3 m_position = glm::vec3(0.0f);
+		glm::vec3 m_position = glm::vec3(0.0f, 0.0f, -2.5f);
 		glm::vec3 m_rotation = glm::vec3(0.0f);
 	};
 }

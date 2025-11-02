@@ -6,6 +6,7 @@
 #include "imgui/imgui.h"
 
 #include "Window.h"
+#include "Camera.h"
 
 namespace Zodiac {
 	class ImGuiLayer {
@@ -17,7 +18,7 @@ namespace Zodiac {
 		static void Shutdown();
 
 		bool Init(GLFWwindow* window, VulkanDevice* device, VulkanInstance* instance);
-		void UpdateGUI();
+		void UpdateGUI(Camera* camera);
 		VkCommandBuffer PrepareCommandBuffer(int image);
 
 	private:

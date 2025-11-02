@@ -9,6 +9,8 @@
 #include "VulkanFence.h"
 #include "VulkanBuffer.h"
 
+#include "Camera.h"
+
 namespace Zodiac {
 	class Renderer {
 	public:
@@ -20,7 +22,7 @@ namespace Zodiac {
 		void Init(VulkanDevice* device, Settings settings, VulkanSurface* surface, VulkanInstance* instance, Window* window);
 		static Renderer& Get();
 
-		void Draw(float dt); //Delta time for test purposes
+		void Draw(float dt, Camera* mainCamera); //Delta time and camera for test purposes
 
 		void BeginDynamicRendering(VkCommandBuffer commandBuffer, int imageIndex, VkClearValue* pClearColor, VkClearValue* pDepthValue);
 
@@ -66,7 +68,7 @@ namespace Zodiac {
 		void CleanupFramebuffers();
 		void CleanupSyncObjects();
 
-		void UpdateUniformBuffers(uint32_t currentImage, float dt); //Delta time for test purposes
+		void UpdateUniformBuffers(uint32_t currentImage, float dt, Camera* mainCamera); //Delta time for test purposes
 
 		static const int MAX_FRAMES_IN_FLIGHT = 2;
 

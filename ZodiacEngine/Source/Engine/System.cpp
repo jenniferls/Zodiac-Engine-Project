@@ -69,7 +69,7 @@ void Zodiac::System::Run() {
 		if (!renderer.m_prepared) {
 			return;
 		}
-		renderer.Draw(m_clock.GetDeltaTime());
+		renderer.Draw(m_clock.GetDeltaTime(), m_mainCamera);
 	}
 	vkDeviceWaitIdle(*m_device->GetDevice()); //Test
 

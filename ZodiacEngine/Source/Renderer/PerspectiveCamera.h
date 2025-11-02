@@ -9,6 +9,7 @@ namespace Zodiac {
 
 		const glm::mat4& GetProjection() const override;
 
+		float GetFoV() const { return m_fov; }
 		void SetFoV(float fov);
 
 	private:
