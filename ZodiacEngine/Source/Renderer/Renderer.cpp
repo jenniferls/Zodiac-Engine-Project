@@ -356,27 +356,13 @@ void Zodiac::Renderer::PrepareGeometry() {
 }
 
 void Zodiac::Renderer::PrepareUniformBuffers() {
-	struct {
-		glm::mat4 projectionMatrix;
-		glm::mat4 modelMatrix;
-		glm::mat4 viewMatrix;
-	} uboVS;
-
 	m_uniformBuffer = new VulkanBuffer(m_device, sizeof(uboVS), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	m_uniformBuffer->p_descriptor.buffer = m_uniformBuffer->GetBuffer();
 	m_uniformBuffer->p_descriptor.offset = 0;
 	m_uniformBuffer->p_descriptor.range = sizeof(uboVS);
 
-	uboVS.projectionMatrix = glm::perspective(glm::radians(60.0f), (float)m_swapchain->GetExtent2D().width / (float)m_swapchain->GetExtent2D().height, 0.1f, 256.0f);
-	uboVS.viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -2.5)); //Last parameter is zoom
-	
-	uboVS.modelMatrix = glm::mat4(1.0f);
-	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3().x, glm::vec3(1.0f, 0.0f, 0.0f)); //TODO: Add changable parameters
-	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3().y, glm::vec3(0.0f, 1.0f, 0.0f));
-	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3().z, glm::vec3(0.0f, 0.0f, 1.0f));
-
 	m_uniformBuffer->MapMemory();
-	m_uniformBuffer->SetData(&uboVS); //Since the buffer has been passed a pointer at creation, it should technically be okay to do this without passing anything else
+	m_uniformBuffer->SetData(&uboVS);
 	m_uniformBuffer->UnmapMemory();
 }
 
@@ -611,12 +597,6 @@ void Zodiac::Renderer::CleanupSyncObjects()
 
 void Zodiac::Renderer::UpdateUniformBuffers(uint32_t currentImage, float dt, Camera* mainCamera)
 {
-	struct {
-		glm::mat4 projectionMatrix;
-		glm::mat4 modelMatrix;
-		glm::mat4 viewMatrix;
-	} uboVS;
-
 	m_uniformBuffer->p_descriptor.range = sizeof(uboVS);
 
 	testVal += 0.5f * dt;

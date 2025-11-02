@@ -12,6 +12,12 @@
 #include "Camera.h"
 
 namespace Zodiac {
+	struct PerFrameUniformData{
+		glm::mat4 projectionMatrix;
+		glm::mat4 modelMatrix;
+		glm::mat4 viewMatrix;
+	};
+
 	class Renderer {
 	public:
 		Renderer(const Renderer&) = delete;
@@ -105,5 +111,6 @@ namespace Zodiac {
 		bool m_swapchainDirty = false;
 
 		float testVal = 0.0f; //For testing updating uniform buffers
+		PerFrameUniformData uboVS; //For testing updating uniform buffers
 	};
 }
