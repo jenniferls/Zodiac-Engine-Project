@@ -21,6 +21,8 @@ namespace Zodiac {
 		void UpdateGUI(Camera* camera);
 		VkCommandBuffer PrepareCommandBuffer(int image);
 
+		bool HasBeenInitialized() const { return m_initialized; }
+
 	private:
 		static void SetupRenderPass(); //Not Used with dynamic rendering
 		static void SetupDescriptorPool();
@@ -41,5 +43,6 @@ namespace Zodiac {
 		uint32_t m_minImageCount = 2; //Should be updated during main loop
 		bool m_showDemoWindow = false;
 		bool m_showAnotherWindow = false;
+		bool m_initialized = false;
 	};
 }

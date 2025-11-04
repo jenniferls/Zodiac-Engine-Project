@@ -345,6 +345,7 @@ bool Zodiac::ImGuiLayer::Init(GLFWwindow* window, VulkanDevice* device, VulkanIn
 
 	//ImGui_ImplVulkan_DestroyFontUploadObjects();
 
+	m_initialized = true;
 	return true;
 }
 

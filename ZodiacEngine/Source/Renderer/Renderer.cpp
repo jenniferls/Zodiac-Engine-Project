@@ -615,7 +615,7 @@ void Zodiac::Renderer::UpdateUniformBuffers(uint32_t currentImage, float dt, Cam
 }
 
 void Zodiac::Renderer::Shutdown() {
-	if (m_showGui) {
+	if (m_imgui->HasBeenInitialized()) {
 		m_imgui->Shutdown();
 	}
 

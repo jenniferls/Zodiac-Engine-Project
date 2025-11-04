@@ -44,12 +44,6 @@ void Zodiac::Camera::Update(float dt, const CameraMovement& movement)
 
 void Zodiac::Camera::RecalculateViewMatrix()
 {
-	//glm::mat4 transform = glm::translate(glm::mat4(1.0f), m_position) *
-	//	glm::rotate(glm::mat4(1.0f), glm::radians(m_rotation.x), glm::vec3(1, 0, 0)) *
-	//	glm::rotate(glm::mat4(1.0f), glm::radians(m_rotation.y), glm::vec3(0, 1, 0)) *
-	//	glm::rotate(glm::mat4(1.0f), glm::radians(m_rotation.z), glm::vec3(0, 0, 1));
-	//m_view = transform;
-
 	//glm::vec3 direction;
 	//direction.x = cos(glm::radians(m_rotation.y)) * cos(glm::radians(m_rotation.x));
 	//direction.y = sin(glm::radians(m_rotation.x));
