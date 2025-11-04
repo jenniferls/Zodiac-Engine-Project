@@ -11,6 +11,7 @@ Zodiac::System::System(const char* applicationName) {
 	m_vulkanConfig.app_version = VK_MAKE_VERSION(0, 1, 0);
 
 	m_window = std::unique_ptr<Window>(Window::Create());
+	m_inputHandler = std::make_unique<InputHandler>();
 
 	if (m_settings.overlay) {
 		Renderer::Get().m_showGui = true;
@@ -34,6 +35,7 @@ bool Zodiac::System::Init() {
 	InitVulkan();
 
 	m_window->SetRenderer(&Renderer::Get());
+	m_window->SetInputHandler(m_inputHandler.get());
 
 	std::cout << "Selected physical device: " << m_physical_device->GetDeviceProperties().deviceName << std::endl;
 
@@ -65,6 +67,7 @@ void Zodiac::System::Run() {
 	Renderer& renderer = Renderer::Get();
 	while (!m_window->WindowShouldClose()) {
 		m_clock.Tick();
+		m_mainCamera->Update(m_clock.GetDeltaTime(), m_inputHandler->GetCameraMovement());
 		m_window->PollWindowEvents();
 		if (!renderer.m_prepared) {
 			return;

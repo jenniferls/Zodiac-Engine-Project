@@ -14,7 +14,7 @@ Zodiac::PerspectiveCamera::~PerspectiveCamera() {
 
 const glm::mat4& Zodiac::PerspectiveCamera::GetProjection() const
 {
-	return glm::perspective(glm::radians(m_fov), m_aspectRatio, m_nearClip, m_farClip);
+	return glm::perspectiveLH_ZO(glm::radians(m_fov), m_aspectRatio, m_nearClip, m_farClip);
 }
 
 void Zodiac::PerspectiveCamera::SetFoV(float fov)
@@ -25,5 +25,5 @@ void Zodiac::PerspectiveCamera::SetFoV(float fov)
 
 void Zodiac::PerspectiveCamera::RecalculateProjectionMatrix()
 {
-	m_projMat = glm::perspective(glm::radians(m_fov), m_aspectRatio, m_nearClip, m_farClip);
+	m_projMat = glm::perspectiveLH_ZO(glm::radians(m_fov), m_aspectRatio, m_nearClip, m_farClip);
 }

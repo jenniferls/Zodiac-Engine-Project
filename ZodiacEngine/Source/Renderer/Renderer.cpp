@@ -605,8 +605,8 @@ void Zodiac::Renderer::UpdateUniformBuffers(uint32_t currentImage, float dt, Cam
 	uboVS.viewMatrix = mainCamera->GetView();
 
 	uboVS.modelMatrix = glm::mat4(1.0f);
-	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3(testVal).x, glm::vec3(1.0f, 0.0f, 0.0f)); //TODO: Add changable parameters
-	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3().y, glm::vec3(0.0f, 1.0f, 0.0f));
+	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3().x, glm::vec3(1.0f, 0.0f, 0.0f)); //TODO: Add changable parameters
+	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3(testVal).y, glm::vec3(0.0f, 1.0f, 0.0f));
 	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3().z, glm::vec3(0.0f, 0.0f, 1.0f));
 
 	m_uniformBuffer->MapMemory();

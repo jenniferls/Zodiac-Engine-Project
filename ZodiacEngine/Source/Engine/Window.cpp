@@ -38,6 +38,15 @@ const Zodiac::WindowProperties& Zodiac::Window::GetWindowProperties() const
 	return m_windowProps;
 }
 
+void Zodiac::Window::SetGLFWCallbacks()
+{
+	glfwSetWindowUserPointer(m_window, this);
+	glfwSetFramebufferSizeCallback(m_window, glfw_resize_callback);
+	glfwSetKeyCallback(m_window, glfw_key_callback);
+	glfwSetMouseButtonCallback(m_window, glfw_mouse_button_callback);
+	glfwSetCursorPosCallback(m_window, glfw_cursor_position_callback);
+}
+
 void Zodiac::Window::glfw_resize_callback(GLFWwindow* window, int w, int h) {
 	auto win = static_cast<Window*>(glfwGetWindowUserPointer(window));
 
@@ -53,6 +62,8 @@ void Zodiac::Window::glfw_key_callback(GLFWwindow* window, int key, int scancode
 {
 	auto win = static_cast<Window*>(glfwGetWindowUserPointer(window));
 
+	bool press = action != GLFW_RELEASE;
+
 	switch (key) {
 		case GLFW_KEY_SPACE:
 			if (action == GLFW_PRESS) {
@@ -64,8 +75,20 @@ void Zodiac::Window::glfw_key_callback(GLFWwindow* window, int key, int scancode
 			if (action == GLFW_PRESS) {
 				glfwSetWindowShouldClose(window, GLFW_TRUE);
 			}
-		break;
+			break;
 	}
+
+	win->m_inputHandler->HandleCameraMovement(key, action, mods);
+}
+
+void Zodiac::Window::glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
+{
+
+}
+
+void Zodiac::Window::glfw_cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
+{
+
 }
 
 void Zodiac::Window::Init(const WindowProperties& props) {
@@ -74,17 +97,15 @@ void Zodiac::Window::Init(const WindowProperties& props) {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 4);
 	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE); //TODO: Make it truly resizable or put to VK_FALSE
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 	if (!glfwVulkanSupported()) {
 		throw std::runtime_error("GLFW ERROR: VULKAN IS NOT SUPPORTED!");
 	}
 	m_window = glfwCreateWindow(props.Width, props.Height, props.Title.c_str(), nullptr, nullptr);
-	glfwSetWindowUserPointer(m_window, this);
 
 	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-	glfwSetFramebufferSizeCallback(m_window, glfw_resize_callback);
-	glfwSetKeyCallback(m_window, glfw_key_callback);
+	SetGLFWCallbacks();
 
 	std::cout << "GLFW initialization successful!" << std::endl;
 }

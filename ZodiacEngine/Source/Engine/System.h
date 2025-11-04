@@ -12,6 +12,7 @@
 
 #include "Renderer.h"
 #include "Camera.h"
+#include "InputHandler.h"
 
 //This class acts more or less as a testbed for now
 namespace Zodiac {
@@ -41,5 +42,6 @@ namespace Zodiac {
 		VulkanSurface* m_surface;
 
 		std::unique_ptr<Window> m_window;
+		std::unique_ptr<InputHandler> m_inputHandler;
 	};
 }

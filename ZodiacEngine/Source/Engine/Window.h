@@ -1,6 +1,7 @@
 #pragma once
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#include "InputHandler.h"
 
 namespace Zodiac {
 	struct WindowProperties {
@@ -35,15 +36,21 @@ namespace Zodiac {
 		unsigned int GetHeight() const { return m_windowProps.Height; }
 
 		void SetRenderer(Renderer* renderer) { m_renderer = renderer; }
+		void SetInputHandler(InputHandler* inputHandler) { m_inputHandler = inputHandler; }
+
+		void SetGLFWCallbacks();
 
 		static void glfw_resize_callback(GLFWwindow* window, int w, int h);
 		static void glfw_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+		static void glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+		static void glfw_cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
 
 	private:
 		void Init(const WindowProperties& props);
 
 		GLFWwindow* m_window = nullptr;
 		Renderer* m_renderer = nullptr;
+		InputHandler* m_inputHandler = nullptr;
 		WindowProperties m_windowProps;
 
 		bool windowShouldClose = false;
