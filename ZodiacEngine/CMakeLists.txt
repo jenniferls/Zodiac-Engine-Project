@@ -58,6 +58,7 @@ target_include_directories(${PROJECT_NAME}
 		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/glm
 		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui
 		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/entt
+		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/SPIRV-Reflect
 		"$ENV{VULKAN_SDK}/Include"
 	PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/GLFW/lib-vc2015

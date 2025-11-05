@@ -5,7 +5,8 @@
 namespace Zodiac {
 	class VulkanShaderModule {
 	public:
-		VulkanShaderModule(VulkanDevice* device, const char* source);
+		VulkanShaderModule(VulkanDevice* device, const char* path);
+		VulkanShaderModule(VulkanDevice* device, std::vector<char> source); //Create from precompiled shader data directly
 		~VulkanShaderModule();
 
 		VkShaderModule* GetShaderModule();
