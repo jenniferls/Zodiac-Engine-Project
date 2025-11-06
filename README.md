@@ -14,3 +14,4 @@ Uses dynamic rendering for imgui but render passes for the main render.
 - glm
 - ImGui
 - EnTT
+- SPIRV-Reflect
