@@ -2,11 +2,12 @@
 #include "VulkanShaderModule.h"
 #include "Initializers.h"
 #include "Validation.h"
+#include "Utility.h"
 
 Zodiac::VulkanShaderModule::VulkanShaderModule(VulkanDevice* device, const char* path) {
 	m_device = device->GetDevice();
 
-	std::vector<char> content = ReadFile(path);
+	std::vector<char> content = FileUtil::ReadBinaryFile(path);
 	if (content.size() != 0) {
 		VkShaderModuleCreateInfo shader_module_create_info = Initializers::ShaderModuleCreateInfo(content);
 		ErrorCheck(vkCreateShaderModule(*m_device, &shader_module_create_info, nullptr, &m_shaderModule));
@@ -35,23 +36,4 @@ Zodiac::VulkanShaderModule::~VulkanShaderModule() {
 
 VkShaderModule* Zodiac::VulkanShaderModule::GetShaderModule() {
 	return &m_shaderModule;
-}
-
-std::vector<char> Zodiac::VulkanShaderModule::ReadFile(const char* source) {
-	std::ifstream file(source, std::ios::binary);
-	if (!file.fail()) {
-		std::streampos begin, end;
-		begin = file.tellg();
-		file.seekg(0, std::ios::end);
-		end = file.tellg();
-
-		std::vector<char> result(static_cast<size_t>(end - begin));
-		file.seekg(0, std::ios::beg);
-		file.read(&result[0], end - begin);
-		file.close();
-		return result;
-	}
-
-	std::cout << "Could not open \"" << source << "\" file!" << std::endl;
-	return std::vector<char>();
 }

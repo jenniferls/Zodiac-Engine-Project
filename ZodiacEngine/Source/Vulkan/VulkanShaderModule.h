@@ -12,8 +12,6 @@ namespace Zodiac {
 		VkShaderModule* GetShaderModule();
 
 	private:
-		std::vector<char> ReadFile(const char* source);
-
 		VkShaderModule m_shaderModule = nullptr;
 		VkDevice* m_device;
 	};
