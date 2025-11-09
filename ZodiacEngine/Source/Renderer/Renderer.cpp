@@ -5,6 +5,7 @@
 #include "Validation.h"
 #include "VulkanShaderModule.h"
 #include "Vertex.h"
+#include "ShaderCompiler.h"
 
 const int Zodiac::Renderer::MAX_FRAMES_IN_FLIGHT;
 
@@ -259,6 +260,8 @@ void Zodiac::Renderer::SetupFramebuffers() {
 bool Zodiac::Renderer::SetupPipeline() {
 	VulkanShaderModule vertexShader(m_device, (std::string(SHADERS_DIR) + "/triangle.vert.spv").c_str());
 	VulkanShaderModule fragmentShader(m_device, (std::string(SHADERS_DIR) + "/triangle.frag.spv").c_str());
+
+	ShaderCompiler::Get().CompileShaderFromText(m_device->GetDevice(), (std::string(SHADERS_DIR) + "/test.slang").c_str());
 
 	if ((vertexShader.GetShaderModule() == nullptr) || (fragmentShader.GetShaderModule() == nullptr)) {
 		return false;

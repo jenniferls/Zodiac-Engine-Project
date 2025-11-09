@@ -59,6 +59,7 @@ target_include_directories(${PROJECT_NAME}
 		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui
 		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/entt
 		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/SPIRV-Reflect
+		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/slang/include
 		"$ENV{VULKAN_SDK}/Include"
 	PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/GLFW/lib-vc2015
@@ -68,11 +69,17 @@ target_include_directories(${PROJECT_NAME}
 # Set GLFW path
 set(GLFW_LIB ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/GLFW/lib-vc2015/glfw3.lib)
 
+target_link_directories(${PROJECT_NAME}
+	PRIVATE
+		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/slang/lib
+)
+
 # Link libraries
 target_link_libraries(${PROJECT_NAME}
 		PRIVATE
 			${Vulkan_LIBRARIES}
 			${GLFW_LIB}
+			slang.lib
 )
 
 # ImGui
@@ -89,6 +96,21 @@ target_include_directories(ImGui PUBLIC
 target_link_libraries(${PROJECT_NAME} PRIVATE ImGui)
 
 # Post-build, copy shaders and resources
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		"${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/Slang/bin/slang.dll"
+		"$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		"${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/Slang/bin/slang-compiler.dll"
+		"$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		"${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/Slang/bin/slangc.pdb"
+		"$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different
+		"${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/Slang/bin/slang-compiler.pdb"
+		"$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+)
+
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
 		"${CMAKE_SOURCE_DIR}/ZodiacEngine/Shaders"

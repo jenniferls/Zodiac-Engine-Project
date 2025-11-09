@@ -1,20 +1,31 @@
 #pragma once
 #include <vulkan/vulkan.h>
 #include <slang/slang.h>
-#include "glslang/Include/glslang_c_interface.h"
+#include <slang/slang-com-ptr.h>
 
 namespace Zodiac {
 	class ShaderCompiler {
 	public:
-		ShaderCompiler() = default;
+		ShaderCompiler(const ShaderCompiler&) = delete;
+		void operator=(ShaderCompiler const&) = delete;
+
+		static ShaderCompiler& Get();
+
 		~ShaderCompiler() = default;
 
-		std::vector<uint32_t> CompileShaderFromText(VkDevice device, const char* path);
+		std::vector<uint32_t> CompileShaderFromText(VkDevice* device, const char* path);
 
 	private:
+		ShaderCompiler();
+
 		bool CompileShader();
 		bool LoadShaderProgram(VkDevice device);
-		static glslang_stage_t GetShaderStageFromFilename(const char* filename);
+		void SlangCreateGlobalSession();
 		void DiagnoseIfNeeded(slang::IBlob* diagnosticsBlob);
+		void PrintEntrypointHashes(int entryPointCount, int targetCount, slang::IComponentType* composedProgram);
+
+		Slang::ComPtr<slang::IGlobalSession> m_globalSession = nullptr;
+		Slang::ComPtr<slang::ISession> m_slangSession = nullptr;
+		uint64_t m_globalCounter = 0;
 	};
 }
