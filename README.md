@@ -15,3 +15,4 @@ Uses dynamic rendering for imgui but render passes for the main render.
 - ImGui
 - EnTT
 - SPIRV-Reflect
+- slang
