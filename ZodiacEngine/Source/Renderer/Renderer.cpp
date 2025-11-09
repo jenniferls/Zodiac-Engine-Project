@@ -261,7 +261,8 @@ bool Zodiac::Renderer::SetupPipeline() {
 	VulkanShaderModule vertexShader(m_device, (std::string(SHADERS_DIR) + "/triangle.vert.spv").c_str());
 	VulkanShaderModule fragmentShader(m_device, (std::string(SHADERS_DIR) + "/triangle.frag.spv").c_str());
 
-	ShaderCompiler::Get().CompileShaderFromText(m_device->GetDevice(), (std::string(SHADERS_DIR) + "/test.slang").c_str());
+	ShaderCompiler::Get().CompileShaderFromText(m_device, (std::string(SHADERS_DIR) + "/test.slang").c_str());
+	//VulkanShaderModule slangShader(m_device, ShaderCompiler::Get().GetSPIRV(), ShaderCompiler::Get().GetSPIRVSize());
 
 	if ((vertexShader.GetShaderModule() == nullptr) || (fragmentShader.GetShaderModule() == nullptr)) {
 		return false;
@@ -271,6 +272,18 @@ bool Zodiac::Renderer::SetupPipeline() {
 		{ Initializers::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT, *vertexShader.GetShaderModule()) },
 		{ Initializers::PipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT, *fragmentShader.GetShaderModule()) }
 	};
+	//Create shader stages for multiple entrypoints in a single shader module, from vk_slang_editor
+	//std::vector<VkPipelineShaderStageCreateInfo> shaderStageCreateInfos(entrypointIndices.size());
+	//for (size_t shader = 0; shader < entrypointIndices.size(); shader++) {
+	//	const size_t entrypointIndex = entrypointIndices[shader];
+	//	VkPipelineShaderStageCreateInfo shaderInfo{
+	//		.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+	//		.stage = entrypointStages[entrypointIndex],
+	//		.module = resources.shaderModule,
+	//		.pName = entrypointNames[entrypointIndex].c_str()
+	//	};
+	//	shaders[shader] = shaderInfo;
+	//}
 
 	std::vector<VkVertexInputBindingDescription> vertexBindingDescriptions = {
 		{ Initializers::VertexInputBindingDescription(0, sizeof(SimpleVertex)) }

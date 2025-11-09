@@ -246,6 +246,17 @@ VkShaderModuleCreateInfo Zodiac::Initializers::ShaderModuleCreateInfo(std::vecto
 	return info;
 }
 
+VkShaderModuleCreateInfo Zodiac::Initializers::ShaderModuleCreateInfo(const uint32_t* spirvData, size_t size) {
+	VkShaderModuleCreateInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	info.pNext = nullptr;
+	info.flags = 0;
+	info.codeSize = size;
+	info.pCode = spirvData;
+
+	return info;
+}
+
 VkPipelineVertexInputStateCreateInfo Zodiac::Initializers::PipelineVertexInputStateCreateInfo(std::vector<VkVertexInputBindingDescription>& vertexInputBindingDesc, std::vector<VkVertexInputAttributeDescription>& vertexInputAttrDesc) {
 	VkPipelineVertexInputStateCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

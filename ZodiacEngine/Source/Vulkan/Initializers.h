@@ -27,6 +27,7 @@ namespace Zodiac { namespace Initializers {
 		VkBufferCreateInfo BufferCreateInfo(VkDeviceSize size, VkBufferUsageFlags usage_flags);
 		VkMemoryAllocateInfo MemoryAllocateInfo(VkDeviceSize size, uint32_t memory_type_index);
 		VkShaderModuleCreateInfo ShaderModuleCreateInfo(std::vector<char>& code);
+		VkShaderModuleCreateInfo ShaderModuleCreateInfo(const uint32_t* spirvData, size_t size);
 		VkPipelineVertexInputStateCreateInfo PipelineVertexInputStateCreateInfo(std::vector<VkVertexInputBindingDescription>& vertexInputBindingDesc, std::vector<VkVertexInputAttributeDescription>& vertexInputAttrDesc);
 		VkPipelineInputAssemblyStateCreateInfo PipelineInputAssemblyStateCreateInfo(VkPrimitiveTopology topology);
 		VkPipelineViewportStateCreateInfo PipelineViewportStateCreateInfo(); //For now only 1. Can be extended later.

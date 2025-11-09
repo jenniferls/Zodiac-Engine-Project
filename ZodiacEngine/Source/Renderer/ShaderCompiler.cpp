@@ -4,31 +4,42 @@
 #include "SPIRV-Reflect/spirv_reflect.h"
 
 #include "Utility.h"
+#include "VulkanShaderModule.h"
 
 Zodiac::ShaderCompiler& Zodiac::ShaderCompiler::Get() {
 	static ShaderCompiler instance;
 	return instance;
 }
 
-std::vector<uint32_t> Zodiac::ShaderCompiler::CompileShaderFromText(VkDevice* device, const char* path)
+bool Zodiac::ShaderCompiler::CompileShaderFromText(VulkanDevice* device, const char* path)
 {
+	SlangCreateSession();
+
+	m_spirv = nullptr; //Clear previous compilation
+
 	Slang::ComPtr<slang::IBlob> diagnosticsBlob;
 
-	slang::IModule* module = m_slangSession->loadModule(path, diagnosticsBlob.writeRef());
+	std::string source;
+	if (!FileUtil::ReadFile(path, source)) {
+		std::cout << "Failed to read shader source from file: " << path << std::endl;
+	}
+
+	m_module = m_slangSession->loadModuleFromSourceString("test", path, source.c_str(), diagnosticsBlob.writeRef());
+	//slang::IModule* module = m_slangSession->loadModule(path, diagnosticsBlob.writeRef());
 	DiagnoseIfNeeded(diagnosticsBlob);
-	if (!module) {
+	if (!m_module) {
 		std::cout << "Failed to load shader module: " << path << std::endl;
-		return std::vector<uint32_t>();
+		return false;
 	}
 
 	//TODO: Should support all types in shaders in the future
 	Slang::ComPtr<slang::IEntryPoint> vertexEntryPoint;
-	module->findEntryPointByName("vertexMain", vertexEntryPoint.writeRef());
+	m_module->findEntryPointByName("vertexMain", vertexEntryPoint.writeRef());
 	Slang::ComPtr<slang::IEntryPoint> fragmentEntryPoint;
-	module->findEntryPointByName("fragmentMain", fragmentEntryPoint.writeRef());
+	m_module->findEntryPointByName("fragmentMain", fragmentEntryPoint.writeRef());
 
 	std::vector<slang::IComponentType*> componentTypes;
-	componentTypes.push_back(module);
+	componentTypes.push_back(m_module);
 
 	int entryPointCount = 0;
 	int vertexEntryPointIndex = entryPointCount++;
@@ -41,16 +52,24 @@ std::vector<uint32_t> Zodiac::ShaderCompiler::CompileShaderFromText(VkDevice* de
 	SlangResult result = m_slangSession->createCompositeComponentType(componentTypes.data(), componentTypes.size(), linkedProgram.writeRef(), diagnosticsBlob.writeRef());
 	DiagnoseIfNeeded(diagnosticsBlob);
 
+	//VulkanShaderModule test = VulkanShaderModule(device, linkedProgram->getEntryPointCode(vertexEntryPointIndex, ), );
+
 	//PrintEntrypointHashes(entryPointCount, 1, linkedProgram);
 
-	return std::vector<uint32_t>();
+	return true;
+}
+
+const uint32_t* Zodiac::ShaderCompiler::GetSPIRV()
+{
+	if (!m_spirv) {
+		return nullptr;
+	}
+	return reinterpret_cast<const uint32_t*>(m_spirv->getBufferPointer());
 }
 
 Zodiac::ShaderCompiler::ShaderCompiler()
 {
 	SlangCreateGlobalSession();
-	slang::SessionDesc sessionDesc = {};
-	m_globalSession->createSession(sessionDesc, m_slangSession.writeRef());
 }
 
 bool Zodiac::ShaderCompiler::CompileShader()
@@ -66,6 +85,24 @@ bool Zodiac::ShaderCompiler::LoadShaderProgram(VkDevice device)
 void Zodiac::ShaderCompiler::SlangCreateGlobalSession()
 {
 	slang::createGlobalSession(m_globalSession.writeRef());
+}
+
+void Zodiac::ShaderCompiler::SlangCreateSession()
+{
+	m_slangSession = {};
+
+	slang::SessionDesc sessionDesc{
+	.targets = m_targets.data(),
+	.targetCount = SlangInt(m_targets.size()),
+	.searchPaths = m_searchPaths.data(),
+	.searchPathCount = SlangInt(m_searchPaths.size()),
+	.preprocessorMacros = m_macros.data(),
+	.preprocessorMacroCount = SlangInt(m_macros.size()),
+	.allowGLSLSyntax = true,
+	.compilerOptionEntries = m_options.data(),
+	.compilerOptionEntryCount = uint32_t(m_options.size()),
+	};
+	m_globalSession->createSession(sessionDesc, m_slangSession.writeRef());
 }
 
 void Zodiac::ShaderCompiler::DiagnoseIfNeeded(slang::IBlob* diagnosticsBlob)
@@ -93,5 +130,42 @@ void Zodiac::ShaderCompiler::PrintEntrypointHashes(int entryPointCount, int targ
 				std::cout << std::format("%.2X", buffer[i]) << std::endl;
 			}
 		}
+	}
+}
+
+VkShaderStageFlagBits Zodiac::ShaderCompiler::SlangStageToVulkanShaderStage(SlangStage stage)
+{
+	switch (stage) {
+	case SlangStage::SLANG_STAGE_VERTEX:
+		return VK_SHADER_STAGE_VERTEX_BIT;
+	case SlangStage::SLANG_STAGE_FRAGMENT:
+		return VK_SHADER_STAGE_FRAGMENT_BIT;
+	case SlangStage::SLANG_STAGE_COMPUTE:
+		return VK_SHADER_STAGE_COMPUTE_BIT;
+	case SlangStage::SLANG_STAGE_HULL:
+		return VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+	case SlangStage::SLANG_STAGE_DOMAIN:
+		return VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+	case SlangStage::SLANG_STAGE_GEOMETRY:
+		return VK_SHADER_STAGE_GEOMETRY_BIT;
+	case SlangStage::SLANG_STAGE_RAY_GENERATION:
+		return VK_SHADER_STAGE_RAYGEN_BIT_KHR;
+	case SlangStage::SLANG_STAGE_INTERSECTION:
+		return VK_SHADER_STAGE_INTERSECTION_BIT_KHR;
+	case SlangStage::SLANG_STAGE_ANY_HIT:
+		return VK_SHADER_STAGE_ANY_HIT_BIT_KHR;
+	case SlangStage::SLANG_STAGE_CLOSEST_HIT:
+		return VK_SHADER_STAGE_CLOSEST_HIT_BIT_KHR;
+	case SlangStage::SLANG_STAGE_MISS:
+		return VK_SHADER_STAGE_MISS_BIT_KHR;
+	case SlangStage::SLANG_STAGE_CALLABLE:
+		return VK_SHADER_STAGE_CALLABLE_BIT_KHR;
+	case SlangStage::SLANG_STAGE_MESH:
+		return VK_SHADER_STAGE_MESH_BIT_EXT;
+	case SlangStage::SLANG_STAGE_AMPLIFICATION:
+		return VK_SHADER_STAGE_TASK_BIT_EXT;
+	default:
+		std::cout << ("Unimplemented or unknown stage %u!\n", static_cast<unsigned>(stage)) << std::endl;
+		return static_cast<VkShaderStageFlagBits>(0);
 	}
 }

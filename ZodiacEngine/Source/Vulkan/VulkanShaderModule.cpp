@@ -30,6 +30,19 @@ Zodiac::VulkanShaderModule::VulkanShaderModule(VulkanDevice* device, std::vector
 	}
 }
 
+Zodiac::VulkanShaderModule::VulkanShaderModule(VulkanDevice* device, const uint32_t* spirv, size_t size)
+{
+	m_device = device->GetDevice();
+
+	if (size != 0) {
+		VkShaderModuleCreateInfo shader_module_create_info = Initializers::ShaderModuleCreateInfo(spirv, size);
+		ErrorCheck(vkCreateShaderModule(*m_device, &shader_module_create_info, nullptr, &m_shaderModule));
+	}
+	else {
+		std::cout << "Error: Shader file is empty." << std::endl;
+	}
+}
+
 Zodiac::VulkanShaderModule::~VulkanShaderModule() {
 	vkDestroyShaderModule(*m_device, m_shaderModule, nullptr);
 }
