@@ -38,9 +38,9 @@ VertexStageOutput vertexMain(AssembledVertex assembledVertex)
     float3 position = assembledVertex.inPos;
     float3 color = assembledVertex.inColor;
 
-    float4x4 ProjectionView = mul(projectionMatrix, viewMatrix);
-    float4x4 MVP = mul(ProjectionView, modelMatrix);
-    output.sv_position = mul(MVP, float4(position, 1.0));
+    float4x4 ProjectionView = mul(viewMatrix, projectionMatrix);
+    float4x4 MVP = mul(modelMatrix, ProjectionView);
+    output.sv_position = mul(float4(position, 1.0), MVP);
     output.coarseVertex.color = color;
 
     return output;
