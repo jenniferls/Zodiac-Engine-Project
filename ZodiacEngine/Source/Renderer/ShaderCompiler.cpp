@@ -32,21 +32,16 @@ bool Zodiac::ShaderCompiler::CompileShaderFromText(VulkanDevice* device, const c
 		return false;
 	}
 
-	//TODO: Should support all types in shaders in the future
-	Slang::ComPtr<slang::IEntryPoint> vertexEntryPoint;
-	m_module->findEntryPointByName("vertexMain", vertexEntryPoint.writeRef());
-	Slang::ComPtr<slang::IEntryPoint> fragmentEntryPoint;
-	m_module->findEntryPointByName("fragmentMain", fragmentEntryPoint.writeRef());
+	const SlangInt32 definedEntryPointCount = m_module->getDefinedEntryPointCount();
 
-	std::vector<slang::IComponentType*> componentTypes;
-	componentTypes.push_back(m_module);
+	std::vector<Slang::ComPtr<slang::IEntryPoint>> entryPoints(definedEntryPointCount);
+	std::vector<slang::IComponentType*> componentTypes(1 + definedEntryPointCount);
+	componentTypes[0] = m_module;
 
-	int entryPointCount = 0;
-	int vertexEntryPointIndex = entryPointCount++;
-	componentTypes.push_back(vertexEntryPoint);
-
-	int fragmentEntryPointIndex = entryPointCount++;
-	componentTypes.push_back(fragmentEntryPoint);
+	for (SlangInt32 i = 0; i < definedEntryPointCount; i++) {
+		m_module->getDefinedEntryPoint(i, entryPoints[i].writeRef());
+		componentTypes[1 + i] = entryPoints[i];
+	}
 
 	Slang::ComPtr<slang::IComponentType> linkedProgram;
 	SlangResult result = m_slangSession->createCompositeComponentType(componentTypes.data(), componentTypes.size(), linkedProgram.writeRef(), diagnosticsBlob.writeRef());
@@ -65,6 +60,14 @@ const uint32_t* Zodiac::ShaderCompiler::GetSPIRV()
 		return nullptr;
 	}
 	return reinterpret_cast<const uint32_t*>(m_spirv->getBufferPointer());
+}
+
+size_t Zodiac::ShaderCompiler::GetSPIRVSize()
+{
+	if (!m_spirv) {
+		return 0;
+	}
+	return m_spirv->getBufferSize();
 }
 
 Zodiac::ShaderCompiler::ShaderCompiler()

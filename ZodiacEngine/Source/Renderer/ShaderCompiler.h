@@ -16,6 +16,7 @@ namespace Zodiac {
 
 		bool CompileShaderFromText(VulkanDevice* device, const char* path);
 		const uint32_t* GetSPIRV();
+		size_t GetSPIRVSize();
 
 	private:
 		ShaderCompiler();
