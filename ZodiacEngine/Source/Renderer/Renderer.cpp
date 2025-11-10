@@ -262,7 +262,7 @@ bool Zodiac::Renderer::SetupPipeline() {
 	VulkanShaderModule fragmentShader(m_device, (std::string(SHADERS_DIR) + "/triangle.frag.spv").c_str());
 
 	ShaderCompiler::Get().CompileShaderFromText(m_device, (std::string(SHADERS_DIR) + "/test.slang").c_str());
-	//VulkanShaderModule slangShader(m_device, ShaderCompiler::Get().GetSPIRV(), ShaderCompiler::Get().GetSPIRVSize());
+	VulkanShaderModule slangShader(m_device, ShaderCompiler::Get().GetSPIRV(), ShaderCompiler::Get().GetSPIRVSize());
 
 	if ((vertexShader.GetShaderModule() == nullptr) || (fragmentShader.GetShaderModule() == nullptr)) {
 		return false;

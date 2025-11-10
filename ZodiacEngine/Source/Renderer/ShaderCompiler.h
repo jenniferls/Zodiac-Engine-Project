@@ -17,6 +17,9 @@ namespace Zodiac {
 		bool CompileShaderFromText(VulkanDevice* device, const char* path);
 		const uint32_t* GetSPIRV();
 		size_t GetSPIRVSize();
+		void AddDefaultTarget();
+		void AddTarget(const slang::TargetDesc& target);
+		void ClearTargets();
 
 	private:
 		ShaderCompiler();
@@ -34,6 +37,7 @@ namespace Zodiac {
 		Slang::ComPtr<slang::ISession> m_slangSession = nullptr;
 		Slang::ComPtr<ISlangBlob> m_spirv = nullptr;
 		Slang::ComPtr<slang::IModule> m_module = nullptr;
+		Slang::ComPtr<slang::IComponentType> m_linkedProgram = nullptr;
 		std::vector<slang::PreprocessorMacroDesc> m_macros;
 		std::vector<slang::CompilerOptionEntry> m_options;
 		std::vector<slang::TargetDesc> m_targets;

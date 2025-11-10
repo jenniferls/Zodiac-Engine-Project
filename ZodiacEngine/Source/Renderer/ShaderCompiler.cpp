@@ -43,9 +43,29 @@ bool Zodiac::ShaderCompiler::CompileShaderFromText(VulkanDevice* device, const c
 		componentTypes[1 + i] = entryPoints[i];
 	}
 
-	Slang::ComPtr<slang::IComponentType> linkedProgram;
-	SlangResult result = m_slangSession->createCompositeComponentType(componentTypes.data(), componentTypes.size(), linkedProgram.writeRef(), diagnosticsBlob.writeRef());
+	Slang::ComPtr<slang::IComponentType> composedProgram;
+	SlangResult result = m_slangSession->createCompositeComponentType(componentTypes.data(), componentTypes.size(), composedProgram.writeRef(), diagnosticsBlob.writeRef());
 	DiagnoseIfNeeded(diagnosticsBlob);
+	if (SLANG_FAILED(result) || !composedProgram)
+	{
+		return false;
+	}
+
+	// From composite component type to linked program
+	result = composedProgram->link(m_linkedProgram.writeRef(), diagnosticsBlob.writeRef());
+	DiagnoseIfNeeded(diagnosticsBlob);
+	if (SLANG_FAILED(result) || !m_linkedProgram)
+	{
+		return false;
+	}
+
+	// From linked program to SPIR-V
+	result = m_linkedProgram->getTargetCode(0, m_spirv.writeRef(), diagnosticsBlob.writeRef());
+	DiagnoseIfNeeded(diagnosticsBlob);
+	if (SLANG_FAILED(result) || nullptr == m_spirv)
+	{
+		return false;
+	}
 
 	//VulkanShaderModule test = VulkanShaderModule(device, linkedProgram->getEntryPointCode(vertexEntryPointIndex, ), );
 
@@ -70,9 +90,30 @@ size_t Zodiac::ShaderCompiler::GetSPIRVSize()
 	return m_spirv->getBufferSize();
 }
 
+void Zodiac::ShaderCompiler::AddDefaultTarget()
+{
+	m_targets.push_back({
+		.format = SLANG_SPIRV,
+		.profile = m_globalSession->findProfile("spirv_1_6+vulkan_1_4"),
+		.flags = SLANG_TARGET_FLAG_GENERATE_SPIRV_DIRECTLY,
+		.forceGLSLScalarBufferLayout = true, //TODO: Need to check documentation
+	});
+}
+
+void Zodiac::ShaderCompiler::AddTarget(const slang::TargetDesc& target)
+{
+	m_targets.push_back(target);
+}
+
+void Zodiac::ShaderCompiler::ClearTargets()
+{
+	m_targets.clear();
+}
+
 Zodiac::ShaderCompiler::ShaderCompiler()
 {
 	SlangCreateGlobalSession();
+	AddDefaultTarget();
 }
 
 bool Zodiac::ShaderCompiler::CompileShader()
