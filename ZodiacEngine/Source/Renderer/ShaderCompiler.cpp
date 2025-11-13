@@ -11,8 +11,7 @@ Zodiac::ShaderCompiler& Zodiac::ShaderCompiler::Get() {
 	return instance;
 }
 
-bool Zodiac::ShaderCompiler::CompileShaderFromText(VulkanDevice* device, const char* path)
-{
+bool Zodiac::ShaderCompiler::CompileShaderFromText(VulkanDevice* device, const char* path) {
 	SlangCreateSession();
 
 	m_spirv = nullptr; //Clear previous compilation
@@ -46,52 +45,42 @@ bool Zodiac::ShaderCompiler::CompileShaderFromText(VulkanDevice* device, const c
 	Slang::ComPtr<slang::IComponentType> composedProgram;
 	SlangResult result = m_slangSession->createCompositeComponentType(componentTypes.data(), componentTypes.size(), composedProgram.writeRef(), diagnosticsBlob.writeRef());
 	DiagnoseIfNeeded(diagnosticsBlob);
-	if (SLANG_FAILED(result) || !composedProgram)
-	{
+	if (SLANG_FAILED(result) || !composedProgram) {
 		return false;
 	}
 
 	// From composite component type to linked program
 	result = composedProgram->link(m_linkedProgram.writeRef(), diagnosticsBlob.writeRef());
 	DiagnoseIfNeeded(diagnosticsBlob);
-	if (SLANG_FAILED(result) || !m_linkedProgram)
-	{
+	if (SLANG_FAILED(result) || !m_linkedProgram) {
 		return false;
 	}
 
 	// From linked program to SPIR-V
 	result = m_linkedProgram->getTargetCode(0, m_spirv.writeRef(), diagnosticsBlob.writeRef());
 	DiagnoseIfNeeded(diagnosticsBlob);
-	if (SLANG_FAILED(result) || nullptr == m_spirv)
-	{
+	if (SLANG_FAILED(result) || nullptr == m_spirv) {
 		return false;
 	}
-
-	//VulkanShaderModule test = VulkanShaderModule(device, linkedProgram->getEntryPointCode(vertexEntryPointIndex, ), );
-
-	//PrintEntrypointHashes(entryPointCount, 1, linkedProgram);
 
 	return true;
 }
 
-const uint32_t* Zodiac::ShaderCompiler::GetSPIRV()
-{
+const uint32_t* Zodiac::ShaderCompiler::GetSPIRV() {
 	if (!m_spirv) {
 		return nullptr;
 	}
 	return reinterpret_cast<const uint32_t*>(m_spirv->getBufferPointer());
 }
 
-size_t Zodiac::ShaderCompiler::GetSPIRVSize()
-{
+size_t Zodiac::ShaderCompiler::GetSPIRVSize() {
 	if (!m_spirv) {
 		return 0;
 	}
 	return m_spirv->getBufferSize();
 }
 
-void Zodiac::ShaderCompiler::AddDefaultTarget()
-{
+void Zodiac::ShaderCompiler::AddDefaultTarget() {
 	m_targets.push_back({
 		.format = SLANG_SPIRV,
 		.profile = m_globalSession->findProfile("spirv_1_6+vulkan_1_4"),
@@ -100,85 +89,84 @@ void Zodiac::ShaderCompiler::AddDefaultTarget()
 	});
 }
 
-void Zodiac::ShaderCompiler::AddTarget(const slang::TargetDesc& target)
-{
+void Zodiac::ShaderCompiler::AddDefaultOptions() {
+	m_options.push_back({ slang::CompilerOptionName::EmitSpirvDirectly, {slang::CompilerOptionValueKind::Int, 1} });
+	m_options.push_back({ slang::CompilerOptionName::VulkanUseEntryPointName, {slang::CompilerOptionValueKind::Int, 1} });
+}
+
+void Zodiac::ShaderCompiler::AddTarget(const slang::TargetDesc& target) {
 	m_targets.push_back(target);
 }
 
-void Zodiac::ShaderCompiler::ClearTargets()
-{
+void Zodiac::ShaderCompiler::ClearTargets() {
 	m_targets.clear();
 }
 
-Zodiac::ShaderCompiler::ShaderCompiler()
-{
+slang::IComponentType* Zodiac::ShaderCompiler::GetLinkedProgram() {
+	if (!m_linkedProgram) {
+		return nullptr;
+	}
+	return m_linkedProgram.get();
+}
+
+Zodiac::ShaderCompiler::ShaderCompiler() {
 	SlangCreateGlobalSession();
 	AddDefaultTarget();
 }
 
-bool Zodiac::ShaderCompiler::CompileShader()
-{
+bool Zodiac::ShaderCompiler::CompileShader() {
 	return false;
 }
 
-bool Zodiac::ShaderCompiler::LoadShaderProgram(VkDevice device)
-{
+bool Zodiac::ShaderCompiler::LoadShaderProgram(VkDevice device) {
 	return false;
 }
 
-void Zodiac::ShaderCompiler::SlangCreateGlobalSession()
-{
+void Zodiac::ShaderCompiler::SlangCreateGlobalSession() {
 	slang::createGlobalSession(m_globalSession.writeRef());
 }
 
-void Zodiac::ShaderCompiler::SlangCreateSession()
-{
+void Zodiac::ShaderCompiler::SlangCreateSession() {
 	m_slangSession = {};
 
-	slang::SessionDesc sessionDesc{
-	.targets = m_targets.data(),
-	.targetCount = SlangInt(m_targets.size()),
-	.searchPaths = m_searchPaths.data(),
-	.searchPathCount = SlangInt(m_searchPaths.size()),
-	.preprocessorMacros = m_macros.data(),
-	.preprocessorMacroCount = SlangInt(m_macros.size()),
-	.allowGLSLSyntax = true,
-	.compilerOptionEntries = m_options.data(),
-	.compilerOptionEntryCount = uint32_t(m_options.size()),
-	};
+	slang::SessionDesc sessionDesc = {};
+	sessionDesc.targets = m_targets.data();
+	sessionDesc.targetCount = SlangInt(m_targets.size());
+	sessionDesc.searchPaths = m_searchPaths.data();
+	sessionDesc.searchPathCount = SlangInt(m_searchPaths.size());
+	sessionDesc.defaultMatrixLayoutMode = SLANG_MATRIX_LAYOUT_COLUMN_MAJOR; //I hate it here
+	sessionDesc.preprocessorMacros = m_macros.data();
+	sessionDesc.preprocessorMacroCount = SlangInt(m_macros.size());
+	sessionDesc.allowGLSLSyntax = true;
+	sessionDesc.compilerOptionEntries = m_options.data();
+	sessionDesc.compilerOptionEntryCount = uint32_t(m_options.size());
+
 	m_globalSession->createSession(sessionDesc, m_slangSession.writeRef());
 }
 
-void Zodiac::ShaderCompiler::DiagnoseIfNeeded(slang::IBlob* diagnosticsBlob)
-{
-	if (diagnosticsBlob != nullptr)
-	{
+void Zodiac::ShaderCompiler::DiagnoseIfNeeded(slang::IBlob* diagnosticsBlob) {
+	if (diagnosticsBlob != nullptr) {
 		printf("%s", (const char*)diagnosticsBlob->getBufferPointer());
 	}
 }
 
-void Zodiac::ShaderCompiler::PrintEntrypointHashes(int entryPointCount, int targetCount, slang::IComponentType* composedProgram)
-{
-	for (int targetIndex = 0; targetIndex < targetCount; targetIndex++)
-	{
-		for (int entryPointIndex = 0; entryPointIndex < entryPointCount; entryPointIndex++)
-		{
+void Zodiac::ShaderCompiler::PrintEntrypointHashes(int entryPointCount, int targetCount, slang::IComponentType* composedProgram) {
+	for (int targetIndex = 0; targetIndex < targetCount; targetIndex++) {
+		for (int entryPointIndex = 0; entryPointIndex < entryPointCount; entryPointIndex++) {
 			Slang::ComPtr<slang::IBlob> entryPointHashBlob;
 			composedProgram->getEntryPointHash(entryPointIndex, targetIndex, entryPointHashBlob.writeRef());
 			std::cout << "callIdx: " << m_globalCounter << ", entrypoint: " << entryPointIndex << ", target: " << targetIndex << ", hash: " << std::endl;
 			m_globalCounter++;
 
 			uint8_t* buffer = (uint8_t*)entryPointHashBlob->getBufferPointer();
-			for (size_t i = 0; i < entryPointHashBlob->getBufferSize(); i++)
-			{
+			for (size_t i = 0; i < entryPointHashBlob->getBufferSize(); i++) {
 				std::cout << std::format("%.2X", buffer[i]) << std::endl;
 			}
 		}
 	}
 }
 
-VkShaderStageFlagBits Zodiac::ShaderCompiler::SlangStageToVulkanShaderStage(SlangStage stage)
-{
+VkShaderStageFlagBits Zodiac::ShaderCompiler::SlangStageToVulkanShaderStage(SlangStage stage) {
 	switch (stage) {
 	case SlangStage::SLANG_STAGE_VERTEX:
 		return VK_SHADER_STAGE_VERTEX_BIT;

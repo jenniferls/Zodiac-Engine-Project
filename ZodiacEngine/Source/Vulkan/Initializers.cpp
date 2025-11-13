@@ -140,6 +140,18 @@ VkPipelineShaderStageCreateInfo Zodiac::Initializers::PipelineShaderStageCreateI
 	return info;
 }
 
+VkPipelineShaderStageCreateInfo Zodiac::Initializers::PipelineShaderStageCreateInfo(VkShaderStageFlagBits stage, VkShaderModule shaderModule, const char* name) {
+	VkPipelineShaderStageCreateInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	info.flags = 0;
+	info.stage = stage;
+	info.module = shaderModule;
+	info.pName = name;
+	info.pSpecializationInfo = nullptr;
+
+	return info;
+}
+
 VkFramebufferCreateInfo Zodiac::Initializers::FramebufferCreateInfo(VkRenderPass renderPass, std::vector<VkImageView>& attachments, uint32_t width, uint32_t height) {
 	VkFramebufferCreateInfo info = {};
 

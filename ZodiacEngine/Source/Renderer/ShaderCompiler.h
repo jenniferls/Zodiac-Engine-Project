@@ -18,8 +18,11 @@ namespace Zodiac {
 		const uint32_t* GetSPIRV();
 		size_t GetSPIRVSize();
 		void AddDefaultTarget();
+		void AddDefaultOptions();
 		void AddTarget(const slang::TargetDesc& target);
 		void ClearTargets();
+		slang::IComponentType* GetLinkedProgram();
+		static VkShaderStageFlagBits SlangStageToVulkanShaderStage(SlangStage stage);
 
 	private:
 		ShaderCompiler();
@@ -30,7 +33,6 @@ namespace Zodiac {
 		void SlangCreateSession();
 		void DiagnoseIfNeeded(slang::IBlob* diagnosticsBlob);
 		void PrintEntrypointHashes(int entryPointCount, int targetCount, slang::IComponentType* composedProgram);
-		static VkShaderStageFlagBits SlangStageToVulkanShaderStage(SlangStage stage);
 
 		uint64_t m_globalCounter = 0;
 		Slang::ComPtr<slang::IGlobalSession> m_globalSession = nullptr;
