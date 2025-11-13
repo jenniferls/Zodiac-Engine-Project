@@ -258,8 +258,6 @@ void Zodiac::Renderer::SetupFramebuffers() {
 }
 
 bool Zodiac::Renderer::SetupPipeline() {
-	//VulkanShaderModule trangleShader(m_device, (std::string(SHADERS_DIR) + "/triangle.spv").c_str());
-
 	ShaderCompiler::Get().CompileShaderFromText(m_device, (std::string(SHADERS_DIR) + "/test.slang").c_str());
 	VulkanShaderModule slangShader(m_device, ShaderCompiler::Get().GetSPIRV(), ShaderCompiler::Get().GetSPIRVSize());
 
@@ -278,9 +276,6 @@ bool Zodiac::Renderer::SetupPipeline() {
 		entrypointStages[i] = ShaderCompiler::Get().SlangStageToVulkanShaderStage(slangStage);
 		shaderStageCreateInfos[i] = Initializers::PipelineShaderStageCreateInfo(entrypointStages[i], *slangShader.GetShaderModule(), entrypointNames[i].c_str());
 	}
-
-	//shaderStageCreateInfos[0] = Initializers::PipelineShaderStageCreateInfo(entrypointStages[0], *trangleShader.GetShaderModule(), "vertexMain");
-	//shaderStageCreateInfos[1] = Initializers::PipelineShaderStageCreateInfo(entrypointStages[1], *trangleShader.GetShaderModule(), "fragmentMain");
 
 	std::vector<VkVertexInputBindingDescription> vertexBindingDescriptions = {
 		{ Initializers::VertexInputBindingDescription(0, sizeof(SimpleVertex)) }

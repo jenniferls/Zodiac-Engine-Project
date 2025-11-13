@@ -11,7 +11,8 @@ add_subdirectory(ZodiacApplication)
 
 target_compile_definitions(${PROJECT_NAME}
 	PRIVATE
-		SHADERS_DIR="$<TARGET_FILE_DIR:${PROJECT_NAME}>/Shaders"
+		$<$<CONFIG:Debug>:SHADERS_DIR="${CMAKE_SOURCE_DIR}/ZodiacEngine/Shaders">
+		$<$<NOT:$<CONFIG:Debug>>:SHADERS_DIR="$<TARGET_FILE_DIR:${PROJECT_NAME}>/Shaders">
 )
 
 foreach(util_target IN ITEMS ALL_BUILD INSTALL PACKAGE RUN_TESTS)
