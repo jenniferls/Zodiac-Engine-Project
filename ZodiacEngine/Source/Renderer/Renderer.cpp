@@ -2,6 +2,7 @@
 #include "Renderer.h"
 #include "Defines.h"
 #include "Initializers.h"
+#include "Utility.h"
 #include "Validation.h"
 #include "VulkanShaderModule.h"
 #include "Vertex.h"
@@ -260,6 +261,7 @@ void Zodiac::Renderer::SetupFramebuffers() {
 bool Zodiac::Renderer::SetupPipeline() {
 	ShaderCompiler::Get().CompileShaderFromText(m_device, (std::string(SHADERS_DIR) + "/test.slang").c_str());
 	VulkanShaderModule slangShader(m_device, ShaderCompiler::Get().GetSPIRV(), ShaderCompiler::Get().GetSPIRVSize());
+	FileUtil::WriteBinaryFile((std::string(SHADERS_DIR) + "/test.spv").c_str(), ShaderCompiler::Get().GetSPIRV(), ShaderCompiler::Get().GetSPIRVSize());
 
 	slang::IComponentType* program = ShaderCompiler::Get().GetLinkedProgram();
 	slang::ProgramLayout* reflection = program->getLayout();

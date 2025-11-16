@@ -20,6 +20,13 @@ std::vector<char> Zodiac::FileUtil::ReadBinaryFile(const char* source) {
 	return std::vector<char>();
 }
 
+void Zodiac::FileUtil::WriteBinaryFile(const char* filename, const void* data, int size)
+{
+	FILE* file = fopen(filename, "wb");
+	fwrite(data, sizeof(uint8_t), size, file);
+	fclose(file);
+}
+
 bool Zodiac::FileUtil::ReadFile(const char* filename, std::string& outFile)
 {
 	std::ifstream file(filename);
