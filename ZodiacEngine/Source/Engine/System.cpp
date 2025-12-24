@@ -68,6 +68,7 @@ void Zodiac::System::Run() {
 	while (!m_window->WindowShouldClose()) {
 		m_clock.Tick();
 		m_mainCamera->Update(m_clock.GetDeltaTime(), m_inputHandler->GetCameraMovement());
+		m_fileWatcher.Poll();
 		m_window->PollWindowEvents();
 		if (!renderer.m_prepared) {
 			return;
@@ -96,7 +97,7 @@ bool Zodiac::System::InitVulkan() {
 	m_device = new Zodiac::VulkanDevice(m_instance, m_physical_device);
 	m_surface = new Zodiac::VulkanSurface(m_instance, m_physical_device, m_window->GetNativeWindow());
 
-	Zodiac::Renderer::Get().Init(m_device, m_settings, m_surface, m_instance, m_window.get());
+	Zodiac::Renderer::Get().Init(m_device, m_settings, m_surface, m_instance, m_window.get(), m_fileWatcher);
 
 	return true;
 }

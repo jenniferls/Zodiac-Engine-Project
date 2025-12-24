@@ -10,12 +10,18 @@
 #include "VulkanBuffer.h"
 
 #include "Camera.h"
+#include "FileWatcher.h"
+#include "ShaderCompiler.h"
 
 namespace Zodiac {
 	struct PerFrameUniformData{
 		glm::mat4 projectionMatrix;
 		glm::mat4 modelMatrix;
 		glm::mat4 viewMatrix;
+	};
+
+	struct PipelineState {
+
 	};
 
 	class Renderer {
@@ -25,7 +31,7 @@ namespace Zodiac {
 
 		~Renderer();
 
-		void Init(VulkanDevice* device, Settings settings, VulkanSurface* surface, VulkanInstance* instance, Window* window);
+		void Init(VulkanDevice* device, Settings settings, VulkanSurface* surface, VulkanInstance* instance, Window* window, FileWatcher& filewatcher);
 		static Renderer& Get();
 
 		void Draw(float dt, Camera* mainCamera); //Delta time and camera for test purposes
@@ -62,6 +68,8 @@ namespace Zodiac {
 		void CreateSyncObjects();
 
 		bool SetupPipeline();
+		bool RecreatePipeline();
+		void TraverseShaderVariableLayout(slang::VariableLayoutReflection* variableLayoutReflection);
 		void PrepareGeometry();
 		void PrepareUniformBuffers();
 		void SetupDescriptorSets();
@@ -79,6 +87,7 @@ namespace Zodiac {
 		static const int MAX_FRAMES_IN_FLIGHT = 2;
 
 		Window* m_window = nullptr;
+		FileWatcher* m_fileWatcher = nullptr;
 
 		VulkanDevice* m_device = nullptr;
 		VulkanSurface* m_surface = nullptr;
