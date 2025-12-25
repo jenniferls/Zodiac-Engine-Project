@@ -51,6 +51,7 @@ void Zodiac::Renderer::Draw(float dt, Camera* mainCamera) {
 	if (m_fileWatcher->HasFileChanged((std::string(SHADERS_DIR) + "/test.slang").c_str())) {
 		vkDeviceWaitIdle(*m_device->GetDevice()); //Causes small stall but is fine since it's for shader development purposes
 		RecreatePipeline();
+		m_fileWatcher->ResetFlags();
 	}
 
 	vkWaitForFences(*m_device->GetDevice(), 1, &m_waitFences[m_currentFrame]->p_fence, VK_TRUE, UINT64_MAX);
