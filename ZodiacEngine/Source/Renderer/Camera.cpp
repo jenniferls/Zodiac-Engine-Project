@@ -29,12 +29,15 @@ void Zodiac::Camera::SetRotation(const glm::vec3& rotation) {
 
 void Zodiac::Camera::Update(float dt, const CameraMovement& movement, const MouseState& mouseState) {
 	float mouseSpeed = 2.0f;
-	glm::vec2 deltaMousePos = mouseState.m_pos - m_oldMousePos;
+
+	glm::vec2 mousePos = glm::vec2(-mouseState.m_pos.x, mouseState.m_pos.y); //Invert X axis for easier navigation
+
+	glm::vec2 deltaMousePos = mousePos - m_oldMousePos;
 	if (mouseState.m_active) {
 		glm::quat deltaQuat = glm::quat(glm::vec3(mouseSpeed * deltaMousePos.y, mouseSpeed * deltaMousePos.x, 0.0f));
 		m_orientation = glm::normalize(deltaQuat * m_orientation);
 	}
-	m_oldMousePos = mouseState.m_pos;
+	m_oldMousePos = mousePos;
 
 	// Basic camera movement implementation
 	if (movement.Forward) {
