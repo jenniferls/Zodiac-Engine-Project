@@ -69,6 +69,14 @@ void Zodiac::Window::glfw_key_callback(GLFWwindow* window, int key, int scancode
 			if (action == GLFW_PRESS) {
 				std::cout << "Spacebar pressed!" << std::endl;
 				win->m_renderer->ToggleImGui();
+				if (win->m_renderer->IsImGuiActive()) {
+					glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+					win->m_inputHandler->SetMouseActiveState(false);
+				}
+				else {
+					glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+					win->m_inputHandler->SetMouseActiveState(true);
+				}
 			}
 			break;
 		case GLFW_KEY_ESCAPE:
@@ -83,12 +91,14 @@ void Zodiac::Window::glfw_key_callback(GLFWwindow* window, int key, int scancode
 
 void Zodiac::Window::glfw_mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 {
-
+	auto win = static_cast<Window*>(glfwGetWindowUserPointer(window));
 }
 
 void Zodiac::Window::glfw_cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
-
+	auto win = static_cast<Window*>(glfwGetWindowUserPointer(window));
+	win->m_inputHandler->SetMousePosition(float(xpos), float(ypos), glm::vec2(win->GetWidth(), win->GetHeight()));
+	//std::cout << "Mouse Position - X: " << xpos << " Y: " << ypos << std::endl;
 }
 
 void Zodiac::Window::Init(const WindowProperties& props) {
@@ -104,6 +114,8 @@ void Zodiac::Window::Init(const WindowProperties& props) {
 	m_window = glfwCreateWindow(props.Width, props.Height, props.Title.c_str(), nullptr, nullptr);
 
 	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+	glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
 	SetGLFWCallbacks();
 

@@ -2,13 +2,10 @@
 #pragma once
 
 namespace Zodiac {
-	Zodiac::InputHandler::InputHandler()
-	{
-
+	Zodiac::InputHandler::InputHandler() {
 	}
 
-	bool InputHandler::HandleCameraMovement(int key, int action, int mods)
-	{
+	bool InputHandler::HandleCameraMovement(int key, int action, int mods) {
         bool Press = action != GLFW_RELEASE;
 
         bool Handled = true;
@@ -44,4 +41,8 @@ namespace Zodiac {
 
         return Handled;
 	}
+    void InputHandler::SetMousePosition(float x, float y, glm::vec2 windowSize) {
+		m_mouseState.m_pos = glm::vec2(x, y) / windowSize;
+		//std::cout << "Mouse Position: " << m_mouseState.m_pos.x << ", " << m_mouseState.m_pos.y << std::endl;
+    }
 }

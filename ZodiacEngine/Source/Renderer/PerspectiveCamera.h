@@ -16,9 +16,9 @@ namespace Zodiac {
 		void RecalculateProjectionMatrix();
 
 		float m_fov;
-		float m_aspectRatio;
 		float m_nearClip;
 		float m_farClip;
+		float m_aspectRatio;
 
 		glm::mat4 m_projMat;
 	};

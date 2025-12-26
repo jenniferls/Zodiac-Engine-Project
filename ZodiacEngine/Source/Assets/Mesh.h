@@ -9,5 +9,6 @@ namespace Zodiac {
 
 	private:
 		std::vector<SimpleVertex> m_vertexBuffer;
+		std::vector<uint32_t> m_indices;
 	};
 }

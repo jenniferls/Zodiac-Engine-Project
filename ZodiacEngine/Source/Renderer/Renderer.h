@@ -45,6 +45,7 @@ namespace Zodiac {
 		void Shutdown();
 
 		void ToggleImGui();
+		bool IsImGuiActive() const { return m_showGui; }
 		void SetFramebufferResized(bool resized);
 		void SetSwapchainDirty();
 

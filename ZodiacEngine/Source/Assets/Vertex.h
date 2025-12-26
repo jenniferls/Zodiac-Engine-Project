@@ -14,8 +14,4 @@ namespace Zodiac {
 		glm::vec3 tangent;
 		glm::vec3 color;
 	};
-
-	struct Index {
-		uint32_t index;
-	};
 }
