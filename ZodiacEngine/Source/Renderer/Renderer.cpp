@@ -50,8 +50,13 @@ Zodiac::Renderer& Zodiac::Renderer::Get() {
 void Zodiac::Renderer::Draw(float dt, Camera* mainCamera) {
 	if (m_fileWatcher->HasFileChanged((std::string(SHADERS_DIR) + "/test.slang").c_str())) {
 		vkDeviceWaitIdle(*m_device->GetDevice()); //Causes small stall but is fine since it's for shader development purposes
-		RecreatePipeline();
-		m_fileWatcher->ResetFlags();
+		if (RecreatePipeline()) {
+			m_fileWatcher->ResetFlags();
+			std::cout << "Pipeline recreated succesfully!" << std::endl;
+		}
+		else {
+			std::cout << "Pipeline recreation failed after shader change!" << std::endl;
+		}
 	}
 
 	vkWaitForFences(*m_device->GetDevice(), 1, &m_waitFences[m_currentFrame]->p_fence, VK_TRUE, UINT64_MAX);
@@ -346,83 +351,86 @@ bool Zodiac::Renderer::SetupPipeline() {
 
 bool Zodiac::Renderer::RecreatePipeline()
 {
-	ShaderCompiler::Get().CompileShaderFromText(m_device, (std::string(SHADERS_DIR) + "/test.slang").c_str());
-	VulkanShaderModule slangShader(m_device, ShaderCompiler::Get().GetSPIRV(), ShaderCompiler::Get().GetSPIRVSize());
-	FileUtil::WriteBinaryFile((std::string(SHADERS_DIR) + "/test.spv").c_str(), ShaderCompiler::Get().GetSPIRV(), ShaderCompiler::Get().GetSPIRVSize());
+	bool res = false;
+	if (ShaderCompiler::Get().CompileShaderFromText(m_device, (std::string(SHADERS_DIR) + "/test.slang").c_str())) {
+		VulkanShaderModule slangShader(m_device, ShaderCompiler::Get().GetSPIRV(), ShaderCompiler::Get().GetSPIRVSize());
+		FileUtil::WriteBinaryFile((std::string(SHADERS_DIR) + "/test.spv").c_str(), ShaderCompiler::Get().GetSPIRV(), ShaderCompiler::Get().GetSPIRVSize());
 
-	slang::IComponentType* program = ShaderCompiler::Get().GetLinkedProgram();
-	slang::ProgramLayout* reflection = program->getLayout();
-	const unsigned parameterCount = reflection->getParameterCount();
-	//TODO: Param/Layout reflection
-	const SlangUInt entrypointCount = reflection->getEntryPointCount();
-	std::vector<std::string> entrypointNames(entrypointCount);
-	std::vector<VkShaderStageFlagBits> entrypointStages(entrypointCount);
-	std::vector<VkPipelineShaderStageCreateInfo> shaderStageCreateInfos(entrypointCount);
-	for (int i = 0; i < entrypointCount; ++i) {
-		slang::EntryPointReflection* entrypoint = reflection->getEntryPointByIndex(i);
-		entrypointNames[i] = entrypoint->getName();
-		const SlangStage slangStage = entrypoint->getStage();
-		entrypointStages[i] = ShaderCompiler::Get().SlangStageToVulkanShaderStage(slangStage);
-		shaderStageCreateInfos[i] = Initializers::PipelineShaderStageCreateInfo(entrypointStages[i], *slangShader.GetShaderModule(), entrypointNames[i].c_str());
+		slang::IComponentType* program = ShaderCompiler::Get().GetLinkedProgram();
+		slang::ProgramLayout* reflection = program->getLayout();
+		const unsigned parameterCount = reflection->getParameterCount();
+		//TODO: Param/Layout reflection
+		const SlangUInt entrypointCount = reflection->getEntryPointCount();
+		std::vector<std::string> entrypointNames(entrypointCount);
+		std::vector<VkShaderStageFlagBits> entrypointStages(entrypointCount);
+		std::vector<VkPipelineShaderStageCreateInfo> shaderStageCreateInfos(entrypointCount);
+		for (int i = 0; i < entrypointCount; ++i) {
+			slang::EntryPointReflection* entrypoint = reflection->getEntryPointByIndex(i);
+			entrypointNames[i] = entrypoint->getName();
+			const SlangStage slangStage = entrypoint->getStage();
+			entrypointStages[i] = ShaderCompiler::Get().SlangStageToVulkanShaderStage(slangStage);
+			shaderStageCreateInfos[i] = Initializers::PipelineShaderStageCreateInfo(entrypointStages[i], *slangShader.GetShaderModule(), entrypointNames[i].c_str());
+		}
+
+		//Traversal of variable layout reflection
+		slang::TypeLayoutReflection* typeLayoutReflection = reflection->getGlobalParamsVarLayout()->getTypeLayout();
+		slang::TypeReflection* typeReflection = typeLayoutReflection->getType();
+		const char* name = reflection->getGlobalParamsVarLayout()->getName();
+		if (name == nullptr) {
+			name = "<unnamed>";
+		}
+
+		std::vector<VkVertexInputBindingDescription> vertexBindingDescriptions = {
+			{ Initializers::VertexInputBindingDescription(0, sizeof(SimpleVertex)) }
+		};
+
+		std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions = {
+			{ Initializers::VertexInputAttributeDescription(0, vertexBindingDescriptions[0].binding, 0) },
+			{ Initializers::VertexInputAttributeDescription(1, vertexBindingDescriptions[0].binding, offsetof(SimpleVertex, color)) }
+		};
+
+		VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo = Initializers::PipelineVertexInputStateCreateInfo(vertexBindingDescriptions, vertexInputAttributeDescriptions);
+		VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo = Initializers::PipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+
+		VkPipelineViewportStateCreateInfo viewportStateCreateInfo = Initializers::PipelineViewportStateCreateInfo();
+		VkPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo = Initializers::PipelineRasterizationStateCreateInfo();
+		VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo = Initializers::PipelineMultisampleStateCreateInfo();
+
+		//VkPipelineColorBlendAttachmentState colorBlendAttachmentState = { //No blend
+		//	VK_FALSE,
+		//	VK_BLEND_FACTOR_ONE,
+		//	VK_BLEND_FACTOR_ZERO,
+		//	VK_BLEND_OP_ADD,
+		//	VK_BLEND_FACTOR_ONE,
+		//	VK_BLEND_FACTOR_ZERO,
+		//	VK_BLEND_OP_ADD,
+		//	VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+		//	VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
+		//};
+		VkPipelineColorBlendAttachmentState colorBlendAttachmentState = {}; //Alpha blend
+		colorBlendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+		colorBlendAttachmentState.blendEnable = VK_TRUE;
+		colorBlendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+		colorBlendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+		colorBlendAttachmentState.colorBlendOp = VK_BLEND_OP_ADD;
+		colorBlendAttachmentState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+		colorBlendAttachmentState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+		colorBlendAttachmentState.alphaBlendOp = VK_BLEND_OP_ADD;
+
+		VkPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo = Initializers::PipelineColorBlendStateCreateInfo(colorBlendAttachmentState, 1);
+		VkPipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo = Initializers::PipelineDepthStencilStateCreateinfo();
+
+		std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
+		VkPipelineDynamicStateCreateInfo dynamicStateCreateInfo = Initializers::PipelineDynamicStateCreateInfo(dynamicStates);
+
+		vkDestroyPipeline(*m_device->GetDevice(), m_pipeline, nullptr);
+
+		VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo = Initializers::GraphicsPipelineCreateInfo(shaderStageCreateInfos, vertexInputStateCreateInfo, inputAssemblyStateCreateInfo, viewportStateCreateInfo, rasterizationStateCreateInfo, multisampleStateCreateInfo, colorBlendStateCreateInfo, dynamicStateCreateInfo, m_pipelineLayout, m_renderPass, depthStencilStateCreateInfo);
+		ErrorCheck(vkCreateGraphicsPipelines(*m_device->GetDevice(), m_pipelineCache, 1, &graphicsPipelineCreateInfo, nullptr, &m_pipeline));
+		res = true;
 	}
 
-	//Traversal of variable layout reflection
-	slang::TypeLayoutReflection* typeLayoutReflection = reflection->getGlobalParamsVarLayout()->getTypeLayout();
-	slang::TypeReflection* typeReflection = typeLayoutReflection->getType();
-	const char* name = reflection->getGlobalParamsVarLayout()->getName();
-	if (name == nullptr) {
-		name = "<unnamed>";
-	}
-
-	std::vector<VkVertexInputBindingDescription> vertexBindingDescriptions = {
-		{ Initializers::VertexInputBindingDescription(0, sizeof(SimpleVertex)) }
-	};
-
-	std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions = {
-		{ Initializers::VertexInputAttributeDescription(0, vertexBindingDescriptions[0].binding, 0) },
-		{ Initializers::VertexInputAttributeDescription(1, vertexBindingDescriptions[0].binding, offsetof(SimpleVertex, color)) }
-	};
-
-	VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo = Initializers::PipelineVertexInputStateCreateInfo(vertexBindingDescriptions, vertexInputAttributeDescriptions);
-	VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo = Initializers::PipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-
-	VkPipelineViewportStateCreateInfo viewportStateCreateInfo = Initializers::PipelineViewportStateCreateInfo();
-	VkPipelineRasterizationStateCreateInfo rasterizationStateCreateInfo = Initializers::PipelineRasterizationStateCreateInfo();
-	VkPipelineMultisampleStateCreateInfo multisampleStateCreateInfo = Initializers::PipelineMultisampleStateCreateInfo();
-
-	//VkPipelineColorBlendAttachmentState colorBlendAttachmentState = { //No blend
-	//	VK_FALSE,
-	//	VK_BLEND_FACTOR_ONE,
-	//	VK_BLEND_FACTOR_ZERO,
-	//	VK_BLEND_OP_ADD,
-	//	VK_BLEND_FACTOR_ONE,
-	//	VK_BLEND_FACTOR_ZERO,
-	//	VK_BLEND_OP_ADD,
-	//	VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
-	//	VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
-	//};
-	VkPipelineColorBlendAttachmentState colorBlendAttachmentState = {}; //Alpha blend
-	colorBlendAttachmentState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-	colorBlendAttachmentState.blendEnable = VK_TRUE;
-	colorBlendAttachmentState.srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
-	colorBlendAttachmentState.dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-	colorBlendAttachmentState.colorBlendOp = VK_BLEND_OP_ADD;
-	colorBlendAttachmentState.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
-	colorBlendAttachmentState.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
-	colorBlendAttachmentState.alphaBlendOp = VK_BLEND_OP_ADD;
-
-	VkPipelineColorBlendStateCreateInfo colorBlendStateCreateInfo = Initializers::PipelineColorBlendStateCreateInfo(colorBlendAttachmentState, 1);
-	VkPipelineDepthStencilStateCreateInfo depthStencilStateCreateInfo = Initializers::PipelineDepthStencilStateCreateinfo();
-
-	std::vector<VkDynamicState> dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
-	VkPipelineDynamicStateCreateInfo dynamicStateCreateInfo = Initializers::PipelineDynamicStateCreateInfo(dynamicStates);
-
-	vkDestroyPipeline(*m_device->GetDevice(), m_pipeline, nullptr);
-
-	VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo = Initializers::GraphicsPipelineCreateInfo(shaderStageCreateInfos, vertexInputStateCreateInfo, inputAssemblyStateCreateInfo, viewportStateCreateInfo, rasterizationStateCreateInfo, multisampleStateCreateInfo, colorBlendStateCreateInfo, dynamicStateCreateInfo, m_pipelineLayout, m_renderPass, depthStencilStateCreateInfo);
-	ErrorCheck(vkCreateGraphicsPipelines(*m_device->GetDevice(), m_pipelineCache, 1, &graphicsPipelineCreateInfo, nullptr, &m_pipeline));
-
-	return true;
+	return res;
 }
 
 void Zodiac::Renderer::PrepareGeometry() {

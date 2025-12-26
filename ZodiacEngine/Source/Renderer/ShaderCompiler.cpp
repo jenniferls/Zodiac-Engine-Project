@@ -21,6 +21,7 @@ bool Zodiac::ShaderCompiler::CompileShaderFromText(VulkanDevice* device, const c
 	std::string source;
 	if (!FileUtil::ReadFile(path, source)) {
 		std::cout << "Failed to read shader source from file: " << path << std::endl;
+		return false;
 	}
 
 	m_module = m_slangSession->loadModuleFromSourceString("test", path, source.c_str(), diagnosticsBlob.writeRef());
