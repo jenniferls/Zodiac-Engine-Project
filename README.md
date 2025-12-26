@@ -14,5 +14,10 @@ Uses dynamic rendering for imgui but render passes for the main render.
 - glm
 - ImGui
 - EnTT
-- SPIRV-Reflect
 - slang
+
+## Implemented features
+- Shader hot-reloading
+- Dynamic rendering + classic render passes
+- VSync
+- Toggleable imgui layer
