@@ -165,7 +165,7 @@ void Zodiac::Renderer::InitInternal() {
 	SetupFramebuffers();
 	CreateSyncObjects();
 
-	PrepareGeometry();
+	SetupVertexBuffers();
 	PrepareUniformBuffers();
 	SetupDescriptorSets();
 	SetupPipeline();
@@ -306,7 +306,8 @@ bool Zodiac::Renderer::SetupPipeline() {
 
 	std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions = {
 		{ Initializers::VertexInputAttributeDescription(0, vertexBindingDescriptions[0].binding, 0) },
-		{ Initializers::VertexInputAttributeDescription(1, vertexBindingDescriptions[0].binding, offsetof(SimpleVertex, color)) }
+		{ Initializers::VertexInputAttributeDescription(1, vertexBindingDescriptions[0].binding, offsetof(SimpleVertex, color)) },
+		{ Initializers::VertexInputAttributeDescription(2, vertexBindingDescriptions[0].binding, offsetof(SimpleVertex, uv)) }
 	};
 
 	VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo = Initializers::PipelineVertexInputStateCreateInfo(vertexBindingDescriptions, vertexInputAttributeDescriptions);
@@ -386,7 +387,8 @@ bool Zodiac::Renderer::RecreatePipeline()
 
 		std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions = {
 			{ Initializers::VertexInputAttributeDescription(0, vertexBindingDescriptions[0].binding, 0) },
-			{ Initializers::VertexInputAttributeDescription(1, vertexBindingDescriptions[0].binding, offsetof(SimpleVertex, color)) }
+			{ Initializers::VertexInputAttributeDescription(1, vertexBindingDescriptions[0].binding, offsetof(SimpleVertex, color)) },
+			{ Initializers::VertexInputAttributeDescription(2, vertexBindingDescriptions[0].binding, offsetof(SimpleVertex, uv)) }
 		};
 
 		VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo = Initializers::PipelineVertexInputStateCreateInfo(vertexBindingDescriptions, vertexInputAttributeDescriptions);
@@ -433,14 +435,17 @@ bool Zodiac::Renderer::RecreatePipeline()
 	return res;
 }
 
-void Zodiac::Renderer::PrepareGeometry() {
+void Zodiac::Renderer::SetupVertexBuffers() {
 	SimpleVertex* vertArr = new SimpleVertex[3];
 	vertArr[0].pos = { 1.0f,  -1.0f, 0.0f };
 	vertArr[0].color = { 1.0f, 0.0f, 0.0f };
+	vertArr[0].uv = { 1.0f, 0.0f };
 	vertArr[1].pos = { 0.0f,  1.0f, 0.0f };
 	vertArr[1].color = { 0.0f, 1.0f, 0.0f };
+	vertArr[1].uv = { 0.5f, 1.0f };
 	vertArr[2].pos = { -1.0f, -1.0f, 0.0f }; 
 	vertArr[2].color = { 0.0f, 0.0f, 1.0f };
+	vertArr[2].uv = { 0.0f, 0.0f };
 
 	std::vector<uint32_t> indices = { 0, 1, 2 };
 

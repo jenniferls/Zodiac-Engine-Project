@@ -5,6 +5,7 @@ namespace Zodiac {
 	struct SimpleVertex {
 		glm::vec3 pos;
 		glm::vec3 color;
+		glm::vec2 uv;
 	};
 
 	struct Vertex {

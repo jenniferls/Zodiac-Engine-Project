@@ -3,6 +3,7 @@ struct AssembledVertex
 {
     float3 inPos    : POSITION;
     float3 inColor  : COLOR;
+    float2 inUV     : TEXCOORD0;
 };
 
 cbuffer Uniforms
@@ -16,6 +17,7 @@ cbuffer Uniforms
 struct CoarseVertex
 {
     float3 color;
+    float2 uv;
 };
 
 // Output of the fragment shader
@@ -37,11 +39,13 @@ VertexStageOutput vertexMain(AssembledVertex assembledVertex)
 
     float3 position = assembledVertex.inPos;
     float3 color = assembledVertex.inColor;
+    float2 uv = assembledVertex.inUV;
 
     float4x4 ProjectionView = mul(projectionMatrix, viewMatrix);
     float4x4 MVP = mul(ProjectionView, modelMatrix);
     output.sv_position = mul(MVP, float4(position, 1.0));
     output.coarseVertex.color = color;
+    output.coarseVertex.uv = uv;
 
     return output;
 }
@@ -50,6 +54,7 @@ VertexStageOutput vertexMain(AssembledVertex assembledVertex)
 Fragment fragmentMain(CoarseVertex coarseVertex : CoarseVertex) : SV_Target
 {
     float3 color = coarseVertex.color;
+    float2 uv = coarseVertex.uv;
 
     Fragment output;
     output.outFragColor = float4(color, 1.0);

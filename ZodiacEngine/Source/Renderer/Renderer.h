@@ -71,7 +71,7 @@ namespace Zodiac {
 		bool SetupPipeline();
 		bool RecreatePipeline();
 		void TraverseShaderVariableLayout(slang::VariableLayoutReflection* variableLayoutReflection);
-		void PrepareGeometry();
+		void SetupVertexBuffers();
 		void PrepareUniformBuffers();
 		void SetupDescriptorSets();
 		void SetupDescriptorPool();
