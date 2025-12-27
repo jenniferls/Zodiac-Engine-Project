@@ -435,11 +435,11 @@ bool Zodiac::Renderer::RecreatePipeline()
 
 void Zodiac::Renderer::PrepareGeometry() {
 	SimpleVertex* vertArr = new SimpleVertex[3];
-	vertArr[0].pos = { 1.0f,  1.0f, 0.0f };
+	vertArr[0].pos = { 1.0f,  -1.0f, 0.0f };
 	vertArr[0].color = { 1.0f, 0.0f, 0.0f };
-	vertArr[1].pos = { -1.0f,  1.0f, 0.0f };
+	vertArr[1].pos = { 0.0f,  1.0f, 0.0f };
 	vertArr[1].color = { 0.0f, 1.0f, 0.0f };
-	vertArr[2].pos = { 0.0f, -1.0f, 0.0f }; 
+	vertArr[2].pos = { -1.0f, -1.0f, 0.0f }; 
 	vertArr[2].color = { 0.0f, 0.0f, 1.0f };
 
 	std::vector<uint32_t> indices = { 0, 1, 2 };

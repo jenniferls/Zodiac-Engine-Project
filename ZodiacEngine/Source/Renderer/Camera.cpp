@@ -28,13 +28,11 @@ void Zodiac::Camera::SetRotation(const glm::vec3& rotation) {
 }
 
 void Zodiac::Camera::Update(float dt, const CameraMovement& movement, const MouseState& mouseState) {
-	float mouseSpeed = 2.0f;
-
-	glm::vec2 mousePos = glm::vec2(-mouseState.m_pos.x, mouseState.m_pos.y); //Invert X axis for easier navigation
+	glm::vec2 mousePos = glm::vec2(-mouseState.m_pos.x, -mouseState.m_pos.y); //Invert for easier navigation
 
 	glm::vec2 deltaMousePos = mousePos - m_oldMousePos;
 	if (mouseState.m_active) {
-		glm::quat deltaQuat = glm::quat(glm::vec3(mouseSpeed * deltaMousePos.y, mouseSpeed * deltaMousePos.x, 0.0f));
+		glm::quat deltaQuat = glm::quat(glm::vec3(m_rotationSpeed * deltaMousePos.y, m_rotationSpeed * deltaMousePos.x, 0.0f));
 		m_orientation = glm::normalize(deltaQuat * m_orientation);
 	}
 	m_oldMousePos = mousePos;
@@ -52,11 +50,11 @@ void Zodiac::Camera::Update(float dt, const CameraMovement& movement, const Mous
 	if (movement.StrafeRight) {
 		m_position += m_speed * dt * glm::normalize(glm::cross(m_up, m_forward));
 	}
-	if (movement.Up) { //Flipping Y axis for up and down to match left-handed coordinate system
-		m_position -= m_speed * dt * m_up;
+	if (movement.Up) {
+		m_position += m_speed * dt * m_up;
 	}
 	if (movement.Down) {
-		m_position += m_speed * dt * m_up;
+		m_position -= m_speed * dt * m_up;
 	}
 	RecalculateViewMatrix();
 }

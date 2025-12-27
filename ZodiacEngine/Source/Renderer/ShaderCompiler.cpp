@@ -93,6 +93,7 @@ void Zodiac::ShaderCompiler::AddDefaultTarget() {
 void Zodiac::ShaderCompiler::AddDefaultOptions() {
 	m_options.push_back({ slang::CompilerOptionName::EmitSpirvDirectly, {slang::CompilerOptionValueKind::Int, 1} });
 	m_options.push_back({ slang::CompilerOptionName::VulkanUseEntryPointName, {slang::CompilerOptionValueKind::Int, 1} });
+	m_options.push_back({ slang::CompilerOptionName::VulkanInvertY, {slang::CompilerOptionValueKind::Int, 1} });
 }
 
 void Zodiac::ShaderCompiler::AddTarget(const slang::TargetDesc& target) {
@@ -113,6 +114,7 @@ slang::IComponentType* Zodiac::ShaderCompiler::GetLinkedProgram() {
 Zodiac::ShaderCompiler::ShaderCompiler() {
 	SlangCreateGlobalSession();
 	AddDefaultTarget();
+	AddDefaultOptions();
 }
 
 bool Zodiac::ShaderCompiler::CompileShader() {
