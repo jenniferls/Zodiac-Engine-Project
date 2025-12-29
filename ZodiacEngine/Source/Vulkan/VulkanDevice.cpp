@@ -9,6 +9,7 @@ Zodiac::VulkanDevice::VulkanDevice(VulkanInstance* instance, VulkanPhysicalDevic
 	m_extensions.push_back("VK_KHR_synchronization2");
 	m_extensions.push_back("VK_KHR_create_renderpass2");
 	m_extensions.push_back("VK_KHR_depth_stencil_resolve");
+	m_extensions.push_back("VK_KHR_shader_draw_parameters");
 
 	bool dynamicRenderingSupported = physical_device->IsExtensionSupported(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
 	int32_t instanceVersion = instance->GetInstanceVersion();
