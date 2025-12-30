@@ -490,6 +490,8 @@ void Zodiac::Renderer::PrepareUniformBuffers() {
 }
 
 void Zodiac::Renderer::SetupDescriptorSets() {
+	m_descriptorSetLayouts.resize(2);
+
 	// Set 0 Binding 0: Uniform buffer (Vertex shader)
 	VkDescriptorSetLayoutBinding uniformsBinding = {};
 	uniformsBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -499,7 +501,7 @@ void Zodiac::Renderer::SetupDescriptorSets() {
 	uniformsBinding.binding = 0;
 
 	VkDescriptorSetLayoutCreateInfo uniformsLayoutCreateInfo = Initializers::DescriptorSetLayoutCreateInfo(1, uniformsBinding);
-	ErrorCheck(vkCreateDescriptorSetLayout(*m_device->GetDevice(), &uniformsLayoutCreateInfo, nullptr, &m_descriptorSetLayoutUniforms));
+	ErrorCheck(vkCreateDescriptorSetLayout(*m_device->GetDevice(), &uniformsLayoutCreateInfo, nullptr, &m_descriptorSetLayouts[0]));
 
 	// Set 1 Binding 0: Vertex buffer used for Programmable Vertex Pulling (Vertex shader)
 	VkDescriptorSetLayoutBinding vertexBinding = {};
@@ -510,11 +512,9 @@ void Zodiac::Renderer::SetupDescriptorSets() {
 	vertexBinding.binding = 0;
 
 	VkDescriptorSetLayoutCreateInfo vertexLayoutCreateInfo = Initializers::DescriptorSetLayoutCreateInfo(1, vertexBinding);
-	ErrorCheck(vkCreateDescriptorSetLayout(*m_device->GetDevice(), &vertexLayoutCreateInfo, nullptr, &m_descriptorSetLayoutVertex));
+	ErrorCheck(vkCreateDescriptorSetLayout(*m_device->GetDevice(), &vertexLayoutCreateInfo, nullptr, &m_descriptorSetLayouts[1]));
 
-	VkDescriptorSetLayout descriptorSetLayouts[] = { m_descriptorSetLayoutUniforms, m_descriptorSetLayoutVertex };
-
-	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = Initializers::PipelineLayoutCreateInfo(2, descriptorSetLayouts);
+	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = Initializers::PipelineLayoutCreateInfo(2, m_descriptorSetLayouts.data());
 	ErrorCheck(vkCreatePipelineLayout(*m_device->GetDevice(), &pipelineLayoutCreateInfo, nullptr, &m_pipelineLayout));
 }
 
@@ -538,7 +538,7 @@ void Zodiac::Renderer::PrepareDescriptorSet() {
 	m_descriptorSets.resize(2);
 
 	// Binding 0 : Uniform buffer
-	VkDescriptorSetAllocateInfo descriptorSetAllocInfo = Initializers::DescriptorSetAllocateInfo(&m_descriptorPool, 1, &m_descriptorSetLayoutUniforms);
+	VkDescriptorSetAllocateInfo descriptorSetAllocInfo = Initializers::DescriptorSetAllocateInfo(&m_descriptorPool, 1, &m_descriptorSetLayouts[0]);
 	ErrorCheck(vkAllocateDescriptorSets(*m_device->GetDevice(), &descriptorSetAllocInfo, &m_descriptorSets[0]));
 
 	VkWriteDescriptorSet writeDescriptorSet = {};
@@ -552,7 +552,7 @@ void Zodiac::Renderer::PrepareDescriptorSet() {
 	writeDescriptorSet.dstBinding = 0;
 
 	// Binding 1 : Vertex storage buffer
-	VkDescriptorSetAllocateInfo descriptorSetAllocInfoVertex = Initializers::DescriptorSetAllocateInfo(&m_descriptorPool, 1, &m_descriptorSetLayoutVertex);
+	VkDescriptorSetAllocateInfo descriptorSetAllocInfoVertex = Initializers::DescriptorSetAllocateInfo(&m_descriptorPool, 1, &m_descriptorSetLayouts[1]);
 	ErrorCheck(vkAllocateDescriptorSets(*m_device->GetDevice(), &descriptorSetAllocInfoVertex, &m_descriptorSets[1]));
 
 	VkWriteDescriptorSet writeDescriptorSetVertex = {};
@@ -738,8 +738,10 @@ void Zodiac::Renderer::Shutdown() {
 	CleanupSyncObjects();
 
 	vkDestroyPipelineCache(*m_device->GetDevice(), m_pipelineCache, nullptr);
-	vkDestroyDescriptorSetLayout(*m_device->GetDevice(), m_descriptorSetLayoutUniforms, nullptr);
-	vkDestroyDescriptorSetLayout(*m_device->GetDevice(), m_descriptorSetLayoutVertex, nullptr);
+	for (int i = 0; i < m_descriptorSetLayouts.size(); i++) {
+		vkDestroyDescriptorSetLayout(*m_device->GetDevice(), m_descriptorSetLayouts[i], nullptr);
+	}
+	m_descriptorSetLayouts.clear();
 	vkDestroyPipelineLayout(*m_device->GetDevice(), m_pipelineLayout, nullptr);
 	vkDestroyRenderPass(*m_device->GetDevice(), m_renderPass, nullptr);
 	vkDestroyPipeline(*m_device->GetDevice(), m_pipeline, nullptr);

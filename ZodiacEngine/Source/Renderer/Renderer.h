@@ -97,9 +97,6 @@ namespace Zodiac {
 		VkPipelineCache m_pipelineCache;
 		VkPipelineLayout m_pipelineLayout;
 		VkDescriptorPool m_descriptorPool;
-		//TODO: Support multiple descriptor sets if needed, don't make a new one for each type
-		VkDescriptorSetLayout m_descriptorSetLayoutUniforms;
-		VkDescriptorSetLayout m_descriptorSetLayoutVertex;
 		std::vector<VkDescriptorSetLayout> m_descriptorSetLayouts;
 		std::vector<VkDescriptorSet> m_descriptorSets;
 		std::vector<VkFramebuffer> m_framebuffers;
