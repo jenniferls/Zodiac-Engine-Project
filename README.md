@@ -18,6 +18,8 @@ Uses dynamic rendering for imgui but render passes for the main render.
 
 ## Implemented features
 - Shader hot-reloading
+- Programmable Vertex Pulling with Indexed rendering
 - Dynamic rendering + classic render passes
 - VSync
 - Toggleable imgui layer
+- Mouse and keyboard-controlled camera
