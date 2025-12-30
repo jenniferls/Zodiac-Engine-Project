@@ -51,7 +51,13 @@ Zodiac::VulkanDevice::VulkanDevice(VulkanInstance* instance, VulkanPhysicalDevic
 		.dynamicRendering = VK_TRUE
 	};
 
-	VkDeviceCreateInfo device_info = Initializers::DeviceCreateInfo(queue_create_info, m_physical_device->GetDeviceFeatures(), m_extensions, &dynamicRenderingFeature);
+	VkPhysicalDeviceScalarBlockLayoutFeatures scalarBlockLayoutFeature = {
+		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SCALAR_BLOCK_LAYOUT_FEATURES,
+		.pNext = &dynamicRenderingFeature,
+		.scalarBlockLayout = VK_TRUE
+	};
+
+	VkDeviceCreateInfo device_info = Initializers::DeviceCreateInfo(queue_create_info, m_physical_device->GetDeviceFeatures(), m_extensions, &scalarBlockLayoutFeature);
 	VkCommandPoolCreateInfo compute_pool_info = Initializers::CommandPoolCreateinfo(m_physical_device->GetFamilyIndices().compute_indices);
 	VkCommandPoolCreateInfo graphics_pool_info = Initializers::CommandPoolCreateinfo(m_physical_device->GetFamilyIndices().graphics_indices, VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 

@@ -282,6 +282,20 @@ VkPipelineVertexInputStateCreateInfo Zodiac::Initializers::PipelineVertexInputSt
 	return info;
 }
 
+//Used with programmable vertex pulling
+VkPipelineVertexInputStateCreateInfo Zodiac::Initializers::PipelineVertexInputStateCreateInfo() {
+	VkPipelineVertexInputStateCreateInfo info = {};
+	info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	info.pNext = nullptr;
+	info.flags = 0;
+	info.vertexBindingDescriptionCount = 0;
+	info.pVertexBindingDescriptions = nullptr;
+	info.vertexAttributeDescriptionCount = 0;
+	info.pVertexAttributeDescriptions = nullptr;
+
+	return info;
+}
+
 VkPipelineInputAssemblyStateCreateInfo Zodiac::Initializers::PipelineInputAssemblyStateCreateInfo(VkPrimitiveTopology topology) {
 	VkPipelineInputAssemblyStateCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -424,13 +438,13 @@ VkPipelineLayoutCreateInfo Zodiac::Initializers::PipelineLayoutCreateInfo() {
 	return info;
 }
 
-VkPipelineLayoutCreateInfo Zodiac::Initializers::PipelineLayoutCreateInfo(uint32_t layoutCount, VkDescriptorSetLayout& pipelineLayoutInfo) {
+VkPipelineLayoutCreateInfo Zodiac::Initializers::PipelineLayoutCreateInfo(uint32_t layoutCount, const VkDescriptorSetLayout* pipelineLayoutInfo) {
 	VkPipelineLayoutCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 	info.flags = 0;
 	info.pNext = nullptr;
 	info.pPushConstantRanges = nullptr;
-	info.pSetLayouts = &pipelineLayoutInfo;
+	info.pSetLayouts = pipelineLayoutInfo;
 	info.pushConstantRangeCount = 0;
 	info.setLayoutCount = layoutCount;
 

@@ -300,17 +300,17 @@ bool Zodiac::Renderer::SetupPipeline() {
 		name = "<unnamed>";
 	}
 
-	std::vector<VkVertexInputBindingDescription> vertexBindingDescriptions = {
-		{ Initializers::VertexInputBindingDescription(0, sizeof(SimpleVertex)) }
-	};
+	//std::vector<VkVertexInputBindingDescription> vertexBindingDescriptions = {
+	//	{ Initializers::VertexInputBindingDescription(0, sizeof(SimpleVertex)) }
+	//};
 
-	std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions = {
-		{ Initializers::VertexInputAttributeDescription(0, vertexBindingDescriptions[0].binding, 0) },
-		{ Initializers::VertexInputAttributeDescription(1, vertexBindingDescriptions[0].binding, offsetof(SimpleVertex, color)) },
-		{ Initializers::VertexInputAttributeDescription(2, vertexBindingDescriptions[0].binding, offsetof(SimpleVertex, uv)) }
-	};
+	//std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions = {
+	//	{ Initializers::VertexInputAttributeDescription(0, vertexBindingDescriptions[0].binding, 0) },
+	//	{ Initializers::VertexInputAttributeDescription(1, vertexBindingDescriptions[0].binding, offsetof(SimpleVertex, color)) },
+	//	{ Initializers::VertexInputAttributeDescription(2, vertexBindingDescriptions[0].binding, offsetof(SimpleVertex, uv)) }
+	//};
 
-	VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo = Initializers::PipelineVertexInputStateCreateInfo(vertexBindingDescriptions, vertexInputAttributeDescriptions);
+	VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo = Initializers::PipelineVertexInputStateCreateInfo();
 	VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo = Initializers::PipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 
 	VkPipelineViewportStateCreateInfo viewportStateCreateInfo = Initializers::PipelineViewportStateCreateInfo();
@@ -381,17 +381,17 @@ bool Zodiac::Renderer::RecreatePipeline()
 			name = "<unnamed>";
 		}
 
-		std::vector<VkVertexInputBindingDescription> vertexBindingDescriptions = {
-			{ Initializers::VertexInputBindingDescription(0, sizeof(SimpleVertex)) }
-		};
+		//std::vector<VkVertexInputBindingDescription> vertexBindingDescriptions = {
+		//	{ Initializers::VertexInputBindingDescription(0, sizeof(SimpleVertex)) }
+		//};
 
-		std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions = {
-			{ Initializers::VertexInputAttributeDescription(0, vertexBindingDescriptions[0].binding, 0) },
-			{ Initializers::VertexInputAttributeDescription(1, vertexBindingDescriptions[0].binding, offsetof(SimpleVertex, color)) },
-			{ Initializers::VertexInputAttributeDescription(2, vertexBindingDescriptions[0].binding, offsetof(SimpleVertex, uv)) }
-		};
+		//std::vector<VkVertexInputAttributeDescription> vertexInputAttributeDescriptions = {
+		//	{ Initializers::VertexInputAttributeDescription(0, vertexBindingDescriptions[0].binding, 0) },
+		//	{ Initializers::VertexInputAttributeDescription(1, vertexBindingDescriptions[0].binding, offsetof(SimpleVertex, color)) },
+		//	{ Initializers::VertexInputAttributeDescription(2, vertexBindingDescriptions[0].binding, offsetof(SimpleVertex, uv)) }
+		//};
 
-		VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo = Initializers::PipelineVertexInputStateCreateInfo(vertexBindingDescriptions, vertexInputAttributeDescriptions);
+		VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo = Initializers::PipelineVertexInputStateCreateInfo();
 		VkPipelineInputAssemblyStateCreateInfo inputAssemblyStateCreateInfo = Initializers::PipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
 
 		VkPipelineViewportStateCreateInfo viewportStateCreateInfo = Initializers::PipelineViewportStateCreateInfo();
@@ -456,17 +456,20 @@ void Zodiac::Renderer::SetupVertexBuffers() {
 	stagingBuffer->UnmapMemory();
 
 	//Device local buffer
-	m_vertexBuffer = new Zodiac::VulkanBuffer(m_device, sizeof(SimpleVertex), 3, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	m_vertexBuffer = new Zodiac::VulkanBuffer(m_device, sizeof(SimpleVertex), 3, /*VK_BUFFER_USAGE_VERTEX_BUFFER_BIT*/VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 	VulkanBuffer* indexBuffer_staging = new Zodiac::VulkanBuffer(m_device, sizeof(uint32_t), 3, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	indexBuffer_staging->MapMemory();
 	indexBuffer_staging->SetData(indices.data());
 	indexBuffer_staging->UnmapMemory();
 
-	m_indexBuffer = new Zodiac::VulkanBuffer(m_device, sizeof(uint32_t), 3, VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	m_indexBuffer = new Zodiac::VulkanBuffer(m_device, sizeof(uint32_t), 3, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 	VkCommandBuffer copyCommand = m_device->GetCommandBuffer(true);
 	m_vertexBuffer->CopyFrom(copyCommand, stagingBuffer);
+	m_vertexBuffer->p_descriptor.buffer = m_vertexBuffer->GetBuffer();
+	m_vertexBuffer->p_descriptor.offset = 0;
+	m_vertexBuffer->p_descriptor.range = VK_WHOLE_SIZE;
 	m_indexBuffer->CopyFrom(copyCommand, indexBuffer_staging);
 	m_device->FlushCommandBuffer(copyCommand, *m_device->GetGraphicsQueue(), m_device->GetGraphicsCommandPool()); //TODO: Might change this a bit
 
@@ -487,50 +490,82 @@ void Zodiac::Renderer::PrepareUniformBuffers() {
 }
 
 void Zodiac::Renderer::SetupDescriptorSets() {
-	// Binding 0: Uniform buffer (Vertex shader)
-	VkDescriptorSetLayoutBinding layoutBinding = {};
-	layoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	layoutBinding.descriptorCount = 1;
-	layoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-	layoutBinding.pImmutableSamplers = nullptr;
+	// Set 0 Binding 0: Uniform buffer (Vertex shader)
+	VkDescriptorSetLayoutBinding uniformsBinding = {};
+	uniformsBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	uniformsBinding.descriptorCount = 1;
+	uniformsBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	uniformsBinding.pImmutableSamplers = nullptr;
+	uniformsBinding.binding = 0;
 
-	VkDescriptorSetLayoutCreateInfo layoutCreateInfo = Initializers::DescriptorSetLayoutCreateInfo(1, layoutBinding);
-	ErrorCheck(vkCreateDescriptorSetLayout(*m_device->GetDevice(), &layoutCreateInfo, nullptr, &m_descriptorSetLayout));
+	VkDescriptorSetLayoutCreateInfo uniformsLayoutCreateInfo = Initializers::DescriptorSetLayoutCreateInfo(1, uniformsBinding);
+	ErrorCheck(vkCreateDescriptorSetLayout(*m_device->GetDevice(), &uniformsLayoutCreateInfo, nullptr, &m_descriptorSetLayoutUniforms));
 
-	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = Initializers::PipelineLayoutCreateInfo(1, m_descriptorSetLayout);
+	// Set 1 Binding 0: Vertex buffer used for Programmable Vertex Pulling (Vertex shader)
+	VkDescriptorSetLayoutBinding vertexBinding = {};
+	vertexBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	vertexBinding.descriptorCount = 1;
+	vertexBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	vertexBinding.pImmutableSamplers = nullptr;
+	vertexBinding.binding = 0;
+
+	VkDescriptorSetLayoutCreateInfo vertexLayoutCreateInfo = Initializers::DescriptorSetLayoutCreateInfo(1, vertexBinding);
+	ErrorCheck(vkCreateDescriptorSetLayout(*m_device->GetDevice(), &vertexLayoutCreateInfo, nullptr, &m_descriptorSetLayoutVertex));
+
+	VkDescriptorSetLayout descriptorSetLayouts[] = { m_descriptorSetLayoutUniforms, m_descriptorSetLayoutVertex };
+
+	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = Initializers::PipelineLayoutCreateInfo(2, descriptorSetLayouts);
 	ErrorCheck(vkCreatePipelineLayout(*m_device->GetDevice(), &pipelineLayoutCreateInfo, nullptr, &m_pipelineLayout));
 }
 
 void Zodiac::Renderer::SetupDescriptorPool() {
-	VkDescriptorPoolSize typeCounts[1];
+	VkDescriptorPoolSize typeCounts[2];
 
 	typeCounts[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	typeCounts[0].descriptorCount = 1;
+	typeCounts[1].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	typeCounts[1].descriptorCount = 1;
 	// For additional types you need to add new entries in the type count list
 	// E.g. for two combined image samplers :
 	// typeCounts[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	// typeCounts[1].descriptorCount = 2;
 
-	VkDescriptorPoolCreateInfo descriptorPoolInfo = Initializers::DescriptorPoolCreateInfo(typeCounts->descriptorCount, typeCounts, typeCounts->descriptorCount);
+	VkDescriptorPoolCreateInfo descriptorPoolInfo = Initializers::DescriptorPoolCreateInfo(2, typeCounts, 2);
 	ErrorCheck(vkCreateDescriptorPool(*m_device->GetDevice(), &descriptorPoolInfo, nullptr, &m_descriptorPool));
 }
 
 void Zodiac::Renderer::PrepareDescriptorSet() {
-	VkDescriptorSetAllocateInfo descriptorSetAllocInfo = Initializers::DescriptorSetAllocateInfo(&m_descriptorPool, 1, &m_descriptorSetLayout);
-	ErrorCheck(vkAllocateDescriptorSets(*m_device->GetDevice(), &descriptorSetAllocInfo, &m_descriptorSet));
+	// Binding 0 : Uniform buffer
+	VkDescriptorSetAllocateInfo descriptorSetAllocInfo = Initializers::DescriptorSetAllocateInfo(&m_descriptorPool, 1, &m_descriptorSetLayoutUniforms);
+	ErrorCheck(vkAllocateDescriptorSets(*m_device->GetDevice(), &descriptorSetAllocInfo, &m_descriptorSetUniforms));
 
 	VkWriteDescriptorSet writeDescriptorSet = {};
 
-	// Binding 0 : Uniform buffer
 	writeDescriptorSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	writeDescriptorSet.dstSet = m_descriptorSet;
+	writeDescriptorSet.dstSet = m_descriptorSetUniforms;
 	writeDescriptorSet.descriptorCount = 1;
 	writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	writeDescriptorSet.pBufferInfo = &m_uniformBuffer->p_descriptor;
 	// Binds this uniform buffer to binding point 0
 	writeDescriptorSet.dstBinding = 0;
 
-	vkUpdateDescriptorSets(*m_device->GetDevice(), 1, &writeDescriptorSet, 0, nullptr);
+	// Binding 1 : Vertex storage buffer
+	VkDescriptorSetAllocateInfo descriptorSetAllocInfoVertex = Initializers::DescriptorSetAllocateInfo(&m_descriptorPool, 1, &m_descriptorSetLayoutVertex);
+	ErrorCheck(vkAllocateDescriptorSets(*m_device->GetDevice(), &descriptorSetAllocInfoVertex, &m_descriptorSetVertex));
+
+	VkWriteDescriptorSet writeDescriptorSetVertex = {};
+
+	writeDescriptorSetVertex.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writeDescriptorSetVertex.dstSet = m_descriptorSetVertex;
+	writeDescriptorSetVertex.descriptorCount = 1;
+	writeDescriptorSetVertex.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	writeDescriptorSetVertex.pBufferInfo = &m_vertexBuffer->p_descriptor;
+	// Binds this buffer to binding point 0
+	writeDescriptorSetVertex.dstBinding = 0;
+
+	VkWriteDescriptorSet writes[] = { writeDescriptorSet, writeDescriptorSetVertex };
+
+	vkUpdateDescriptorSets(*m_device->GetDevice(), 2, writes, 0, nullptr);
 }
 
 void Zodiac::Renderer::BuildCommandBuffers() {
@@ -559,12 +594,15 @@ void Zodiac::Renderer::BuildCommandBuffers() {
 			scissor.offset.y = 0;
 			vkCmdSetScissor(m_drawCmdBuffers[i], 0, 1, &scissor);
 
+			//TODO: Cleanup this and make neater
+			VkDescriptorSet descriptorSets[] = { m_descriptorSetUniforms, m_descriptorSetVertex };
+
 			// Bind descriptor sets describing shader binding points
-			vkCmdBindDescriptorSets(m_drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
+			vkCmdBindDescriptorSets(m_drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 2, descriptorSets, 0, nullptr);
 
 			// Bind vertex buffer (contains position and colors)
-			VkDeviceSize offsets[1] = { 0 };
-			vkCmdBindVertexBuffers(m_drawCmdBuffers[i], 0, 1, &m_vertexBuffer->GetBuffer(), offsets);
+			//VkDeviceSize offsets[1] = { 0 };
+			//vkCmdBindVertexBuffers(m_drawCmdBuffers[i], 0, 1, &m_vertexBuffer->GetBuffer(), offsets);
 			vkCmdBindIndexBuffer(m_drawCmdBuffers[i], m_indexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
 			vkCmdBindPipeline(m_drawCmdBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
@@ -621,12 +659,15 @@ void Zodiac::Renderer::RecordCommandBuffer(int32_t index, bool secondBarrier) {
 	scissor.offset.y = 0;
 	vkCmdSetScissor(m_drawCmdBuffers[index], 0, 1, &scissor);
 
+	//TODO: Cleanup this and make neater
+	VkDescriptorSet descriptorSets[] = { m_descriptorSetUniforms, m_descriptorSetVertex };
+
 	// Bind descriptor sets describing shader binding points
-	vkCmdBindDescriptorSets(m_drawCmdBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 1, &m_descriptorSet, 0, nullptr);
+	vkCmdBindDescriptorSets(m_drawCmdBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 2, descriptorSets, 0, nullptr);
 
 	// Bind vertex buffer (contains position and colors)
-	VkDeviceSize offsets[1] = { 0 };
-	vkCmdBindVertexBuffers(m_drawCmdBuffers[index], 0, 1, &m_vertexBuffer->GetBuffer(), offsets);
+	//VkDeviceSize offsets[1] = { 0 };
+	//vkCmdBindVertexBuffers(m_drawCmdBuffers[index], 0, 1, &m_vertexBuffer->GetBuffer(), offsets);
 	vkCmdBindIndexBuffer(m_drawCmdBuffers[index], m_indexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
 	vkCmdBindPipeline(m_drawCmdBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
@@ -743,7 +784,8 @@ void Zodiac::Renderer::Shutdown() {
 	CleanupSyncObjects();
 
 	vkDestroyPipelineCache(*m_device->GetDevice(), m_pipelineCache, nullptr);
-	vkDestroyDescriptorSetLayout(*m_device->GetDevice(), m_descriptorSetLayout, nullptr);
+	vkDestroyDescriptorSetLayout(*m_device->GetDevice(), m_descriptorSetLayoutUniforms, nullptr);
+	vkDestroyDescriptorSetLayout(*m_device->GetDevice(), m_descriptorSetLayoutVertex, nullptr);
 	vkDestroyPipelineLayout(*m_device->GetDevice(), m_pipelineLayout, nullptr);
 	vkDestroyRenderPass(*m_device->GetDevice(), m_renderPass, nullptr);
 	vkDestroyPipeline(*m_device->GetDevice(), m_pipeline, nullptr);

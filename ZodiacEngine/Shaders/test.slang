@@ -1,17 +1,21 @@
 // Per-vertex attributes to be assembled from bound vertex buffers.
 struct AssembledVertex
 {
-    float3 inPos    : POSITION;
-    float3 inColor  : COLOR;
-    float2 inUV     : TEXCOORD0;
+    float3 inPos;
+    float3 inColor;
+    float2 inUV;
 };
 
+[[vk::binding(0, 0)]]
 cbuffer Uniforms
 {
     float4x4 projectionMatrix;
     float4x4 modelMatrix;
     float4x4 viewMatrix;
 }
+
+[[vk::binding(0, 1)]]
+StructuredBuffer<AssembledVertex> VertexBuffer;
 
 // Output of the vertex shader, and input to the fragment shader.
 struct CoarseVertex
@@ -33,8 +37,9 @@ struct VertexStageOutput
 };
 
 [shader("vertex")]
-VertexStageOutput vertexMain(AssembledVertex assembledVertex)
+VertexStageOutput vertexMain(uint vertexID: SV_VertexID)
 {
+    AssembledVertex assembledVertex = VertexBuffer[vertexID];
     VertexStageOutput output;
 
     float3 position = assembledVertex.inPos;
