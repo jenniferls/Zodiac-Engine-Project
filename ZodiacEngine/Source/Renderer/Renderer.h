@@ -76,7 +76,6 @@ namespace Zodiac {
 		void SetupDescriptorSets();
 		void SetupDescriptorPool();
 		void PrepareDescriptorSet();
-		void BuildCommandBuffers();
 		void AllocateCommandBuffers();
 		void RecordCommandBuffer(int32_t index, bool secondBarrier = false);
 		void RecreateSwapChain();
@@ -101,10 +100,8 @@ namespace Zodiac {
 		//TODO: Support multiple descriptor sets if needed, don't make a new one for each type
 		VkDescriptorSetLayout m_descriptorSetLayoutUniforms;
 		VkDescriptorSetLayout m_descriptorSetLayoutVertex;
-		//std::vector<VkDescriptorSetLayout> m_descriptorSetLayouts;
-		VkDescriptorSet m_descriptorSetUniforms;
-		VkDescriptorSet m_descriptorSetVertex;
-		//std::vector<VkDescriptorSet> m_descriptorSets;
+		std::vector<VkDescriptorSetLayout> m_descriptorSetLayouts;
+		std::vector<VkDescriptorSet> m_descriptorSets;
 		std::vector<VkFramebuffer> m_framebuffers;
 
 		std::vector<VkCommandBuffer> m_drawCmdBuffers;
