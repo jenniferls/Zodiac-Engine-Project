@@ -74,12 +74,28 @@ target_link_directories(${PROJECT_NAME}
 		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/slang/lib
 )
 
+# Assimp
+add_library(assimp STATIC IMPORTED)
+
+set_target_properties(assimp PROPERTIES
+	IMPORTED_LOCATION
+		"${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/lib/x64/assimp-vc143-mt.lib"
+	INTERFACE_INCLUDE_DIRECTORIES
+		"${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/include/assimp"
+)
+
+target_compile_definitions(${PROJECT_NAME}
+	PRIVATE
+		ASSIMP_BUILD_NO_EXPORT
+)
+
 # Link libraries
 target_link_libraries(${PROJECT_NAME}
 		PRIVATE
 			${Vulkan_LIBRARIES}
 			${GLFW_LIB}
 			slang.lib
+			assimp
 )
 
 # ImGui
