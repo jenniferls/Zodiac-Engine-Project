@@ -2,7 +2,7 @@
 Open Asset Import Library (assimp)
 ----------------------------------------------------------------------
 
-Copyright (c) 2006-2025, assimp team
+Copyright (c) 2006-2020, assimp team
 
 All rights reserved.
 
@@ -39,56 +39,41 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ----------------------------------------------------------------------
 */
 
-/** @file Declares a helper class, "CommentRemover", which can be
- *  used to remove comments (single and multi line) from a text file.
- */
-#pragma once
-#ifndef AI_REMOVE_COMMENTS_H_INC
-#define AI_REMOVE_COMMENTS_H_INC
+/** @file Provides facilities to replace the default assert handler. */
 
-#ifdef __GNUC__
-#   pragma GCC system_header
-#endif
+#ifndef INCLUDED_AI_ASSERTHANDLER_H
+#define INCLUDED_AI_ASSERTHANDLER_H
 
+#include <assimp/ai_assert.h>
 #include <assimp/defs.h>
 
 namespace Assimp {
 
 // ---------------------------------------------------------------------------
-/** \brief Helper class to remove single and multi line comments from a file
- *
- *  Some mesh formats like MD5 have comments that are quite similar
- *  to those in C or C++ so this code has been moved to a separate
- *  module.
+/**
+ *  @brief  Signature of functions which handle assert violations.
  */
-class ASSIMP_API CommentRemover {
-public:
-    // class cannot be instanced
-    CommentRemover() = delete;
-    ~CommentRemover() = delete;
+using AiAssertHandler = void (*)(const char* failedExpression, const char* file, int line);
 
-    /// @brief    Remove single-line comments. 
-    /// The end of a line is expected to be either NL or CR or NLCR.
-    /// @param szComment The start sequence of the comment, e.g. "//"
-    /// @param szBuffer Buffer to work with
-    /// @param chReplacement Character to be used as replacement
-    /// for commented lines. By default this is ' '
-    static void RemoveLineComments(const char* szComment,
-        char* szBuffer, char chReplacement = ' ');
+// ---------------------------------------------------------------------------
+/**
+ *  @brief  Set the assert handler.
+ */
+ASSIMP_API void setAiAssertHandler(AiAssertHandler handler);
 
-    /// @brief Remove multi-line comments. 
-    /// The end of a line is expected to be either NL or CR or NLCR. Multi-line comments
-    /// may not be nested (as in C).
-    /// @param szCommentStart The start sequence of the comment, e.g. "/*"
-    /// @param szCommentEnd The end sequence of the comment, e.g. "*/"
-    /// @param szBuffer Buffer to work with
-    /// @param chReplacement Character to be used as replacement
-    /// for commented lines. By default this is ' '
-    static void RemoveMultiLineComments(const char* szCommentStart,
-        const char* szCommentEnd,char* szBuffer,
-        char chReplacement = ' ');
-};
+// ---------------------------------------------------------------------------
+/** The assert handler which is set by default.
+ *
+ *  @brief  This issues a message to stderr and calls abort.
+ */
+AI_WONT_RETURN ASSIMP_API void defaultAiAssertHandler(const char* failedExpression, const char* file, int line) AI_WONT_RETURN_SUFFIX;
 
-} // ! Assimp
+// ---------------------------------------------------------------------------
+/**
+ *  @brief  Dispatches an assert violation to the assert handler.
+ */
+ASSIMP_API void aiAssertViolation(const char* failedExpression, const char* file, int line);
 
-#endif // !! AI_REMOVE_COMMENTS_H_INC
+} // end of namespace Assimp
+
+#endif // INCLUDED_AI_ASSERTHANDLER_H

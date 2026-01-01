@@ -7,8 +7,11 @@ namespace Zodiac {
 		Mesh();
 		~Mesh();
 
+		void SetVertexBuffer(const void* vertices) { m_vertexBuffer = vertices; }
+		void SetIndexBuffer(const std::vector<uint32_t>& indices) { m_indices = indices; }
+
 	private:
-		std::vector<SimpleVertex> m_vertexBuffer;
+		const void* m_vertexBuffer;
 		std::vector<uint32_t> m_indices;
 	};
 }
