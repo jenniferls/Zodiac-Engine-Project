@@ -2,8 +2,9 @@
 struct AssembledVertex
 {
     float3 inPos;
-    float3 inColor;
     float2 inUV;
+    float3 inNormal;
+    float3 inColor;
 };
 
 [[vk::binding(0, 0)]]
@@ -22,6 +23,7 @@ struct CoarseVertex
 {
     float3 color;
     float2 uv;
+    float3 normal;
 };
 
 // Output of the fragment shader
@@ -45,12 +47,15 @@ VertexStageOutput vertexMain(uint vertexID: SV_VertexID)
     float3 position = assembledVertex.inPos;
     float3 color = assembledVertex.inColor;
     float2 uv = assembledVertex.inUV;
+    float3 normal = assembledVertex.inNormal;
 
     float4x4 ProjectionView = mul(projectionMatrix, viewMatrix);
     float4x4 MVP = mul(ProjectionView, modelMatrix);
+
     output.sv_position = mul(MVP, float4(position, 1.0));
     output.coarseVertex.color = color;
     output.coarseVertex.uv = uv;
+    output.coarseVertex.normal = normal;
 
     return output;
 }
@@ -60,6 +65,7 @@ Fragment fragmentMain(CoarseVertex coarseVertex : CoarseVertex) : SV_Target
 {
     float3 color = coarseVertex.color;
     float2 uv = coarseVertex.uv;
+    float3 normal = coarseVertex.normal;
 
     Fragment output;
     output.outFragColor = float4(color, 1.0);

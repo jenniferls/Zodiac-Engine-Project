@@ -23,6 +23,7 @@ void Zodiac::Mesh::AssembleVertexFromMeshDataAtIndex(uint32_t index){
 	vertex.pos = m_meshData.positions[index];
 	vertex.uv = m_meshData.uvs[index];
 	vertex.color = m_meshData.colors[index];
+	vertex.normal = m_meshData.normals[index];
 
 	m_vertexBuffer.emplace_back(vertex);
 }
