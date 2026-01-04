@@ -1,5 +1,5 @@
 #pragma once
-#include "Mesh.h"
+#include "Model.h"
 
 namespace Zodiac {
 	class MeshImporter {
@@ -7,10 +7,10 @@ namespace Zodiac {
 		MeshImporter();
 		~MeshImporter();
 
-		bool LoadModel(const char* path, Mesh& mesh);
+		bool LoadModel(const char* path, Model& model);
 
 	private:
-		bool AssimpImport(const char* path, Mesh& mesh);
-		bool BinaryImport(const char* path, Mesh& mesh);
+		bool AssimpImport(const char* path, Model& model);
+		bool BinaryImport(const char* path, Model& model);
 	};
 }

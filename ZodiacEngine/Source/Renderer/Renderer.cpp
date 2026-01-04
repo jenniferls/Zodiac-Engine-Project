@@ -436,37 +436,46 @@ bool Zodiac::Renderer::RecreatePipeline()
 }
 
 void Zodiac::Renderer::SetupVertexBuffers() {
-	m_meshes.emplace_back();
-	m_meshImporter.LoadModel((std::string(IMPORT_MODELS_DIR) + "/cube.obj").c_str(), m_meshes[0]);
+	m_models.emplace_back();
+	std::vector<SimpleVertex> vertArr;
+	std::vector<uint32_t> indices;
+	if (m_meshImporter.LoadModel((std::string(IMPORT_MODELS_DIR) + "/dragon.obj").c_str(), m_models[0])) {
+		std::vector<Mesh> meshes = m_models[0].GetMeshes();
+		//for (uint32_t i = 0; i < meshes.size(); i++) {
+		vertArr = meshes[0].GetVertexBuffer();
+		indices = meshes[0].GetIndexBuffer();
+		//}
+	}
+	else {
+		vertArr.resize(3);
+		vertArr[0].pos = { 1.0f,  -1.0f, 0.0f };
+		vertArr[0].color = { 1.0f, 0.0f, 0.0f };
+		vertArr[0].uv = { 1.0f, 0.0f };
+		vertArr[1].pos = { 0.0f,  1.0f, 0.0f };
+		vertArr[1].color = { 0.0f, 1.0f, 0.0f };
+		vertArr[1].uv = { 0.5f, 1.0f };
+		vertArr[2].pos = { -1.0f, -1.0f, 0.0f }; 
+		vertArr[2].color = { 0.0f, 0.0f, 1.0f };
+		vertArr[2].uv = { 0.0f, 0.0f };
 
-	SimpleVertex* vertArr = new SimpleVertex[3];
-	vertArr[0].pos = { 1.0f,  -1.0f, 0.0f };
-	vertArr[0].color = { 1.0f, 0.0f, 0.0f };
-	vertArr[0].uv = { 1.0f, 0.0f };
-	vertArr[1].pos = { 0.0f,  1.0f, 0.0f };
-	vertArr[1].color = { 0.0f, 1.0f, 0.0f };
-	vertArr[1].uv = { 0.5f, 1.0f };
-	vertArr[2].pos = { -1.0f, -1.0f, 0.0f }; 
-	vertArr[2].color = { 0.0f, 0.0f, 1.0f };
-	vertArr[2].uv = { 0.0f, 0.0f };
-
-	std::vector<uint32_t> indices = { 0, 1, 2 };
+		indices = { 0, 1, 2 };
+	}
 
 	//Staging buffer
-	VulkanBuffer* stagingBuffer = new Zodiac::VulkanBuffer(m_device, sizeof(SimpleVertex), 3, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	VulkanBuffer* stagingBuffer = new Zodiac::VulkanBuffer(m_device, sizeof(SimpleVertex), vertArr.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	stagingBuffer->MapMemory();
-	stagingBuffer->SetData(vertArr);
+	stagingBuffer->SetData(vertArr.data());
 	stagingBuffer->UnmapMemory();
 
 	//Device local buffer
-	m_vertexBuffer = new Zodiac::VulkanBuffer(m_device, sizeof(SimpleVertex), 3, /*VK_BUFFER_USAGE_VERTEX_BUFFER_BIT*/VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	m_vertexBuffer = new Zodiac::VulkanBuffer(m_device, sizeof(SimpleVertex), vertArr.size(), /*VK_BUFFER_USAGE_VERTEX_BUFFER_BIT*/VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-	VulkanBuffer* indexBuffer_staging = new Zodiac::VulkanBuffer(m_device, sizeof(uint32_t), 3, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	VulkanBuffer* indexBuffer_staging = new Zodiac::VulkanBuffer(m_device, sizeof(uint32_t), indices.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 	indexBuffer_staging->MapMemory();
 	indexBuffer_staging->SetData(indices.data());
 	indexBuffer_staging->UnmapMemory();
 
-	m_indexBuffer = new Zodiac::VulkanBuffer(m_device, sizeof(uint32_t), 3, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	m_indexBuffer = new Zodiac::VulkanBuffer(m_device, sizeof(uint32_t), indices.size(), VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 	VkCommandBuffer copyCommand = m_device->GetCommandBuffer(true);
 	m_vertexBuffer->CopyFrom(copyCommand, stagingBuffer);
@@ -478,7 +487,6 @@ void Zodiac::Renderer::SetupVertexBuffers() {
 
 	delete stagingBuffer;
 	delete indexBuffer_staging;
-	delete[] vertArr;
 }
 
 void Zodiac::Renderer::PrepareUniformBuffers() {

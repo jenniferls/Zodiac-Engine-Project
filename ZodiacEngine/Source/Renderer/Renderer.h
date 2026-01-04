@@ -90,7 +90,7 @@ namespace Zodiac {
 		Window* m_window = nullptr;
 		FileWatcher* m_fileWatcher = nullptr;
 
-		std::vector<Mesh> m_meshes; //For testing purposes. Should be moved later
+		std::vector<Model> m_models; //For testing purposes. Should be moved later
 		MeshImporter m_meshImporter; //For testing purposes. Should be moved later
 
 		VulkanDevice* m_device = nullptr;
