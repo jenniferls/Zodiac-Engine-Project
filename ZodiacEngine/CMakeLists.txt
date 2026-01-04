@@ -75,13 +75,15 @@ target_link_directories(${PROJECT_NAME}
 )
 
 # Assimp
-add_library(assimp STATIC IMPORTED)
+add_library(assimp SHARED IMPORTED)
 
 set_target_properties(assimp PROPERTIES
-	IMPORTED_LOCATION
+	IMPORTED_IMPLIB
 		"${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/lib/x64/assimp-vc143-mt.lib"
+	IMPORTED_LOCATION
+		"${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/lib/x64/assimp-vc143-mt.dll"
 	INTERFACE_INCLUDE_DIRECTORIES
-		"${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/include/assimp"
+		"${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/include"
 )
 
 target_compile_definitions(${PROJECT_NAME}
@@ -134,4 +136,10 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
 		"${CMAKE_SOURCE_DIR}/ZodiacEngine/Resources"
 		"$<TARGET_FILE_DIR:${PROJECT_NAME}>/Resources"
+)
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+	COMMAND ${CMAKE_COMMAND} -E copy_if_different
+	"${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/lib/x64/assimp-vc143-mt.dll"
+	"$<TARGET_FILE_DIR:${PROJECT_NAME}>"
 )
