@@ -436,6 +436,9 @@ bool Zodiac::Renderer::RecreatePipeline()
 }
 
 void Zodiac::Renderer::SetupVertexBuffers() {
+	m_meshes.emplace_back();
+	m_meshImporter.LoadModel((std::string(IMPORT_MODELS_DIR) + "/cube.obj").c_str(), m_meshes[0]);
+
 	SimpleVertex* vertArr = new SimpleVertex[3];
 	vertArr[0].pos = { 1.0f,  -1.0f, 0.0f };
 	vertArr[0].color = { 1.0f, 0.0f, 0.0f };

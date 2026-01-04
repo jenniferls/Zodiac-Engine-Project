@@ -13,6 +13,7 @@ target_compile_definitions(${PROJECT_NAME}
 	PRIVATE
 		$<$<CONFIG:Debug>:SHADERS_DIR="${CMAKE_SOURCE_DIR}/ZodiacEngine/Shaders">
 		$<$<NOT:$<CONFIG:Debug>>:SHADERS_DIR="$<TARGET_FILE_DIR:${PROJECT_NAME}>/Shaders">
+		IMPORT_MODELS_DIR="${CMAKE_SOURCE_DIR}/ZodiacEngine/Resources/Models/Import"
 )
 
 foreach(util_target IN ITEMS ALL_BUILD INSTALL PACKAGE RUN_TESTS)

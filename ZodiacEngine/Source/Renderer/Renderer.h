@@ -12,6 +12,7 @@
 #include "Camera.h"
 #include "FileWatcher.h"
 #include "ShaderCompiler.h"
+#include "MeshImporter.h" //TODO: Move to manager. Added for testing purposes
 
 namespace Zodiac {
 	struct PerFrameUniformData{
@@ -89,6 +90,9 @@ namespace Zodiac {
 		Window* m_window = nullptr;
 		FileWatcher* m_fileWatcher = nullptr;
 
+		std::vector<Mesh> m_meshes; //For testing purposes. Should be moved later
+		MeshImporter m_meshImporter; //For testing purposes. Should be moved later
+
 		VulkanDevice* m_device = nullptr;
 		VulkanSurface* m_surface = nullptr;
 		Settings m_settings;
@@ -109,6 +113,7 @@ namespace Zodiac {
 		std::vector<VulkanFence*> m_imagesInFlight;
 		size_t m_currentFrame = 0;
 
+		//Global buffers
 		VulkanBuffer* m_vertexBuffer = nullptr;
 		VulkanBuffer* m_indexBuffer = nullptr;
 		VulkanBuffer* m_uniformBuffer = nullptr;
