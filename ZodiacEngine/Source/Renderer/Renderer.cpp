@@ -637,7 +637,7 @@ void Zodiac::Renderer::RecordCommandBuffer(int32_t index, bool secondBarrier) {
 	vkCmdBindIndexBuffer(m_drawCmdBuffers[index], m_indexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
 	vkCmdBindPipeline(m_drawCmdBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
-	vkCmdDrawIndexed(m_drawCmdBuffers[index], m_indexBuffer->GetCount(), m_totalMeshCount, 0, 0, 1); //Need to find a better place for total mesh count
+	vkCmdDrawIndexed(m_drawCmdBuffers[index], m_indexBuffer->GetCount(), 1, 0, 0, 1);
 
 	vkCmdEndRenderPass(m_drawCmdBuffers[index]);
 
