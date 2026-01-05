@@ -17,6 +17,8 @@ cbuffer Uniforms
 
 [[vk::binding(0, 1)]]
 StructuredBuffer<AssembledVertex> VertexBuffer;
+[[vk::binding(1, 1)]]
+StructuredBuffer<uint32_t> IndexBuffer;
 
 // Output of the vertex shader, and input to the fragment shader.
 struct CoarseVertex
@@ -41,7 +43,8 @@ struct VertexStageOutput
 [shader("vertex")]
 VertexStageOutput vertexMain(uint vertexID: SV_VertexID)
 {
-    AssembledVertex assembledVertex = VertexBuffer[vertexID];
+    uint32_t index = IndexBuffer[vertexID];
+    AssembledVertex assembledVertex = VertexBuffer[index];
     VertexStageOutput output;
 
     float3 position = assembledVertex.inPos;

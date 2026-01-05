@@ -469,12 +469,12 @@ VkPresentInfoKHR Zodiac::Initializers::PresentInfo(VkSwapchainKHR& swapchain, ui
 	return info;
 }
 
-VkDescriptorSetLayoutCreateInfo Zodiac::Initializers::DescriptorSetLayoutCreateInfo(uint32_t bindingCount, VkDescriptorSetLayoutBinding& layoutBinding) {
+VkDescriptorSetLayoutCreateInfo Zodiac::Initializers::DescriptorSetLayoutCreateInfo(uint32_t bindingCount, VkDescriptorSetLayoutBinding* layoutBindings) {
 	VkDescriptorSetLayoutCreateInfo info = {};
 	info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	info.pNext = 0;
 	info.bindingCount = bindingCount;
-	info.pBindings = &layoutBinding;
+	info.pBindings = layoutBindings;
 
 	return info;
 }
