@@ -55,8 +55,6 @@ namespace Zodiac {
 		void SetClearColor(const glm::vec4 color);
 		void Clear();
 
-		void DrawIndexed();
-
 		VulkanSwapchain* m_swapchain = nullptr;
 		bool m_prepared = false;
 		bool m_showGui = true;
@@ -85,6 +83,8 @@ namespace Zodiac {
 
 		void UpdateUniformBuffers(uint32_t currentImage, float dt, Camera* mainCamera); //Delta time for test purposes
 
+		void CalcTotalMeshCount();
+
 		static const int MAX_FRAMES_IN_FLIGHT = 2;
 
 		Window* m_window = nullptr;
@@ -92,6 +92,7 @@ namespace Zodiac {
 
 		std::vector<Model> m_models; //For testing purposes. Should be moved later
 		MeshImporter m_meshImporter; //For testing purposes. Should be moved later
+		uint32_t m_totalMeshCount = 0; //For testing purposes. Should be moved later
 
 		VulkanDevice* m_device = nullptr;
 		VulkanSurface* m_surface = nullptr;

@@ -9,10 +9,6 @@
 
 const int Zodiac::Renderer::MAX_FRAMES_IN_FLIGHT;
 
-void Zodiac::Renderer::DrawIndexed() {
-
-}
-
 Zodiac::Renderer::~Renderer() {
 
 }
@@ -64,6 +60,10 @@ void Zodiac::Renderer::Draw(float dt, Camera* mainCamera) {
 	uint32_t imageIndex;
 	VkResult res = vkAcquireNextImageKHR(*m_device->GetDevice(), *m_swapchain->GetSwapchain(), UINT64_MAX, m_presentSemaphores[m_currentFrame]->GetSemaphore(), VK_NULL_HANDLE, &imageIndex);
 
+	//Temporarily update all models here
+	for (uint32_t i = 0; i < m_models.size(); i++) {
+		m_models[i].PerFrameUpdate();
+	}
 	UpdateUniformBuffers(imageIndex, dt, mainCamera);
 
 	if (res == VK_ERROR_OUT_OF_DATE_KHR) {
@@ -166,12 +166,12 @@ void Zodiac::Renderer::InitInternal() {
 	CreateSyncObjects();
 
 	SetupVertexBuffers();
+	CalcTotalMeshCount(); //For testing purposes. Should be moved later
 	PrepareUniformBuffers();
 	SetupDescriptorSets();
 	SetupPipeline();
 	SetupDescriptorPool();
 	PrepareDescriptorSet();
-	//BuildCommandBuffers();
 	AllocateCommandBuffers();
 	m_prepared = true;
 }
@@ -436,6 +436,7 @@ bool Zodiac::Renderer::RecreatePipeline()
 }
 
 void Zodiac::Renderer::SetupVertexBuffers() {
+	//This part is temporary written like this for testing purposes
 	m_models.emplace_back();
 	std::vector<SimpleVertex> vertArr;
 	std::vector<uint32_t> indices;
@@ -636,7 +637,7 @@ void Zodiac::Renderer::RecordCommandBuffer(int32_t index, bool secondBarrier) {
 	vkCmdBindIndexBuffer(m_drawCmdBuffers[index], m_indexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
 	vkCmdBindPipeline(m_drawCmdBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
-	vkCmdDrawIndexed(m_drawCmdBuffers[index], m_indexBuffer->GetCount(), 1, 0, 0, 1);
+	vkCmdDrawIndexed(m_drawCmdBuffers[index], m_indexBuffer->GetCount(), m_totalMeshCount, 0, 0, 1); //Need to find a better place for total mesh count
 
 	vkCmdEndRenderPass(m_drawCmdBuffers[index]);
 
@@ -738,6 +739,12 @@ void Zodiac::Renderer::UpdateUniformBuffers(uint32_t currentImage, float dt, Cam
 	m_uniformBuffer->MapMemory();
 	m_uniformBuffer->SetData(&uboVS); //Since the buffer has been passed a pointer at creation, it should technically be okay to do this without passing anything else
 	m_uniformBuffer->UnmapMemory();
+}
+
+void Zodiac::Renderer::CalcTotalMeshCount() {
+	for (uint32_t i = 0; i < m_models.size(); i++) {
+		m_totalMeshCount += m_models[i].GetMeshes().size();
+	}
 }
 
 void Zodiac::Renderer::Shutdown() {

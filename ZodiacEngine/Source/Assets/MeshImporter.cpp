@@ -50,6 +50,15 @@ bool Zodiac::MeshImporter::AssimpImport(const char* path, Model& model){
 						outMesh.m_meshData.uvs.emplace_back(glm::vec2(0.0f, 0.0f));
 					}
 
+					if (mesh->HasTangentsAndBitangents()) {
+						outMesh.m_meshData.tangents.emplace_back(glm::vec3(mesh->mTangents[j].x, mesh->mTangents[j].y, mesh->mTangents[j].z));
+						outMesh.m_meshData.bitangents.emplace_back(glm::vec3(mesh->mBitangents[j].x, mesh->mBitangents[j].y, mesh->mBitangents[j].z));
+					}
+					else {
+						outMesh.m_meshData.tangents.emplace_back(glm::vec3(0.0f, 0.0f, 0.0f));
+						outMesh.m_meshData.bitangents.emplace_back(glm::vec3(0.0f, 0.0f, 0.0f));
+					}
+
 					if (mesh->HasVertexColors(0)) {
 						outMesh.m_meshData.colors.emplace_back(glm::vec3(mesh->mColors[0][j].r, mesh->mColors[0][j].g, mesh->mColors[0][j].b));
 					}
