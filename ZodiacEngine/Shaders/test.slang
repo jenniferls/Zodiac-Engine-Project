@@ -13,7 +13,8 @@ cbuffer Uniforms
     float4x4 projectionMatrix;
     float4x4 modelMatrix;
     float4x4 viewMatrix;
-}
+    float3x3 normalMatrix;
+};
 
 [[vk::binding(0, 1)]]
 StructuredBuffer<AssembledVertex> VertexBuffer;
@@ -23,6 +24,7 @@ StructuredBuffer<uint32_t> IndexBuffer;
 // Output of the vertex shader, and input to the fragment shader.
 struct CoarseVertex
 {
+    float3 position;
     float3 color;
     float2 uv;
     float3 normal;
@@ -38,7 +40,7 @@ struct VertexStageOutput
 {
     CoarseVertex coarseVertex   : CoarseVertex;
     float4 sv_position          : SV_Position;
-};
+}; 
 
 [shader("vertex")]
 VertexStageOutput vertexMain(uint vertexID: SV_VertexID)
@@ -56,24 +58,39 @@ VertexStageOutput vertexMain(uint vertexID: SV_VertexID)
     float4x4 MVP = mul(ProjectionView, modelMatrix);
 
     output.sv_position = mul(MVP, float4(position, 1.0));
+    output.coarseVertex.position = mul(modelMatrix, float4(position, 1.0f)).xyz;
+    output.coarseVertex.normal = normalize(mul(normalMatrix, normal));
     output.coarseVertex.color = color;
     output.coarseVertex.uv = uv;
-    output.coarseVertex.normal = normal;
 
     return output;
+}
+
+float3 CalculateDiffuseLighting(float3 normal, float3 lightPos, float3 fragPos)
+{
+    static const float3 LIGHT_COLOR = float3(1.0f);
+    static const float AMBIENT_STRENGTH = 0.1f;
+
+    float3 ambient = AMBIENT_STRENGTH * LIGHT_COLOR;
+    float3 pointToLight = normalize(lightPos - fragPos);
+    float diffuseFactor = saturate(dot(pointToLight, normal));
+    float3 diffuse = diffuseFactor * LIGHT_COLOR;
+    float3 final = ambient + diffuse;
+
+    return final;
 }
 
 [shader("fragment")]
 Fragment fragmentMain(CoarseVertex coarseVertex : CoarseVertex) : SV_Target
 {
+    float3 fragPos = coarseVertex.position;
     float3 color = coarseVertex.color;
     float2 uv = coarseVertex.uv;
     float3 normal = coarseVertex.normal;
 
-    float3 lightVector = normalize(float3(0.5f, 0.5f, 0.5f));
-    float3 lightPos = float3(5.0f, 5.0f, 5.0f);
+    static const float3 LIGHT_POS = float3(-6.0f, 5.0f, -4.0f);
 
-    color = float3(0.5f, 0.5f, 0.5f) * dot(normalize(normal), lightVector);
+    color = CalculateDiffuseLighting(normal, LIGHT_POS, fragPos);
 
     Fragment output;
     output.outFragColor = float4(color, 1.0);

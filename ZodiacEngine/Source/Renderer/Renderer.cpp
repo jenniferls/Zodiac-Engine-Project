@@ -758,6 +758,8 @@ void Zodiac::Renderer::UpdateUniformBuffers(uint32_t currentImage, float dt, Cam
 	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3(testVal).y, glm::vec3(0.0f, 1.0f, 0.0f));
 	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3().z, glm::vec3(0.0f, 0.0f, 1.0f));
 
+	uboVS.normalMatrix = glm::transpose(glm::inverse(glm::mat3(uboVS.modelMatrix)));
+
 	m_uniformBuffer->MapMemory();
 	m_uniformBuffer->SetData(&uboVS); //Since the buffer has been passed a pointer at creation, it should technically be okay to do this without passing anything else
 	m_uniformBuffer->UnmapMemory();
