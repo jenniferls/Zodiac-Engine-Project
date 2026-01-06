@@ -44,7 +44,7 @@ Zodiac::Renderer& Zodiac::Renderer::Get() {
 }
 
 void Zodiac::Renderer::Draw(float dt, Camera* mainCamera) {
-	if (m_fileWatcher->HasFileChanged((std::string(SHADERS_DIR) + "/cube.slang").c_str())) {
+	if (m_fileWatcher->HasFileChanged((std::string(SHADERS_DIR) + "/test.slang").c_str())) {
 		vkDeviceWaitIdle(*m_device->GetDevice()); //Causes small stall but is fine since it's for shader development purposes
 		if (RecreatePipeline()) {
 			m_fileWatcher->ResetFlags();
@@ -504,6 +504,10 @@ void Zodiac::Renderer::PrepareUniformBuffers() {
 	m_uniformBuffer->MapMemory();
 	m_uniformBuffer->SetData(&uboVS);
 	m_uniformBuffer->UnmapMemory();
+}
+
+void Zodiac::Renderer::CreateIndirectBuffer() {
+
 }
 
 void Zodiac::Renderer::SetupDescriptorSets() {

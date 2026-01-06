@@ -72,6 +72,7 @@ namespace Zodiac {
 		void TraverseShaderVariableLayout(slang::VariableLayoutReflection* variableLayoutReflection);
 		void SetupVertexBuffers();
 		void PrepareUniformBuffers();
+		void CreateIndirectBuffer();
 		void SetupDescriptorSets();
 		void SetupDescriptorPool();
 		void PrepareDescriptorSet();

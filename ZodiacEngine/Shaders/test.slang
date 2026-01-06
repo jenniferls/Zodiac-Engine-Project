@@ -70,6 +70,11 @@ Fragment fragmentMain(CoarseVertex coarseVertex : CoarseVertex) : SV_Target
     float2 uv = coarseVertex.uv;
     float3 normal = coarseVertex.normal;
 
+    float3 lightVector = normalize(float3(0.5f, 0.5f, 0.5f));
+    float3 lightPos = float3(5.0f, 5.0f, 5.0f);
+
+    color = float3(0.5f, 0.5f, 0.5f) * dot(normalize(normal), lightVector);
+
     Fragment output;
     output.outFragColor = float4(color, 1.0);
 
