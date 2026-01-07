@@ -9,11 +9,8 @@ Zodiac::Model::~Model() {
 
 }
 
-void Zodiac::Model::AddMesh() {
-	m_meshes.emplace_back(Mesh());
-}
-
 void Zodiac::Model::AddMesh(Mesh mesh) {
+	m_totalVertexCount += mesh.GetVertexCount();
 	m_meshes.emplace_back(std::move(mesh));
 }
 

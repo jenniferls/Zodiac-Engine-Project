@@ -60,10 +60,9 @@ void Zodiac::Renderer::Draw(float dt, Camera* mainCamera) {
 	uint32_t imageIndex;
 	VkResult res = vkAcquireNextImageKHR(*m_device->GetDevice(), *m_swapchain->GetSwapchain(), UINT64_MAX, m_presentSemaphores[m_currentFrame]->GetSemaphore(), VK_NULL_HANDLE, &imageIndex);
 
-	//Temporarily update all models here
-	for (uint32_t i = 0; i < m_models.size(); i++) {
-		m_models[i].PerFrameUpdate();
-	}
+	//Temporarily update scene here
+	m_scene.Update();
+
 	UpdateUniformBuffers(imageIndex, dt, mainCamera);
 
 	if (res == VK_ERROR_OUT_OF_DATE_KHR) {
@@ -166,7 +165,6 @@ void Zodiac::Renderer::InitInternal() {
 	CreateSyncObjects();
 
 	SetupVertexBuffers();
-	CalcTotalMeshCount(); //For testing purposes. Should be moved later
 	PrepareUniformBuffers();
 	SetupDescriptorSets();
 	SetupPipeline();
@@ -437,11 +435,12 @@ bool Zodiac::Renderer::RecreatePipeline()
 
 void Zodiac::Renderer::SetupVertexBuffers() {
 	//This part is temporary written like this for testing purposes
-	m_models.emplace_back();
 	std::vector<SimpleVertex> vertArr;
 	std::vector<uint32_t> indices;
-	if (m_meshImporter.LoadModel((std::string(IMPORT_MODELS_DIR) + "/dragon.obj").c_str(), m_models[0])) {
-		std::vector<Mesh> meshes = m_models[0].GetMeshes();
+	Model testModel;
+	if (m_meshImporter.LoadModel((std::string(IMPORT_MODELS_DIR) + "/dragon.obj").c_str(), testModel)) {
+		m_scene.AddModel(testModel);
+		std::vector<Mesh> meshes = m_scene.GetModel(0).GetMeshes();
 		//for (uint32_t i = 0; i < meshes.size(); i++) {
 		vertArr = meshes[0].GetVertexBuffer();
 		indices = meshes[0].GetIndexBuffer();
@@ -763,12 +762,6 @@ void Zodiac::Renderer::UpdateUniformBuffers(uint32_t currentImage, float dt, Cam
 	m_uniformBuffer->MapMemory();
 	m_uniformBuffer->SetData(&uboVS); //Since the buffer has been passed a pointer at creation, it should technically be okay to do this without passing anything else
 	m_uniformBuffer->UnmapMemory();
-}
-
-void Zodiac::Renderer::CalcTotalMeshCount() {
-	for (uint32_t i = 0; i < m_models.size(); i++) {
-		m_totalMeshCount += m_models[i].GetMeshes().size();
-	}
 }
 
 void Zodiac::Renderer::Shutdown() {

@@ -22,6 +22,8 @@ namespace Zodiac {
 		std::vector<SimpleVertex>& GetVertexBuffer() { return m_vertexBuffer; }
 		std::vector<uint32_t>& GetIndexBuffer() { return m_indices; }
 
+		uint32_t GetVertexCount() const { return static_cast<uint32_t>(m_vertexBuffer.size()); }
+
 		void AddVertex(const Vertex& vertexData);
 		void AssembleVertexFromMeshDataAtIndex(uint32_t index);
 

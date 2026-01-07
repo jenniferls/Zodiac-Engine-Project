@@ -49,8 +49,9 @@ void Zodiac::ImGuiLayer::UpdateGUI(Camera* camera) {
 	PerspectiveCamera* cam = static_cast<PerspectiveCamera*>(camera);
 
 	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-	if (m_showDemoWindow)
+	if (m_showDemoWindow) {
 		ImGui::ShowDemoWindow(&m_showDemoWindow);
+	}
 
 	// 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
 	{
@@ -59,7 +60,7 @@ void Zodiac::ImGuiLayer::UpdateGUI(Camera* camera) {
 		bool vsync = settings.vsync;
 		glm::vec4 clear_color = m_clearColor;
 
-		ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+		ImGui::Begin("Debug window");
 
 		ImGui::Text("Welcome to Zodiac Engine!");               // Display some text (you can use a format strings too)
 		ImGui::Checkbox("Demo Window", &m_showDemoWindow);      // Edit bools storing our window open/close state
@@ -84,17 +85,18 @@ void Zodiac::ImGuiLayer::UpdateGUI(Camera* camera) {
 		ImGui::Text("counter = %d", counter);
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+		ImGui::Text("Models: %d", renderer.m_scene.GetModelCount());
+		ImGui::Text("Meshes: %d", renderer.m_scene.GetSceneMeshCount());
+		ImGui::Text("Triangles: %d", renderer.m_scene.GetSceneVertexCount() / 3);
+		ImGui::Text("Vertices: %d", renderer.m_scene.GetSceneVertexCount());
+
 		ImGui::End();
 	}
 
 	// 3. Show another simple window.
 	if (m_showAnotherWindow)
 	{
-		ImGui::Begin("Another Window", &m_showAnotherWindow);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-		ImGui::Text("Hello from another window!");
-		if (ImGui::Button("Close Me"))
-			m_showAnotherWindow = false;
-		ImGui::End();
+		ImGui::ShowMetricsWindow(&m_showAnotherWindow);
 	}
 
 	// Rendering

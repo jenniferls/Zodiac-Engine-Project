@@ -13,6 +13,7 @@
 #include "FileWatcher.h"
 #include "ShaderCompiler.h"
 #include "MeshImporter.h" //TODO: Move to manager. Added for testing purposes
+#include "Scene.h"
 
 namespace Zodiac {
 	struct PerFrameUniformData{
@@ -60,6 +61,8 @@ namespace Zodiac {
 		bool m_prepared = false;
 		bool m_showGui = true;
 
+		Scene m_scene; //Should be moved out later
+
 	private:
 		Renderer() = default;
 		void InitInternal();
@@ -85,16 +88,12 @@ namespace Zodiac {
 
 		void UpdateUniformBuffers(uint32_t currentImage, float dt, Camera* mainCamera); //Delta time for test purposes
 
-		void CalcTotalMeshCount();
-
 		static const int MAX_FRAMES_IN_FLIGHT = 2;
 
 		Window* m_window = nullptr;
 		FileWatcher* m_fileWatcher = nullptr;
 
-		std::vector<Model> m_models; //For testing purposes. Should be moved later
 		MeshImporter m_meshImporter; //For testing purposes. Should be moved later
-		uint32_t m_totalMeshCount = 0; //For testing purposes. Should be moved later
 
 		VulkanDevice* m_device = nullptr;
 		VulkanSurface* m_surface = nullptr;
