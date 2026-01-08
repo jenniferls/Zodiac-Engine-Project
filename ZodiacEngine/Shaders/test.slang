@@ -9,8 +9,9 @@ struct AssembledVertex
 
 struct GeometryData
 {
-    uint32_t vertexCount;
-    uint32_t indexCount;
+    uint32_t BaseIndex;
+    uint32_t IndexCount;
+    uint32_t BaseVertex;
 };
 
 [[vk::binding(0, 0)]]
@@ -26,8 +27,8 @@ cbuffer Uniforms
 StructuredBuffer<AssembledVertex> VertexBuffer;
 [[vk::binding(1, 1)]]
 StructuredBuffer<uint32_t> IndexBuffer;
-//[[vk::binding(2, 1)]]
-//StructuredBuffer<GeometryData> geometryData;
+[[vk::binding(2, 1)]]
+StructuredBuffer<GeometryData> geometryData;
 
 // Output of the vertex shader, and input to the fragment shader.
 struct CoarseVertex

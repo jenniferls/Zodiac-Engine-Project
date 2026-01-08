@@ -29,6 +29,13 @@ namespace Zodiac {
 		uint32_t BaseVertex;
 	};
 
+	struct MeshAlignmentData {
+		uint32_t VertexBufferOffset = 0;
+		uint32_t VertexBufferRange = 0;
+		uint32_t IndexBufferOffset = 0;
+		uint32_t IndexBufferRange = 0;
+	};
+
 	struct PipelineState {
 
 	};
@@ -82,6 +89,7 @@ namespace Zodiac {
 		void TraverseShaderVariableLayout(slang::VariableLayoutReflection* variableLayoutReflection);
 		void SetupVertexBuffers();
 		void PrepareUniformBuffers();
+		void UpdateMeshAlignment();
 		void CreateMetaDataBuffer();
 		void CreateIndirectBuffer();
 		void SetupDescriptorSets();
@@ -128,6 +136,8 @@ namespace Zodiac {
 		VulkanBuffer* m_uniformBuffer = nullptr;
 		VulkanBuffer* m_metaDataBuffer = nullptr;
 		VulkanBuffer* m_indirectBuffer = nullptr;
+
+		std::vector<MeshAlignmentData> m_meshAlignmentData;
 
 		VkClearValue m_clearValues[2];
 

@@ -3,13 +3,6 @@
 //#include <entt/entt.hpp>
 
 namespace Zodiac {
-	struct MeshAlignmentData {
-		uint32_t VertexBufferOffset = 0;
-		uint32_t VertexBufferRange = 0;
-		uint32_t IndexBufferOffset = 0;
-		uint32_t IndexBufferRange = 0;
-	};
-
 	class Scene {
 	public:
 		Scene();
@@ -29,7 +22,6 @@ namespace Zodiac {
 		uint32_t GetSceneTriangleCount() const { return m_totalTriangleCount; }
 		uint32_t GetSceneVertexCount() const { return m_totalVertexCount; }
 
-		std::vector<MeshAlignmentData> m_meshAlignmentData;
 	private:
 		std::vector<const Mesh*> m_flattenedMeshes;
 
