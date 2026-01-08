@@ -11,6 +11,7 @@ Zodiac::Model::~Model() {
 
 void Zodiac::Model::AddMesh(Mesh mesh) {
 	m_totalVertexCount += mesh.GetVertexCount();
+	m_totalIndexCount += static_cast<uint32_t>(mesh.GetIndexBuffer().size());
 	m_meshes.emplace_back(std::move(mesh));
 }
 

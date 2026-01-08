@@ -87,7 +87,7 @@ void Zodiac::ImGuiLayer::UpdateGUI(Camera* camera) {
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::Text("Models: %d", renderer.m_scene.GetModelCount());
 		ImGui::Text("Meshes: %d", renderer.m_scene.GetSceneMeshCount());
-		ImGui::Text("Triangles: %d", renderer.m_scene.GetSceneVertexCount() / 3);
+		ImGui::Text("Triangles: %d", renderer.m_scene.GetSceneTriangleCount());
 		ImGui::Text("Vertices: %d", renderer.m_scene.GetSceneVertexCount());
 
 		ImGui::End();

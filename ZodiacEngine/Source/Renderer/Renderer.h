@@ -23,6 +23,12 @@ namespace Zodiac {
 		glm::mat3 normalMatrix;
 	};
 
+	struct MeshMetaData {
+		uint32_t BaseIndex;
+		uint32_t IndexCount;
+		uint32_t BaseVertex;
+	};
+
 	struct PipelineState {
 
 	};
@@ -76,6 +82,7 @@ namespace Zodiac {
 		void TraverseShaderVariableLayout(slang::VariableLayoutReflection* variableLayoutReflection);
 		void SetupVertexBuffers();
 		void PrepareUniformBuffers();
+		void CreateMetaDataBuffer();
 		void CreateIndirectBuffer();
 		void SetupDescriptorSets();
 		void SetupDescriptorPool();
@@ -119,6 +126,8 @@ namespace Zodiac {
 		VulkanBuffer* m_vertexBuffer = nullptr;
 		VulkanBuffer* m_indexBuffer = nullptr;
 		VulkanBuffer* m_uniformBuffer = nullptr;
+		VulkanBuffer* m_metaDataBuffer = nullptr;
+		VulkanBuffer* m_indirectBuffer = nullptr;
 
 		VkClearValue m_clearValues[2];
 
