@@ -9,9 +9,9 @@ struct AssembledVertex
 
 struct GeometryData
 {
-    uint32_t BaseIndex;
+    uint32_t IndexOffset;
     uint32_t IndexCount;
-    uint32_t BaseVertex;
+    uint32_t VertexOffset;
 };
 
 [[vk::binding(0, 0)]]
@@ -54,14 +54,18 @@ struct VertexStageOutput
 [shader("vertex")]
 VertexStageOutput vertexMain(uint vertexID: SV_VertexID, uint instanceID: SV_InstanceID)
 {
-    //static const int INDEX_SIZE = 4;
+    static const int NUM_FLOATS_IN_VERTEX_DATA = 11;
+    static const int FLOAT_SIZE = 4;
+    static const int INDEX_SIZE = 4;
 
-    //uint DrawId = instanceID;
-    //GeometryData metaData = geometryData[DrawId];
-    //uint BaseIndex = metaData.BaseIndex / INDEX_SIZE;
+    GeometryData metaData = geometryData[instanceID];
 
-    uint32_t index = IndexBuffer[/*metaData.BaseIndex + */vertexID];
-    AssembledVertex assembledVertex = VertexBuffer[index];
+    uint baseIndex = metaData.IndexOffset / INDEX_SIZE;
+    uint32_t index = IndexBuffer[baseIndex + vertexID];
+
+    uint baseVertex = metaData.VertexOffset / (NUM_FLOATS_IN_VERTEX_DATA * FLOAT_SIZE);
+    AssembledVertex assembledVertex = VertexBuffer[baseVertex + index];
+
     VertexStageOutput output;
 
     float3 position = assembledVertex.inPos;
