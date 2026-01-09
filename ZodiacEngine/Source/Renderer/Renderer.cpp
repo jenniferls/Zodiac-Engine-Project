@@ -527,13 +527,13 @@ void Zodiac::Renderer::UpdateMeshAlignment() {
 
 	for (int i = 0; i < NumSubmeshes; i++) {
 		m_meshAlignmentData[i].VertexBufferOffset = BaseVertexOffset;
-		m_meshAlignmentData[i].VertexBufferRange = m_scene.GetAllMeshesInScene()[i].GetVertexCount() * sizeof(SimpleVertex);
+		m_meshAlignmentData[i].VertexBufferRange = m_scene.GetAllMeshesInScene()[i].GetVertexCount() /** sizeof(SimpleVertex)*/;
 
 		BaseVertexOffset += m_meshAlignmentData[i].VertexBufferRange;
 		//BaseVertexOffset = AlignUpToMultiple(BaseVertexOffset, Alignment);
 
 		m_meshAlignmentData[i].IndexBufferOffset = BaseIndexOffset;
-		m_meshAlignmentData[i].IndexBufferRange = m_scene.GetAllMeshesInScene()[i].GetIndexCount() * sizeof(uint32_t);
+		m_meshAlignmentData[i].IndexBufferRange = m_scene.GetAllMeshesInScene()[i].GetIndexCount() /** sizeof(uint32_t)*/;
 
 		BaseIndexOffset += m_meshAlignmentData[i].IndexBufferRange;
 		//BaseIndexOffset = AlignUpToMultiple(BaseIndexOffset, Alignment);

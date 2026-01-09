@@ -52,7 +52,7 @@ struct VertexStageOutput
 };
 
 [shader("vertex")]
-VertexStageOutput vertexMain(uint vertexID: SV_VertexID, uint instanceID: SV_InstanceID)
+VertexStageOutput vertexMain(uint vertexID: SV_VertexID, uint instanceID: SV_StartInstanceLocation)
 {
     static const int NUM_FLOATS_IN_VERTEX_DATA = 11;
     static const int FLOAT_SIZE = 4;
@@ -60,10 +60,10 @@ VertexStageOutput vertexMain(uint vertexID: SV_VertexID, uint instanceID: SV_Ins
 
     GeometryData metaData = geometryData[instanceID];
 
-    uint baseIndex = metaData.IndexOffset / INDEX_SIZE;
+    uint baseIndex = metaData.IndexOffset /*/ INDEX_SIZE*/;
     uint32_t index = IndexBuffer[baseIndex + vertexID];
 
-    uint baseVertex = metaData.VertexOffset / (NUM_FLOATS_IN_VERTEX_DATA * FLOAT_SIZE);
+    uint baseVertex = metaData.VertexOffset /*/ (NUM_FLOATS_IN_VERTEX_DATA * FLOAT_SIZE)*/;
     AssembledVertex assembledVertex = VertexBuffer[baseVertex + index];
 
     VertexStageOutput output;
