@@ -17,10 +17,10 @@ void Zodiac::Scene::Update() {
 
 void Zodiac::Scene::AddModel(Model& model) {
 	m_models.emplace_back(model);
-	Model& modelRef = m_models.back();
+	//Model& modelRef = m_models.back();
 
-	for (uint32_t i = 0; i < modelRef.GetMeshCount(); i++) {
-		m_flattenedMeshes.emplace_back(&modelRef.GetMesh(i));
+	for (uint32_t i = 0; i < model.GetMeshCount(); i++) {
+		m_flattenedMeshes.emplace_back(model.GetMesh(i));
 		m_totalTriangleCount += model.GetMesh(i).GetIndexCount() / 3;
 	}
 	m_totalMeshCount += model.GetMeshCount();

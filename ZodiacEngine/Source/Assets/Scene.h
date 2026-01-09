@@ -16,14 +16,14 @@ namespace Zodiac {
 		Model& GetModel(uint32_t index) { return m_models[index]; }
 		std::vector<Model>& GetModels() { return m_models; }
 
-		std::vector<const Mesh*> GetAllMeshesInScene() { return m_flattenedMeshes; }
+		std::vector<Mesh> GetAllMeshesInScene() { return m_flattenedMeshes; }
 
 		uint32_t GetSceneMeshCount() const { return m_totalMeshCount; }
 		uint32_t GetSceneTriangleCount() const { return m_totalTriangleCount; }
 		uint32_t GetSceneVertexCount() const { return m_totalVertexCount; }
 
 	private:
-		std::vector<const Mesh*> m_flattenedMeshes;
+		std::vector<Mesh> m_flattenedMeshes;
 
 		std::vector<Model> m_models;
 		//entt::registry m_registry;

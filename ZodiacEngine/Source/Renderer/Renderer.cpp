@@ -441,8 +441,8 @@ void Zodiac::Renderer::SetupVertexBuffers() {
 	std::vector<SimpleVertex> vertArr;
 	std::vector<uint32_t> indices;
 	Model testModels[2];
-	std::string modelNames[2] = { "/dragon.obj", "/cube.obj" };
-	for (int i = 0; i < 1; i++) {
+	std::string modelNames[2] = { "/dragon.obj", "/bunny.obj" };
+	for (int i = 0; i < 2; i++) {
 		if (m_meshImporter.LoadModel((std::string(IMPORT_MODELS_DIR) + modelNames[i]).c_str(), testModels[i])) {
 			m_scene.AddModel(testModels[i]);
 			std::vector<Mesh> meshes = m_scene.GetModel(i).GetMeshes();
@@ -527,13 +527,13 @@ void Zodiac::Renderer::UpdateMeshAlignment() {
 
 	for (int i = 0; i < NumSubmeshes; i++) {
 		m_meshAlignmentData[i].VertexBufferOffset = BaseVertexOffset;
-		m_meshAlignmentData[i].VertexBufferRange = m_scene.GetAllMeshesInScene()[i]->GetVertexCount() * sizeof(SimpleVertex);
+		m_meshAlignmentData[i].VertexBufferRange = m_scene.GetAllMeshesInScene()[i].GetVertexCount() * sizeof(SimpleVertex);
 
 		BaseVertexOffset += m_meshAlignmentData[i].VertexBufferRange;
 		//BaseVertexOffset = AlignUpToMultiple(BaseVertexOffset, Alignment);
 
 		m_meshAlignmentData[i].IndexBufferOffset = BaseIndexOffset;
-		m_meshAlignmentData[i].IndexBufferRange = m_scene.GetAllMeshesInScene()[i]->GetIndexCount() * sizeof(uint32_t);
+		m_meshAlignmentData[i].IndexBufferRange = m_scene.GetAllMeshesInScene()[i].GetIndexCount() * sizeof(uint32_t);
 
 		BaseIndexOffset += m_meshAlignmentData[i].IndexBufferRange;
 		//BaseIndexOffset = AlignUpToMultiple(BaseIndexOffset, Alignment);
@@ -545,9 +545,9 @@ void Zodiac::Renderer::CreateMetaDataBuffer() {
 
 	std::vector<MeshMetaData> MetaData(meshCount);
 
-	for (int i = 0; i < meshCount; i++) {
+	for (uint32_t i = 0; i < meshCount; i++) {
 		MetaData[i].BaseIndex = m_meshAlignmentData[i].IndexBufferOffset;
-		MetaData[i].IndexCount = m_scene.GetAllMeshesInScene()[i]->GetIndexCount();
+		MetaData[i].IndexCount = m_scene.GetAllMeshesInScene()[i].GetIndexCount();
 		MetaData[i].BaseVertex = m_meshAlignmentData[i].VertexBufferOffset;
 	}
 
@@ -568,7 +568,7 @@ void Zodiac::Renderer::CreateIndirectBuffer() {
 
 	for (uint32_t i = 0; i < meshCount; i++) {
 		VkDrawIndirectCommand cmd = {
-		.vertexCount = m_scene.GetAllMeshesInScene()[i]->GetIndexCount(),
+		.vertexCount = m_scene.GetAllMeshesInScene()[i].GetIndexCount(),
 		.instanceCount = 1,
 		.firstVertex = 0,
 		.firstInstance = i
