@@ -545,11 +545,11 @@ void Zodiac::Renderer::CreateMetaDataBuffer() {
 		MetaData[i].BaseVertex = m_meshAlignmentData[i].VertexBufferOffset;
 	}
 
-	m_metaDataBuffer = new VulkanBuffer(m_device, MetaData.size(), 1, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	m_metaDataBuffer = new VulkanBuffer(m_device, sizeof(MeshMetaData), meshCount, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 	m_metaDataBuffer->p_descriptor.buffer = m_metaDataBuffer->GetBuffer();
 	m_metaDataBuffer->p_descriptor.offset = 0;
-	m_metaDataBuffer->p_descriptor.range = MetaData.size();
+	m_metaDataBuffer->p_descriptor.range = meshCount * sizeof(MeshMetaData);
 
 	m_metaDataBuffer->MapMemory();
 	m_metaDataBuffer->SetData(MetaData.data());
@@ -557,10 +557,10 @@ void Zodiac::Renderer::CreateMetaDataBuffer() {
 }
 
 void Zodiac::Renderer::CreateIndirectBuffer() {
-	std::vector<VkDrawIndirectCommand> drawCommands(m_scene.GetSceneMeshCount());
+	uint32_t meshCount = m_scene.GetSceneMeshCount();
+	std::vector<VkDrawIndirectCommand> drawCommands(meshCount);
 
-	uint32_t globalIndex = 0;
-	for (uint32_t i = 0; i < m_scene.GetSceneMeshCount(); i++) {
+	for (uint32_t i = 0; i < meshCount; i++) {
 		VkDrawIndirectCommand cmd = {
 		.vertexCount = m_scene.GetAllMeshesInScene()[i]->GetIndexCount(),
 		.instanceCount = 1,
@@ -568,11 +568,14 @@ void Zodiac::Renderer::CreateIndirectBuffer() {
 		.firstInstance = i
 		};
 
-		drawCommands[globalIndex] = cmd;
-		globalIndex++;
+		drawCommands[i] = cmd;
 	}
 
-	m_indirectBuffer = new VulkanBuffer(m_device, sizeof(drawCommands), 1, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	m_indirectBuffer = new VulkanBuffer(m_device, sizeof(VkDrawIndirectCommand), meshCount, VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+	m_indirectBuffer->MapMemory();
+	m_indirectBuffer->SetData(drawCommands.data());
+	m_indirectBuffer->UnmapMemory();
 }
 
 void Zodiac::Renderer::SetupDescriptorSets() {
@@ -739,7 +742,7 @@ void Zodiac::Renderer::RecordCommandBuffer(int32_t index, bool secondBarrier) {
 	vkCmdBindPipeline(m_drawCmdBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
 	//vkCmdDrawIndexed(m_drawCmdBuffers[index], m_indexBuffer->GetCount(), 1, 0, 0, 1);
 	vkCmdDraw(m_drawCmdBuffers[index], m_indexBuffer->GetCount(), 1, 0, 0);
-	//vkCmdDrawIndirect(m_drawCmdBuffers[index], m_indirectBuffer->GetBuffer(), 0, 1, sizeof(VkDrawIndirectCommand));
+	//vkCmdDrawIndirect(m_drawCmdBuffers[index], m_indirectBuffer->GetBuffer(), 0, m_scene.GetSceneMeshCount(), sizeof(VkDrawIndirectCommand));
 
 	vkCmdEndRenderPass(m_drawCmdBuffers[index]);
 

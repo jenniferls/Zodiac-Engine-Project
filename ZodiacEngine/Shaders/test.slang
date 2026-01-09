@@ -49,12 +49,18 @@ struct VertexStageOutput
 {
     CoarseVertex coarseVertex   : CoarseVertex;
     float4 sv_position          : SV_Position;
-}; 
+};
 
 [shader("vertex")]
-VertexStageOutput vertexMain(uint vertexID: SV_VertexID)
+VertexStageOutput vertexMain(uint vertexID: SV_VertexID, uint instanceID: SV_InstanceID)
 {
-    uint32_t index = IndexBuffer[vertexID];
+    //static const int INDEX_SIZE = 4;
+
+    //uint DrawId = instanceID;
+    //GeometryData metaData = geometryData[DrawId];
+    //uint BaseIndex = metaData.BaseIndex / INDEX_SIZE;
+
+    uint32_t index = IndexBuffer[/*metaData.BaseIndex + */vertexID];
     AssembledVertex assembledVertex = VertexBuffer[index];
     VertexStageOutput output;
 
