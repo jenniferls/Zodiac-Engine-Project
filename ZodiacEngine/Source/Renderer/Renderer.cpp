@@ -440,28 +440,34 @@ void Zodiac::Renderer::SetupVertexBuffers() {
 	//This part is temporary written like this for testing purposes
 	std::vector<SimpleVertex> vertArr;
 	std::vector<uint32_t> indices;
-	Model testModel;
-	if (m_meshImporter.LoadModel((std::string(IMPORT_MODELS_DIR) + "/dragon.obj").c_str(), testModel)) {
-		m_scene.AddModel(testModel);
-		std::vector<Mesh> meshes = m_scene.GetModel(0).GetMeshes();
-		//for (uint32_t i = 0; i < meshes.size(); i++) {
-		vertArr = meshes[0].GetVertexBuffer();
-		indices = meshes[0].GetIndexBuffer();
-		//}
-	}
-	else {
-		vertArr.resize(3);
-		vertArr[0].pos = { 1.0f,  -1.0f, 0.0f };
-		vertArr[0].color = { 1.0f, 0.0f, 0.0f };
-		vertArr[0].uv = { 1.0f, 0.0f };
-		vertArr[1].pos = { 0.0f,  1.0f, 0.0f };
-		vertArr[1].color = { 0.0f, 1.0f, 0.0f };
-		vertArr[1].uv = { 0.5f, 1.0f };
-		vertArr[2].pos = { -1.0f, -1.0f, 0.0f }; 
-		vertArr[2].color = { 0.0f, 0.0f, 1.0f };
-		vertArr[2].uv = { 0.0f, 0.0f };
+	Model testModels[2];
+	std::string modelNames[2] = { "/dragon.obj", "/cube.obj" };
+	for (int i = 0; i < 1; i++) {
+		if (m_meshImporter.LoadModel((std::string(IMPORT_MODELS_DIR) + modelNames[i]).c_str(), testModels[i])) {
+			m_scene.AddModel(testModels[i]);
+			std::vector<Mesh> meshes = m_scene.GetModel(i).GetMeshes();
+			for (uint32_t j = 0; j < meshes.size(); j++) {
+				vertArr.insert(vertArr.end(), meshes[j].GetVertexBuffer().begin(), meshes[j].GetVertexBuffer().end());
+				indices.insert(indices.end(), meshes[j].GetIndexBuffer().begin(), meshes[j].GetIndexBuffer().end());
+			}
+		}
+		else {
+			SimpleVertex triangleVerts[3];
+			triangleVerts[0].pos = { 1.0f,  -1.0f, 0.0f };
+			triangleVerts[0].color = { 1.0f, 0.0f, 0.0f };
+			triangleVerts[0].uv = { 1.0f, 0.0f };
+			triangleVerts[1].pos = { 0.0f,  1.0f, 0.0f };
+			triangleVerts[1].color = { 0.0f, 1.0f, 0.0f };
+			triangleVerts[1].uv = { 0.5f, 1.0f };
+			triangleVerts[2].pos = { -1.0f, -1.0f, 0.0f };
+			triangleVerts[2].color = { 0.0f, 0.0f, 1.0f };
+			triangleVerts[2].uv = { 0.0f, 0.0f };
 
-		indices = { 0, 1, 2 };
+			uint32_t triangleIndices[3] = {0, 1, 2};
+
+			vertArr.insert(vertArr.end(), &triangleVerts[0], &triangleVerts[3]);
+			indices.insert(indices.end(), &triangleIndices[0], &triangleIndices[3]);
+		}
 	}
 
 	//Staging buffer
