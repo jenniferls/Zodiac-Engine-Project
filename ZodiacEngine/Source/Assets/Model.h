@@ -17,16 +17,20 @@ namespace Zodiac {
 
 		uint32_t GetModelVertexCount() const { return m_totalVertexCount; }
 
-		void PerFrameUpdate();
+		//void PerFrameUpdate();
 
-		const glm::mat4& GetModelMatrix() const { return m_modelMatrix; }
+		//const glm::mat4& GetModelMatrix() const { return m_modelMatrix; }
+
+		void SetPosition(const glm::vec3& position) { m_transform.position = position; }
+		void SetRotation(const glm::vec3& rotation) { m_transform.rotation = rotation; }
+		void SetScale(const glm::vec3& scale) { m_transform.scale = scale; }
 
 		Transform m_transform;
 	private:
-		void CreateModelMatrix();
+		//void CreateModelMatrix();
 
 		std::vector<Mesh> m_meshes;
-		glm::mat4 m_modelMatrix = glm::mat4();
+		//glm::mat4 m_modelMatrix = glm::mat4();
 		uint32_t m_totalVertexCount = 0;
 		uint32_t m_totalIndexCount = 0;
 	};

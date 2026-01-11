@@ -8,7 +8,7 @@ namespace Zodiac {
 		Scene();
 		~Scene();
 
-		void Update();
+		void Update(float dt);
 
 		uint32_t GetModelCount() const { return static_cast<uint32_t>(m_models.size()); }
 		void AddModel(Model& model);
@@ -16,7 +16,7 @@ namespace Zodiac {
 		Model& GetModel(uint32_t index) { return m_models[index]; }
 		std::vector<Model>& GetModels() { return m_models; }
 
-		std::vector<Mesh> GetAllMeshesInScene() { return m_flattenedMeshes; }
+		const std::vector<Mesh>& GetAllMeshesInScene() { return m_flattenedMeshes; }
 
 		uint32_t GetSceneMeshCount() const { return m_totalMeshCount; }
 		uint32_t GetSceneTriangleCount() const { return m_totalTriangleCount; }

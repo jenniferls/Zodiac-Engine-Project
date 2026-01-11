@@ -14,8 +14,14 @@ struct GeometryData
     uint32_t VertexOffset;
 };
 
+struct PerInstanceData
+{
+    float4x4 modelMatrix;
+    float3x3 normalMatrix;
+};
+
 [[vk::binding(0, 0)]]
-cbuffer Uniforms
+cbuffer PerFrameUniforms
 {
     float4x4 projectionMatrix;
     float4x4 modelMatrix;
@@ -29,14 +35,22 @@ StructuredBuffer<AssembledVertex> VertexBuffer;
 StructuredBuffer<uint32_t> IndexBuffer;
 [[vk::binding(2, 1)]]
 StructuredBuffer<GeometryData> geometryData;
+[[vk::binding(3, 1)]]
+StructuredBuffer<PerInstanceData> perInstanceData;
 
 // Output of the vertex shader, and input to the fragment shader.
-struct CoarseVertex
+struct OutVertex
 {
     float3 position;
     float3 color;
     float2 uv;
     float3 normal;
+};
+
+struct VertexStageOutput
+{
+    OutVertex outVertex : CoarseVertex;
+    float4 sv_position : SV_Position;
 };
 
 // Output of the fragment shader
@@ -45,25 +59,16 @@ struct Fragment
     float4 outFragColor;
 };
 
-struct VertexStageOutput
-{
-    CoarseVertex coarseVertex   : CoarseVertex;
-    float4 sv_position          : SV_Position;
-};
-
 [shader("vertex")]
 VertexStageOutput vertexMain(uint vertexID: SV_VertexID, uint instanceID: SV_StartInstanceLocation)
 {
-    static const int NUM_FLOATS_IN_VERTEX_DATA = 11;
-    static const int FLOAT_SIZE = 4;
-    static const int INDEX_SIZE = 4;
-
     GeometryData metaData = geometryData[instanceID];
+    PerInstanceData matrices = perInstanceData[instanceID];
 
-    uint baseIndex = metaData.IndexOffset /*/ INDEX_SIZE*/;
+    uint baseIndex = metaData.IndexOffset;
     uint32_t index = IndexBuffer[baseIndex + vertexID];
 
-    uint baseVertex = metaData.VertexOffset /*/ (NUM_FLOATS_IN_VERTEX_DATA * FLOAT_SIZE)*/;
+    uint baseVertex = metaData.VertexOffset;
     AssembledVertex assembledVertex = VertexBuffer[baseVertex + index];
 
     VertexStageOutput output;
@@ -74,13 +79,13 @@ VertexStageOutput vertexMain(uint vertexID: SV_VertexID, uint instanceID: SV_Sta
     float3 normal = assembledVertex.inNormal;
 
     float4x4 ProjectionView = mul(projectionMatrix, viewMatrix);
-    float4x4 MVP = mul(ProjectionView, modelMatrix);
+    float4x4 MVP = mul(ProjectionView, /*matrices.*/modelMatrix);
 
     output.sv_position = mul(MVP, float4(position, 1.0));
-    output.coarseVertex.position = mul(modelMatrix, float4(position, 1.0f)).xyz;
-    output.coarseVertex.normal = normalize(mul(normalMatrix, normal));
-    output.coarseVertex.color = color;
-    output.coarseVertex.uv = uv;
+    output.outVertex.position = mul(/*matrices.*/modelMatrix, float4(position, 1.0f)).xyz;
+    output.outVertex.normal = normalize(mul(/*matrices.*/normalMatrix, normal));
+    output.outVertex.color = color;
+    output.outVertex.uv = uv;
 
     return output;
 }
@@ -100,12 +105,12 @@ float3 CalculateDiffuseLighting(float3 normal, float3 lightPos, float3 fragPos)
 }
 
 [shader("fragment")]
-Fragment fragmentMain(CoarseVertex coarseVertex : CoarseVertex) : SV_Target
+Fragment fragmentMain(OutVertex outVertex: OutVertex) : SV_Target
 {
-    float3 fragPos = coarseVertex.position;
-    float3 color = coarseVertex.color;
-    float2 uv = coarseVertex.uv;
-    float3 normal = coarseVertex.normal;
+    float3 fragPos = outVertex.position;
+    float3 color = outVertex.color;
+    float2 uv = outVertex.uv;
+    float3 normal = outVertex.normal;
 
     static const float3 LIGHT_POS = float3(-6.0f, 5.0f, -4.0f);
 

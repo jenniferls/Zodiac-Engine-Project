@@ -61,9 +61,9 @@ void Zodiac::Renderer::Draw(float dt, Camera* mainCamera) {
 	VkResult res = vkAcquireNextImageKHR(*m_device->GetDevice(), *m_swapchain->GetSwapchain(), UINT64_MAX, m_presentSemaphores[m_currentFrame]->GetSemaphore(), VK_NULL_HANDLE, &imageIndex);
 
 	//Temporarily update scene here
-	m_scene.Update();
+	m_scene.Update(dt);
 
-	UpdateUniformBuffers(imageIndex, dt, mainCamera);
+	UpdatePerFrameData(imageIndex, dt, mainCamera);
 
 	if (res == VK_ERROR_OUT_OF_DATE_KHR) {
 		RecreateSwapChain();
@@ -168,6 +168,7 @@ void Zodiac::Renderer::InitInternal() {
 	PrepareUniformBuffers();
 	UpdateMeshAlignment();
 	CreateMetaDataBuffer();
+	CreatePerInstanceBuffer();
 	CreateIndirectBuffer();
 	SetupDescriptorSets();
 	SetupPipeline();
@@ -527,16 +528,14 @@ void Zodiac::Renderer::UpdateMeshAlignment() {
 
 	for (int i = 0; i < NumSubmeshes; i++) {
 		m_meshAlignmentData[i].VertexBufferOffset = BaseVertexOffset;
-		m_meshAlignmentData[i].VertexBufferRange = m_scene.GetAllMeshesInScene()[i].GetVertexCount() /** sizeof(SimpleVertex)*/;
+		m_meshAlignmentData[i].VertexBufferRange = m_scene.GetAllMeshesInScene()[i].GetVertexCount();
 
 		BaseVertexOffset += m_meshAlignmentData[i].VertexBufferRange;
-		//BaseVertexOffset = AlignUpToMultiple(BaseVertexOffset, Alignment);
 
 		m_meshAlignmentData[i].IndexBufferOffset = BaseIndexOffset;
-		m_meshAlignmentData[i].IndexBufferRange = m_scene.GetAllMeshesInScene()[i].GetIndexCount() /** sizeof(uint32_t)*/;
+		m_meshAlignmentData[i].IndexBufferRange = m_scene.GetAllMeshesInScene()[i].GetIndexCount();
 
 		BaseIndexOffset += m_meshAlignmentData[i].IndexBufferRange;
-		//BaseIndexOffset = AlignUpToMultiple(BaseIndexOffset, Alignment);
 	}
 }
 
@@ -584,6 +583,16 @@ void Zodiac::Renderer::CreateIndirectBuffer() {
 	m_indirectBuffer->UnmapMemory();
 }
 
+void Zodiac::Renderer::CreatePerInstanceBuffer() {
+	uint32_t meshCount = m_scene.GetSceneMeshCount();
+
+	m_perInstanceBuffer = new VulkanBuffer(m_device, sizeof(PerInstanceData), meshCount, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+	m_perInstanceBuffer->p_descriptor.buffer = m_perInstanceBuffer->GetBuffer();
+	m_perInstanceBuffer->p_descriptor.offset = 0;
+	m_perInstanceBuffer->p_descriptor.range = meshCount * sizeof(PerInstanceData);
+}
+
 void Zodiac::Renderer::SetupDescriptorSets() {
 	m_descriptorSetLayouts.resize(2);
 
@@ -599,7 +608,7 @@ void Zodiac::Renderer::SetupDescriptorSets() {
 	ErrorCheck(vkCreateDescriptorSetLayout(*m_device->GetDevice(), &uniformsLayoutCreateInfo, nullptr, &m_descriptorSetLayouts[0]));
 
 	// Set 1 Binding 0: Vertex buffer used for Programmable Vertex Pulling (Vertex shader)
-	VkDescriptorSetLayoutBinding geometryBindings[3] = {};
+	VkDescriptorSetLayoutBinding geometryBindings[4] = {};
 	geometryBindings[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 	geometryBindings[0].descriptorCount = 1;
 	geometryBindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
@@ -620,7 +629,14 @@ void Zodiac::Renderer::SetupDescriptorSets() {
 	geometryBindings[2].pImmutableSamplers = nullptr;
 	geometryBindings[2].binding = 2;
 
-	VkDescriptorSetLayoutCreateInfo geometryLayoutCreateInfo = Initializers::DescriptorSetLayoutCreateInfo(3, geometryBindings);
+	//Set 1 Binding 3: Per-instance transform data
+	geometryBindings[3].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	geometryBindings[3].descriptorCount = 1;
+	geometryBindings[3].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	geometryBindings[3].pImmutableSamplers = nullptr;
+	geometryBindings[3].binding = 3;
+
+	VkDescriptorSetLayoutCreateInfo geometryLayoutCreateInfo = Initializers::DescriptorSetLayoutCreateInfo(4, geometryBindings);
 	ErrorCheck(vkCreateDescriptorSetLayout(*m_device->GetDevice(), &geometryLayoutCreateInfo, nullptr, &m_descriptorSetLayouts[1]));
 
 	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = Initializers::PipelineLayoutCreateInfo(2, m_descriptorSetLayouts.data());
@@ -633,13 +649,13 @@ void Zodiac::Renderer::SetupDescriptorPool() {
 	typeCounts[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	typeCounts[0].descriptorCount = 1;
 	typeCounts[1].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-	typeCounts[1].descriptorCount = 3;
+	typeCounts[1].descriptorCount = 4;
 	// For additional types you need to add new entries in the type count list
 	// E.g. for two combined image samplers :
 	// typeCounts[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	// typeCounts[1].descriptorCount = 2;
 
-	VkDescriptorPoolCreateInfo descriptorPoolInfo = Initializers::DescriptorPoolCreateInfo(2, typeCounts, 3);
+	VkDescriptorPoolCreateInfo descriptorPoolInfo = Initializers::DescriptorPoolCreateInfo(2, typeCounts, 4);
 	ErrorCheck(vkCreateDescriptorPool(*m_device->GetDevice(), &descriptorPoolInfo, nullptr, &m_descriptorPool));
 }
 
@@ -650,7 +666,7 @@ void Zodiac::Renderer::PrepareDescriptorSet() {
 	VkDescriptorSetAllocateInfo descriptorSetAllocInfo = Initializers::DescriptorSetAllocateInfo(&m_descriptorPool, 1, &m_descriptorSetLayouts[0]);
 	ErrorCheck(vkAllocateDescriptorSets(*m_device->GetDevice(), &descriptorSetAllocInfo, &m_descriptorSets[0]));
 
-	VkWriteDescriptorSet writeDescriptorSets[4] = {};
+	VkWriteDescriptorSet writeDescriptorSets[5] = {};
 
 	writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	writeDescriptorSets[0].dstSet = m_descriptorSets[0];
@@ -685,10 +701,18 @@ void Zodiac::Renderer::PrepareDescriptorSet() {
 	writeDescriptorSets[3].descriptorCount = 1;
 	writeDescriptorSets[3].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 	writeDescriptorSets[3].pBufferInfo = &m_metaDataBuffer->p_descriptor;
-	// Binds this buffer to binding point 1
+	// Binds this buffer to binding point 2
 	writeDescriptorSets[3].dstBinding = 2;
 
-	vkUpdateDescriptorSets(*m_device->GetDevice(), 4, writeDescriptorSets, 0, nullptr);
+	writeDescriptorSets[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	writeDescriptorSets[4].dstSet = m_descriptorSets[1];
+	writeDescriptorSets[4].descriptorCount = 1;
+	writeDescriptorSets[4].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	writeDescriptorSets[4].pBufferInfo = &m_perInstanceBuffer->p_descriptor;
+	// Binds this buffer to binding point 3
+	writeDescriptorSets[4].dstBinding = 3;
+
+	vkUpdateDescriptorSets(*m_device->GetDevice(), 5, writeDescriptorSets, 0, nullptr);
 }
 
 void Zodiac::Renderer::AllocateCommandBuffers() {
@@ -833,8 +857,7 @@ void Zodiac::Renderer::CleanupSyncObjects()
 	m_imagesInFlight.clear();
 }
 
-void Zodiac::Renderer::UpdateUniformBuffers(uint32_t currentImage, float dt, Camera* mainCamera)
-{
+void Zodiac::Renderer::UpdateUniformBuffers(uint32_t currentImage, float dt, Camera* mainCamera) {
 	m_uniformBuffer->p_descriptor.range = sizeof(uboVS);
 
 	testVal += 0.5f * dt;
@@ -843,7 +866,7 @@ void Zodiac::Renderer::UpdateUniformBuffers(uint32_t currentImage, float dt, Cam
 	uboVS.viewMatrix = mainCamera->GetView();
 
 	uboVS.modelMatrix = glm::mat4(1.0f);
-	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3().x, glm::vec3(1.0f, 0.0f, 0.0f)); //TODO: Add changable parameters
+	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3().x, glm::vec3(1.0f, 0.0f, 0.0f));
 	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3(testVal).y, glm::vec3(0.0f, 1.0f, 0.0f));
 	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3().z, glm::vec3(0.0f, 0.0f, 1.0f));
 
@@ -852,6 +875,27 @@ void Zodiac::Renderer::UpdateUniformBuffers(uint32_t currentImage, float dt, Cam
 	m_uniformBuffer->MapMemory();
 	m_uniformBuffer->SetData(&uboVS); //Since the buffer has been passed a pointer at creation, it should technically be okay to do this without passing anything else
 	m_uniformBuffer->UnmapMemory();
+}
+
+void Zodiac::Renderer::UpdatePerFrameData(uint32_t currentImage, float dt, Camera* mainCamera)
+{
+	UpdateUniformBuffers(currentImage, dt, mainCamera);
+
+	uint32_t meshCount = m_scene.GetSceneMeshCount();
+	std::vector<PerInstanceData> perInstanceData(meshCount);
+
+	for (uint32_t i = 0; i < meshCount; i++) {
+		perInstanceData[i].modelMatrix = m_scene.GetAllMeshesInScene()[i].GetModelMatrix();
+		perInstanceData[i].normalMatrix = m_scene.GetAllMeshesInScene()[i].GetNormalMatrix();
+	}
+
+	m_perInstanceBuffer->p_descriptor.buffer = m_perInstanceBuffer->GetBuffer();
+	m_perInstanceBuffer->p_descriptor.offset = 0;
+	m_perInstanceBuffer->p_descriptor.range = meshCount * sizeof(PerInstanceData);
+
+	m_perInstanceBuffer->MapMemory();
+	m_perInstanceBuffer->SetData(perInstanceData.data());
+	m_perInstanceBuffer->UnmapMemory();
 }
 
 void Zodiac::Renderer::Shutdown() {
@@ -880,6 +924,7 @@ void Zodiac::Renderer::Shutdown() {
 	delete m_uniformBuffer;
 	delete m_metaDataBuffer;
 	delete m_indirectBuffer;
+	delete m_perInstanceBuffer;
 }
 
 void Zodiac::Renderer::ToggleImGui()

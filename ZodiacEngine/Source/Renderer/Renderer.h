@@ -16,7 +16,7 @@
 #include "Scene.h"
 
 namespace Zodiac {
-	struct PerFrameUniformData{
+	struct PerFrameUniformData {
 		glm::mat4 projectionMatrix;
 		glm::mat4 modelMatrix;
 		glm::mat4 viewMatrix;
@@ -27,6 +27,11 @@ namespace Zodiac {
 		uint32_t BaseIndex;
 		uint32_t IndexCount;
 		uint32_t BaseVertex;
+	};
+
+	struct PerInstanceData {
+		glm::mat4 modelMatrix;
+		glm::mat3 normalMatrix;
 	};
 
 	struct MeshAlignmentData {
@@ -92,6 +97,7 @@ namespace Zodiac {
 		void UpdateMeshAlignment();
 		void CreateMetaDataBuffer();
 		void CreateIndirectBuffer();
+		void CreatePerInstanceBuffer();
 		void SetupDescriptorSets();
 		void SetupDescriptorPool();
 		void PrepareDescriptorSet();
@@ -101,7 +107,8 @@ namespace Zodiac {
 		void CleanupFramebuffers();
 		void CleanupSyncObjects();
 
-		void UpdateUniformBuffers(uint32_t currentImage, float dt, Camera* mainCamera); //Delta time for test purposes
+		void UpdateUniformBuffers(uint32_t currentImage, float dt, Camera* mainCamera);
+		void UpdatePerFrameData(uint32_t currentImage, float dt, Camera* mainCamera); //Delta time for test purposes
 
 		static const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -136,6 +143,7 @@ namespace Zodiac {
 		VulkanBuffer* m_uniformBuffer = nullptr;
 		VulkanBuffer* m_metaDataBuffer = nullptr;
 		VulkanBuffer* m_indirectBuffer = nullptr;
+		VulkanBuffer* m_perInstanceBuffer = nullptr;
 
 		std::vector<MeshAlignmentData> m_meshAlignmentData;
 
