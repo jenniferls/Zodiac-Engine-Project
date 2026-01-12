@@ -99,7 +99,7 @@ namespace Zodiac {
 		void CreateIndirectBuffer();
 		void CreatePerInstanceBuffer();
 		void SetupDescriptorSets();
-		void SetupDescriptorPool();
+		void SetupDescriptorPool(uint32_t uniformBufferCount, uint32_t storageBufferCount, uint32_t maxSets);
 		void PrepareDescriptorSet();
 		void AllocateCommandBuffers();
 		void RecordCommandBuffer(int32_t index, bool secondBarrier = false);
@@ -126,7 +126,7 @@ namespace Zodiac {
 		VkPipelineLayout m_pipelineLayout;
 		VkDescriptorPool m_descriptorPool;
 		std::vector<VkDescriptorSetLayout> m_descriptorSetLayouts;
-		std::vector<VkDescriptorSet> m_descriptorSets;
+		/*std::vector<*/std::vector<VkDescriptorSet>/*>*/ m_descriptorSets; //Per swapchain image
 		std::vector<VkFramebuffer> m_framebuffers;
 
 		std::vector<VkCommandBuffer> m_drawCmdBuffers;

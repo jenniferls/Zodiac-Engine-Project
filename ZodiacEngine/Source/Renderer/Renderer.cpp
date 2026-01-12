@@ -171,10 +171,10 @@ void Zodiac::Renderer::InitInternal() {
 	CreateMetaDataBuffer();
 	CreatePerInstanceBuffer();
 	CreateIndirectBuffer();
+	SetupDescriptorPool(1, 4, 2 * m_swapchain->GetImageCount());
 	SetupDescriptorSets();
-	SetupPipeline();
-	SetupDescriptorPool();
 	PrepareDescriptorSet();
+	SetupPipeline();
 	AllocateCommandBuffers();
 	m_prepared = true;
 }
@@ -604,7 +604,8 @@ void Zodiac::Renderer::SetupDescriptorSets() {
 	ErrorCheck(vkCreateDescriptorSetLayout(*m_device->GetDevice(), &uniformsLayoutCreateInfo, nullptr, &m_descriptorSetLayouts[0]));
 
 	// Set 1 Binding 0: Vertex buffer used for Programmable Vertex Pulling (Vertex shader)
-	VkDescriptorSetLayoutBinding geometryBindings[4] = {};
+	std::vector<VkDescriptorSetLayoutBinding> geometryBindings(4);
+
 	geometryBindings[0].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 	geometryBindings[0].descriptorCount = 1;
 	geometryBindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
@@ -632,37 +633,60 @@ void Zodiac::Renderer::SetupDescriptorSets() {
 	geometryBindings[3].pImmutableSamplers = nullptr;
 	geometryBindings[3].binding = 3;
 
-	VkDescriptorSetLayoutCreateInfo geometryLayoutCreateInfo = Initializers::DescriptorSetLayoutCreateInfo(4, geometryBindings);
+	VkDescriptorSetLayoutCreateInfo geometryLayoutCreateInfo = Initializers::DescriptorSetLayoutCreateInfo(geometryBindings.size(), geometryBindings.data());
 	ErrorCheck(vkCreateDescriptorSetLayout(*m_device->GetDevice(), &geometryLayoutCreateInfo, nullptr, &m_descriptorSetLayouts[1]));
 
-	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = Initializers::PipelineLayoutCreateInfo(2, m_descriptorSetLayouts.data());
+	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = Initializers::PipelineLayoutCreateInfo(m_descriptorSetLayouts.size(), m_descriptorSetLayouts.data());
 	ErrorCheck(vkCreatePipelineLayout(*m_device->GetDevice(), &pipelineLayoutCreateInfo, nullptr, &m_pipelineLayout));
 }
 
-void Zodiac::Renderer::SetupDescriptorPool() {
-	VkDescriptorPoolSize typeCounts[2];
+void Zodiac::Renderer::SetupDescriptorPool(uint32_t uniformBufferCount, uint32_t storageBufferCount, uint32_t maxSets) {
+	//VkDescriptorPoolSize typeCounts[2];
+	std::vector<VkDescriptorPoolSize> poolSizes;
 
-	typeCounts[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	typeCounts[0].descriptorCount = 1;
-	typeCounts[1].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-	typeCounts[1].descriptorCount = 4;
+	if (uniformBufferCount > 0) {
+		VkDescriptorPoolSize uniformsPoolSize = {
+			.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+			.descriptorCount = uniformBufferCount
+		};
+
+		poolSizes.emplace_back(uniformsPoolSize);
+	}
+
+	if (storageBufferCount > 0) {
+		VkDescriptorPoolSize ssboPoolSize = {
+			.type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+			.descriptorCount = storageBufferCount
+		};
+
+		poolSizes.emplace_back(ssboPoolSize);
+	}
+
 	// For additional types you need to add new entries in the type count list
 	// E.g. for two combined image samplers :
 	// typeCounts[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	// typeCounts[1].descriptorCount = 2;
 
-	VkDescriptorPoolCreateInfo descriptorPoolInfo = Initializers::DescriptorPoolCreateInfo(2, typeCounts, 4);
+	VkDescriptorPoolCreateInfo descriptorPoolInfo = Initializers::DescriptorPoolCreateInfo(poolSizes.size(), poolSizes.data(), maxSets);
 	ErrorCheck(vkCreateDescriptorPool(*m_device->GetDevice(), &descriptorPoolInfo, nullptr, &m_descriptorPool));
 }
 
 void Zodiac::Renderer::PrepareDescriptorSet() {
-	m_descriptorSets.resize(2);
+	//for (uint32_t i = 0; i < m_swapchain->GetImageCount(); i++) {
+
+	//}
+
+	m_descriptorSets.resize(m_descriptorSetLayouts.size());
 
 	// Binding 0 : Uniform buffer
 	VkDescriptorSetAllocateInfo descriptorSetAllocInfo = Initializers::DescriptorSetAllocateInfo(&m_descriptorPool, 1, &m_descriptorSetLayouts[0]);
 	ErrorCheck(vkAllocateDescriptorSets(*m_device->GetDevice(), &descriptorSetAllocInfo, &m_descriptorSets[0]));
 
-	VkWriteDescriptorSet writeDescriptorSets[5] = {};
+	// Binding 1 : Vertex and index storage buffers
+	VkDescriptorSetAllocateInfo descriptorSetAllocInfoGeometry = Initializers::DescriptorSetAllocateInfo(&m_descriptorPool, 1, &m_descriptorSetLayouts[1]);
+	ErrorCheck(vkAllocateDescriptorSets(*m_device->GetDevice(), &descriptorSetAllocInfoGeometry, &m_descriptorSets[1]));
+
+	std::vector<VkWriteDescriptorSet> writeDescriptorSets(5);
 
 	writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	writeDescriptorSets[0].dstSet = m_descriptorSets[0];
@@ -671,10 +695,6 @@ void Zodiac::Renderer::PrepareDescriptorSet() {
 	writeDescriptorSets[0].pBufferInfo = &m_uniformBuffer->p_descriptor;
 	// Binds this uniform buffer to binding point 0
 	writeDescriptorSets[0].dstBinding = 0;
-
-	// Binding 1 : Vertex and index storage buffers
-	VkDescriptorSetAllocateInfo descriptorSetAllocInfoGeometry = Initializers::DescriptorSetAllocateInfo(&m_descriptorPool, 1, &m_descriptorSetLayouts[1]);
-	ErrorCheck(vkAllocateDescriptorSets(*m_device->GetDevice(), &descriptorSetAllocInfoGeometry, &m_descriptorSets[1]));
 
 	writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 	writeDescriptorSets[1].dstSet = m_descriptorSets[1];
@@ -708,7 +728,7 @@ void Zodiac::Renderer::PrepareDescriptorSet() {
 	// Binds this buffer to binding point 3
 	writeDescriptorSets[4].dstBinding = 3;
 
-	vkUpdateDescriptorSets(*m_device->GetDevice(), 5, writeDescriptorSets, 0, nullptr);
+	vkUpdateDescriptorSets(*m_device->GetDevice(), writeDescriptorSets.size(), writeDescriptorSets.data(), 0, nullptr);
 }
 
 void Zodiac::Renderer::AllocateCommandBuffers() {
@@ -758,16 +778,11 @@ void Zodiac::Renderer::RecordCommandBuffer(int32_t index, bool secondBarrier) {
 	vkCmdSetScissor(m_drawCmdBuffers[index], 0, 1, &scissor);
 
 	// Bind descriptor sets describing shader binding points
-	vkCmdBindDescriptorSets(m_drawCmdBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 2, m_descriptorSets.data(), 0, nullptr);
+	vkCmdBindDescriptorSets(m_drawCmdBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 2, m_descriptorSets/*[index]*/.data(), 0, nullptr);
 
-	// Bind vertex buffer (contains position and colors)
-	//VkDeviceSize offsets[1] = { 0 };
-	//vkCmdBindVertexBuffers(m_drawCmdBuffers[index], 0, 1, &m_vertexBuffer->GetBuffer(), offsets);
 	//vkCmdBindIndexBuffer(m_drawCmdBuffers[index], m_indexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
 	vkCmdBindPipeline(m_drawCmdBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
-	//vkCmdDrawIndexed(m_drawCmdBuffers[index], m_indexBuffer->GetCount(), 1, 0, 0, 1);
-	//vkCmdDraw(m_drawCmdBuffers[index], m_indexBuffer->GetCount(), 1, 0, 0);
 	vkCmdDrawIndirect(m_drawCmdBuffers[index], m_indirectBuffer->GetBuffer(), 0, m_scene.GetSceneMeshCount(), sizeof(VkDrawIndirectCommand));
 
 	vkCmdEndRenderPass(m_drawCmdBuffers[index]);
