@@ -33,6 +33,33 @@ void Zodiac::Mesh::AssembleVertexFromMeshDataAtIndex(uint32_t index){
 	m_vertexBuffer.emplace_back(vertex);
 }
 
+void Zodiac::Mesh::SetToTriangleMesh() {
+	m_meshData.positions = {
+		glm::vec3(1.0f, -1.0f, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		glm::vec3(-1.0f, -1.0f, 0.0f)
+	};
+	m_meshData.uvs = {
+		glm::vec2(1.0f, 0.0f),
+		glm::vec2(0.5f, 1.0f),
+		glm::vec2(0.0f, 0.0f)
+	};
+	m_meshData.normals = {
+		glm::vec3(0.0f, 0.0f, 1.0f),
+		glm::vec3(0.0f, 0.0f, 1.0f),
+		glm::vec3(0.0f, 0.0f, 1.0f)
+	};
+	m_meshData.colors = {
+		glm::vec3(1.0f, 0.0f, 0.0f),
+		glm::vec3(0.0f, 1.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, 1.0f)
+	};
+	m_indices = { 0, 1, 2 };
+	for (uint32_t i = 0; i < 3; i++) {
+		AssembleVertexFromMeshDataAtIndex(i);
+	}
+}
+
 void Zodiac::Mesh::CreateModelMatrix() {
 	m_modelMatrix = glm::mat4(1.0f);
 	m_modelMatrix = glm::translate(m_modelMatrix, m_transform.position);

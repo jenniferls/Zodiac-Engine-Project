@@ -36,6 +36,8 @@ namespace Zodiac {
 
 		void AddIndex(uint32_t index) { m_indices.emplace_back(index); }
 
+		void SetToTriangleMesh(); //Sets up the mesh as a simple triangle
+
 		void SetPosition(const glm::vec3& position) { m_transform.position = position; }
 		void SetRotation(const glm::vec3& rotation) { m_transform.rotation = rotation; }
 		void SetScale(const glm::vec3& scale) { m_transform.scale = scale; }

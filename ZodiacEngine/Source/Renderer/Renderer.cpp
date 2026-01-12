@@ -454,21 +454,14 @@ void Zodiac::Renderer::SetupVertexBuffers() {
 			}
 		}
 		else {
-			SimpleVertex triangleVerts[3];
-			triangleVerts[0].pos = { 1.0f,  -1.0f, 0.0f };
-			triangleVerts[0].color = { 1.0f, 0.0f, 0.0f };
-			triangleVerts[0].uv = { 1.0f, 0.0f };
-			triangleVerts[1].pos = { 0.0f,  1.0f, 0.0f };
-			triangleVerts[1].color = { 0.0f, 1.0f, 0.0f };
-			triangleVerts[1].uv = { 0.5f, 1.0f };
-			triangleVerts[2].pos = { -1.0f, -1.0f, 0.0f };
-			triangleVerts[2].color = { 0.0f, 0.0f, 1.0f };
-			triangleVerts[2].uv = { 0.0f, 0.0f };
+			Mesh triangleMesh;
+			triangleMesh.SetToTriangleMesh();
+			Model triangleModel;
+			triangleModel.AddMesh(triangleMesh);
+			m_scene.AddModel(triangleModel);
 
-			uint32_t triangleIndices[3] = {0, 1, 2};
-
-			vertArr.insert(vertArr.end(), &triangleVerts[0], &triangleVerts[3]);
-			indices.insert(indices.end(), &triangleIndices[0], &triangleIndices[3]);
+			vertArr.insert(vertArr.end(), triangleModel.GetMesh(0).GetVertexBuffer().begin(), triangleModel.GetMesh(0).GetVertexBuffer().end());
+			indices.insert(indices.end(), triangleModel.GetMesh(0).GetIndexBuffer().begin(), triangleModel.GetMesh(0).GetIndexBuffer().end());
 		}
 	}
 	m_scene.GetModel(1).GetMesh(0).SetScale(glm::vec3(0.4f));
