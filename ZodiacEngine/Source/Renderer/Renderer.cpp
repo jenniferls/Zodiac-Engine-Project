@@ -171,7 +171,7 @@ void Zodiac::Renderer::InitInternal() {
 	CreateMetaDataBuffer();
 	CreatePerInstanceBuffer();
 	CreateIndirectBuffer();
-	SetupDescriptorPool(1, 4, 2 * m_swapchain->GetImageCount());
+	SetupDescriptorPool(m_swapchain->GetImageCount(), 4, m_swapchain->GetImageCount() + 1);
 	SetupDescriptorSets();
 	PrepareDescriptorSet();
 	SetupPipeline();
@@ -778,7 +778,7 @@ void Zodiac::Renderer::RecordCommandBuffer(int32_t index, bool secondBarrier) {
 	vkCmdSetScissor(m_drawCmdBuffers[index], 0, 1, &scissor);
 
 	// Bind descriptor sets describing shader binding points
-	vkCmdBindDescriptorSets(m_drawCmdBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, 2, m_descriptorSets/*[index]*/.data(), 0, nullptr);
+	vkCmdBindDescriptorSets(m_drawCmdBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, m_descriptorSets.size(), m_descriptorSets/*[index]*/.data(), 0, nullptr);
 
 	//vkCmdBindIndexBuffer(m_drawCmdBuffers[index], m_indexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
