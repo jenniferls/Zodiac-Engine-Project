@@ -16,8 +16,7 @@ const glm::mat4& Zodiac::Camera::GetView() const {
 	//return m_view;
 }
 
-void Zodiac::Camera::SetPosition(const glm::vec3& position)
-{
+void Zodiac::Camera::SetPosition(const glm::vec3& position) {
 	m_position = position;
 	RecalculateViewMatrix();
 }
