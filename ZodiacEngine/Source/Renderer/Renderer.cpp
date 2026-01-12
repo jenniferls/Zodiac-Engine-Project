@@ -165,6 +165,7 @@ void Zodiac::Renderer::InitInternal() {
 	CreateSyncObjects();
 
 	SetupVertexBuffers();
+	m_scene.FlattenMeshes(); //Since we need a flat list of meshes for rendering, manually call this after all models/meshes have been set up correctly
 	PrepareUniformBuffers();
 	UpdateMeshAlignment();
 	CreateMetaDataBuffer();
@@ -470,6 +471,8 @@ void Zodiac::Renderer::SetupVertexBuffers() {
 			indices.insert(indices.end(), &triangleIndices[0], &triangleIndices[3]);
 		}
 	}
+	m_scene.GetModel(1).GetMesh(0).SetScale(glm::vec3(0.4f));
+	m_scene.GetModel(1).GetMesh(0).SetPosition(glm::vec3(1.0f, -0.4f, 0.f));
 
 	//Staging buffer
 	VulkanBuffer* stagingBuffer = new Zodiac::VulkanBuffer(m_device, sizeof(SimpleVertex), vertArr.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
@@ -517,7 +520,7 @@ void Zodiac::Renderer::PrepareUniformBuffers() {
 }
 
 void Zodiac::Renderer::UpdateMeshAlignment() {
-	VkDeviceSize Alignment = m_device->GetPhysicalDevice()->GetDeviceProperties().limits.minStorageBufferOffsetAlignment;
+	//VkDeviceSize Alignment = m_device->GetPhysicalDevice()->GetDeviceProperties().limits.minStorageBufferOffsetAlignment;
 
 	size_t NumSubmeshes = m_scene.GetSceneMeshCount();
 

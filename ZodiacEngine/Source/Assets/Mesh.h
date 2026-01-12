@@ -46,6 +46,8 @@ namespace Zodiac {
 		void CreateModelMatrix();
 		void CreateNormalMatrix();
 
+		std::string name = "Unnamed";
+
 		std::vector<SimpleVertex> m_vertexBuffer;
 		std::vector<uint32_t> m_indices;
 

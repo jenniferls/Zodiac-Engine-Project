@@ -79,11 +79,11 @@ VertexStageOutput vertexMain(uint vertexID: SV_VertexID, uint instanceID: SV_Sta
     float3 normal = assembledVertex.inNormal;
 
     float4x4 ProjectionView = mul(projectionMatrix, viewMatrix);
-    float4x4 MVP = mul(ProjectionView, /*matrices.*/modelMatrix);
+    float4x4 MVP = mul(ProjectionView, matrices.modelMatrix);
 
     output.sv_position = mul(MVP, float4(position, 1.0));
-    output.outVertex.position = mul(/*matrices.*/modelMatrix, float4(position, 1.0f)).xyz;
-    output.outVertex.normal = normalize(mul(/*matrices.*/normalMatrix, normal));
+    output.outVertex.position = mul(matrices.modelMatrix, float4(position, 1.0f)).xyz;
+    output.outVertex.normal = normalize(mul(matrices.normalMatrix, normal));
     output.outVertex.color = color;
     output.outVertex.uv = uv;
 

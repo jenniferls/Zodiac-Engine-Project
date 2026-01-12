@@ -10,6 +10,8 @@ namespace Zodiac {
 
 		void Update(float dt);
 
+		void FlattenMeshes(); //TODO: Find an improved solution later
+
 		uint32_t GetModelCount() const { return static_cast<uint32_t>(m_models.size()); }
 		void AddModel(Model& model);
 
