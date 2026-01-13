@@ -501,15 +501,18 @@ void Zodiac::Renderer::SetupVertexBuffers() {
 }
 
 void Zodiac::Renderer::PrepareUniformBuffers() {
-	m_uniformBuffer = new VulkanBuffer(m_device, sizeof(uboVS), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	m_uniformBuffer.resize(m_swapchain->GetImageCount());
+	for (uint32_t i = 0; i < m_swapchain->GetImageCount(); i++) {
+		m_uniformBuffer[i] = new VulkanBuffer(m_device, sizeof(uboVS), 1, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-	m_uniformBuffer->p_descriptor.buffer = m_uniformBuffer->GetBuffer();
-	m_uniformBuffer->p_descriptor.offset = 0;
-	m_uniformBuffer->p_descriptor.range = sizeof(uboVS);
+		m_uniformBuffer[i]->p_descriptor.buffer = m_uniformBuffer[i]->GetBuffer();
+		m_uniformBuffer[i]->p_descriptor.offset = 0;
+		m_uniformBuffer[i]->p_descriptor.range = sizeof(uboVS);
 
-	m_uniformBuffer->MapMemory();
-	m_uniformBuffer->SetData(&uboVS);
-	m_uniformBuffer->UnmapMemory();
+		m_uniformBuffer[i]->MapMemory();
+		m_uniformBuffer[i]->SetData(&uboVS);
+		m_uniformBuffer[i]->UnmapMemory();
+	}
 }
 
 void Zodiac::Renderer::UpdateMeshAlignment() {
@@ -690,7 +693,7 @@ void Zodiac::Renderer::PrepareDescriptorSet() {
 		writeDescriptorSets[0].dstSet = m_descriptorSets[i][0];
 		writeDescriptorSets[0].descriptorCount = 1;
 		writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		writeDescriptorSets[0].pBufferInfo = &m_uniformBuffer->p_descriptor;
+		writeDescriptorSets[0].pBufferInfo = &m_uniformBuffer[i]->p_descriptor;
 		// Binds this uniform buffer to binding point 0
 		writeDescriptorSets[0].dstBinding = 0;
 
@@ -868,7 +871,7 @@ void Zodiac::Renderer::CleanupSyncObjects()
 }
 
 void Zodiac::Renderer::UpdateUniformBuffers(uint32_t currentImage, float dt, Camera* mainCamera) {
-	m_uniformBuffer->p_descriptor.range = sizeof(uboVS);
+	m_uniformBuffer[currentImage]->p_descriptor.range = sizeof(uboVS);
 
 	testVal += 0.5f * dt;
 
@@ -882,9 +885,9 @@ void Zodiac::Renderer::UpdateUniformBuffers(uint32_t currentImage, float dt, Cam
 
 	uboVS.normalMatrix = glm::transpose(glm::inverse(glm::mat3(uboVS.modelMatrix)));
 
-	m_uniformBuffer->MapMemory();
-	m_uniformBuffer->SetData(&uboVS); //Since the buffer has been passed a pointer at creation, it should technically be okay to do this without passing anything else
-	m_uniformBuffer->UnmapMemory();
+	m_uniformBuffer[currentImage]->MapMemory();
+	m_uniformBuffer[currentImage]->SetData(&uboVS); //Since the buffer has been passed a pointer at creation, it should technically be okay to do this without passing anything else
+	m_uniformBuffer[currentImage]->UnmapMemory();
 }
 
 void Zodiac::Renderer::UpdatePerFrameData(uint32_t currentImage, float dt, Camera* mainCamera)
@@ -931,7 +934,9 @@ void Zodiac::Renderer::Shutdown() {
 	//Note to self: Keep an eye on these so that they're destroyed at the right time
 	delete m_vertexBuffer;
 	delete m_indexBuffer;
-	delete m_uniformBuffer;
+	for (int i = 0; i < m_uniformBuffer.size(); i++) {
+		delete m_uniformBuffer[i];
+	}
 	delete m_metaDataBuffer;
 	delete m_indirectBuffer;
 	delete m_perInstanceBuffer;

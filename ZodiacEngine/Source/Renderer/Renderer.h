@@ -140,7 +140,7 @@ namespace Zodiac {
 		//Global buffers
 		VulkanBuffer* m_vertexBuffer = nullptr;
 		VulkanBuffer* m_indexBuffer = nullptr;
-		VulkanBuffer* m_uniformBuffer = nullptr;
+		std::vector<VulkanBuffer*> m_uniformBuffer;
 		VulkanBuffer* m_metaDataBuffer = nullptr;
 		VulkanBuffer* m_indirectBuffer = nullptr;
 		VulkanBuffer* m_perInstanceBuffer = nullptr;
