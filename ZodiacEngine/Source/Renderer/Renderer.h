@@ -75,6 +75,8 @@ namespace Zodiac {
 		void SetClearColor(const glm::vec4 color);
 		void Clear();
 
+		static const int MAX_FRAMES_IN_FLIGHT = 2;
+
 		VulkanSwapchain* m_swapchain = nullptr;
 		bool m_prepared = false;
 		bool m_showGui = true;
@@ -102,15 +104,13 @@ namespace Zodiac {
 		void SetupDescriptorPool(uint32_t uniformBufferCount, uint32_t storageBufferCount, uint32_t maxSets);
 		void PrepareDescriptorSet();
 		void AllocateCommandBuffers();
-		void RecordCommandBuffer(int32_t index, bool secondBarrier = false);
+		void RecordCommandBuffer(uint32_t currentframe, int32_t index, bool secondBarrier = false);
 		void RecreateSwapChain();
 		void CleanupFramebuffers();
 		void CleanupSyncObjects();
 
 		void UpdateUniformBuffers(uint32_t currentImage, float dt, Camera* mainCamera);
 		void UpdatePerFrameData(uint32_t currentImage, float dt, Camera* mainCamera); //Delta time for test purposes
-
-		static const int MAX_FRAMES_IN_FLIGHT = 2;
 
 		Window* m_window = nullptr;
 		FileWatcher* m_fileWatcher = nullptr;
@@ -133,8 +133,7 @@ namespace Zodiac {
 
 		std::vector<VulkanSemaphore*> m_presentSemaphores;
 		std::vector<VulkanSemaphore*> m_renderCompleteSemaphores;
-		std::vector<VulkanFence*> m_waitFences;
-		std::vector<VulkanFence*> m_imagesInFlight;
+		std::vector<VulkanFence*> m_imagesInFlightFences;
 		size_t m_currentFrame = 0;
 
 		//Global buffers

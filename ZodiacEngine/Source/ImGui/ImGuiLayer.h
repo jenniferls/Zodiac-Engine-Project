@@ -19,7 +19,7 @@ namespace Zodiac {
 
 		bool Init(GLFWwindow* window, VulkanDevice* device, VulkanInstance* instance);
 		void UpdateGUI(Camera* camera);
-		VkCommandBuffer PrepareCommandBuffer(int image);
+		VkCommandBuffer PrepareCommandBuffer(uint32_t currentFrame, int image);
 
 		bool HasBeenInitialized() const { return m_initialized; }
 

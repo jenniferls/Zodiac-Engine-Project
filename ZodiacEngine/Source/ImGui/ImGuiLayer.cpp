@@ -104,17 +104,17 @@ void Zodiac::ImGuiLayer::UpdateGUI(Camera* camera) {
 }
 
 // Must be called after the ImGUI frame was prepared on the application side!
-VkCommandBuffer Zodiac::ImGuiLayer::PrepareCommandBuffer(int image) {
+VkCommandBuffer Zodiac::ImGuiLayer::PrepareCommandBuffer(uint32_t currentFrame, int image) {
 	Renderer& renderer = Renderer::Get();
 
-	s_device->BeginCommandBuffer(s_command_buffers[image], VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+	s_device->BeginCommandBuffer(s_command_buffers[currentFrame], VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
 	
-	renderer.BeginDynamicRendering(s_command_buffers[image], image, NULL, NULL);
+	renderer.BeginDynamicRendering(s_command_buffers[currentFrame], image, NULL, NULL);
 
 	ImDrawData* pDrawData = ImGui::GetDrawData();
-	ImGui_ImplVulkan_RenderDrawData(pDrawData, s_command_buffers[image]);
+	ImGui_ImplVulkan_RenderDrawData(pDrawData, s_command_buffers[currentFrame]);
 
-	vkCmdEndRendering(s_command_buffers[image]);
+	vkCmdEndRendering(s_command_buffers[currentFrame]);
 
 	//Needs some sort of wrapper
 	VkImageLayout oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -264,13 +264,13 @@ VkCommandBuffer Zodiac::ImGuiLayer::PrepareCommandBuffer(int image) {
 			exit(1);
 		}
 
-		vkCmdPipelineBarrier(s_command_buffers[image], sourceStage, destinationStage,
+		vkCmdPipelineBarrier(s_command_buffers[currentFrame], sourceStage, destinationStage,
 			0, 0, NULL, 0, NULL, 1, &barrier);
 	}
 
-	vkEndCommandBuffer(s_command_buffers[image]);
+	vkEndCommandBuffer(s_command_buffers[currentFrame]);
 
-	return s_command_buffers[image];
+	return s_command_buffers[currentFrame];
 }
 
 bool Zodiac::ImGuiLayer::Init(GLFWwindow* window, VulkanDevice* device, VulkanInstance* instance) {
@@ -329,8 +329,8 @@ bool Zodiac::ImGuiLayer::Init(GLFWwindow* window, VulkanDevice* device, VulkanIn
 	ImGui_ImplVulkan_Init(&init_info);
 
 	//VkCommandPool command_pool = device->GetGraphicsCommandPool();
-	s_command_buffers.resize(renderer.m_swapchain->GetImageCount());
-	device->CreateCommandBuffers(renderer.m_swapchain->GetImageCount(), s_command_buffers.data());
+	s_command_buffers.resize(renderer.MAX_FRAMES_IN_FLIGHT);
+	device->CreateCommandBuffers(renderer.MAX_FRAMES_IN_FLIGHT, s_command_buffers.data());
 
 	//err = vkResetCommandPool(device->GetDevice(), command_pool, 0);
 	//check_vk_result(err);
