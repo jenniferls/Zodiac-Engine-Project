@@ -585,11 +585,14 @@ void Zodiac::Renderer::CreateIndirectBuffer() {
 void Zodiac::Renderer::CreatePerInstanceBuffer() {
 	uint32_t meshCount = m_scene.GetSceneMeshCount();
 
-	m_perInstanceBuffer = new VulkanBuffer(m_device, sizeof(PerInstanceData), meshCount, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	m_perInstanceBuffer.resize(m_swapchain->GetImageCount());
+	for (uint32_t i = 0; i < m_swapchain->GetImageCount(); i++) {
+		m_perInstanceBuffer[i] = new VulkanBuffer(m_device, sizeof(PerInstanceData), meshCount, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
-	m_perInstanceBuffer->p_descriptor.buffer = m_perInstanceBuffer->GetBuffer();
-	m_perInstanceBuffer->p_descriptor.offset = 0;
-	m_perInstanceBuffer->p_descriptor.range = meshCount * sizeof(PerInstanceData);
+		m_perInstanceBuffer[i]->p_descriptor.buffer = m_perInstanceBuffer[i]->GetBuffer();
+		m_perInstanceBuffer[i]->p_descriptor.offset = 0;
+		m_perInstanceBuffer[i]->p_descriptor.range = meshCount * sizeof(PerInstanceData);
+	}
 }
 
 void Zodiac::Renderer::SetupDescriptorSets() {
@@ -725,7 +728,7 @@ void Zodiac::Renderer::PrepareDescriptorSet() {
 		writeDescriptorSets[4].dstSet = m_descriptorSets[i][1];
 		writeDescriptorSets[4].descriptorCount = 1;
 		writeDescriptorSets[4].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-		writeDescriptorSets[4].pBufferInfo = &m_perInstanceBuffer->p_descriptor;
+		writeDescriptorSets[4].pBufferInfo = &m_perInstanceBuffer[i]->p_descriptor;
 		// Binds this buffer to binding point 3
 		writeDescriptorSets[4].dstBinding = 3;
 
@@ -902,13 +905,13 @@ void Zodiac::Renderer::UpdatePerFrameData(uint32_t currentImage, float dt, Camer
 		perInstanceData[i].normalMatrix = m_scene.GetAllMeshesInScene()[i].GetNormalMatrix();
 	}
 
-	m_perInstanceBuffer->p_descriptor.buffer = m_perInstanceBuffer->GetBuffer();
-	m_perInstanceBuffer->p_descriptor.offset = 0;
-	m_perInstanceBuffer->p_descriptor.range = meshCount * sizeof(PerInstanceData);
+	m_perInstanceBuffer[currentImage]->p_descriptor.buffer = m_perInstanceBuffer[currentImage]->GetBuffer();
+	m_perInstanceBuffer[currentImage]->p_descriptor.offset = 0;
+	m_perInstanceBuffer[currentImage]->p_descriptor.range = meshCount * sizeof(PerInstanceData);
 
-	m_perInstanceBuffer->MapMemory();
-	m_perInstanceBuffer->SetData(perInstanceData.data());
-	m_perInstanceBuffer->UnmapMemory();
+	m_perInstanceBuffer[currentImage]->MapMemory();
+	m_perInstanceBuffer[currentImage]->SetData(perInstanceData.data());
+	m_perInstanceBuffer[currentImage]->UnmapMemory();
 }
 
 void Zodiac::Renderer::Shutdown() {
@@ -939,7 +942,9 @@ void Zodiac::Renderer::Shutdown() {
 	}
 	delete m_metaDataBuffer;
 	delete m_indirectBuffer;
-	delete m_perInstanceBuffer;
+	for (int i = 0; i < m_perInstanceBuffer.size(); i++) {
+		delete m_perInstanceBuffer[i];
+	}
 }
 
 void Zodiac::Renderer::ToggleImGui()

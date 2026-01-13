@@ -143,7 +143,7 @@ namespace Zodiac {
 		std::vector<VulkanBuffer*> m_uniformBuffer;
 		VulkanBuffer* m_metaDataBuffer = nullptr;
 		VulkanBuffer* m_indirectBuffer = nullptr;
-		VulkanBuffer* m_perInstanceBuffer = nullptr;
+		std::vector<VulkanBuffer*> m_perInstanceBuffer;
 
 		std::vector<MeshAlignmentData> m_meshAlignmentData;
 
