@@ -436,16 +436,22 @@ void Zodiac::Renderer::SetupVertexBuffers() {
 	//This part is temporary written like this for testing purposes
 	std::vector<SimpleVertex> vertArr;
 	std::vector<uint32_t> indices;
-	Model testModels[2];
-	std::string modelNames[2] = { "/dragon.obj", "/bunny.obj" };
-	for (int i = 0; i < 2; i++) {
+
+	//uint32_t testMultiplier = 10;
+	std::vector<Model> testModels;
+	std::vector<std::string> modelNames = { "/dragon.obj", "/bunny.obj", "/cube.obj" };
+	testModels.resize(modelNames.size()/* * testMultiplier*/);
+	for (int i = 0; i < modelNames.size(); i++) {
 		if (m_meshImporter.LoadModel((std::string(IMPORT_MODELS_DIR) + modelNames[i]).c_str(), testModels[i])) {
-			m_scene.AddModel(testModels[i]);
-			std::vector<Mesh> meshes = m_scene.GetModel(i).GetMeshes();
-			for (uint32_t j = 0; j < meshes.size(); j++) {
-				vertArr.insert(vertArr.end(), meshes[j].GetVertexBuffer().begin(), meshes[j].GetVertexBuffer().end());
-				indices.insert(indices.end(), meshes[j].GetIndexBuffer().begin(), meshes[j].GetIndexBuffer().end());
-			}
+			//for (uint32_t j = 0; j < testMultiplier; j++) {
+				testModels[i].SetName("TestModel_" + modelNames[i]);
+				m_scene.AddModel(testModels[i]);
+				std::vector<Mesh> meshes = m_scene.GetModel(m_scene.GetModelCount() - 1).GetMeshes();
+				for (uint32_t k = 0; k < meshes.size(); k++) {
+					vertArr.insert(vertArr.end(), meshes[k].GetVertexBuffer().begin(), meshes[k].GetVertexBuffer().end());
+					indices.insert(indices.end(), meshes[k].GetIndexBuffer().begin(), meshes[k].GetIndexBuffer().end());
+				}
+			//}
 		}
 		else {
 			Mesh triangleMesh;
@@ -459,7 +465,12 @@ void Zodiac::Renderer::SetupVertexBuffers() {
 		}
 	}
 	m_scene.GetModel(1).GetMesh(0).SetScale(glm::vec3(0.4f));
-	m_scene.GetModel(1).GetMesh(0).SetPosition(glm::vec3(1.0f, -0.4f, 0.f));
+	m_scene.GetModel(1).GetMesh(0).SetPosition(glm::vec3(0.0f, -0.4f, 0.f));
+	for (uint32_t i = 0; i < m_scene.GetModelCount(); i++) {
+		for (uint32_t j = 0; j < m_scene.GetModels()[i].GetMeshCount(); j++) {
+			m_scene.GetModels()[i].GetMesh(j).SetPosition(m_scene.GetModels()[i].GetMesh(j).GetPosition() + glm::vec3(i * 1.5f, 0.0f, 0.0f));
+		}
+	}
 
 	//Staging buffer
 	VulkanBuffer* stagingBuffer = new Zodiac::VulkanBuffer(m_device, sizeof(SimpleVertex), vertArr.size(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);

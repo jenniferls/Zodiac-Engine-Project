@@ -42,6 +42,10 @@ namespace Zodiac {
 		void SetRotation(const glm::vec3& rotation) { m_transform.rotation = rotation; }
 		void SetScale(const glm::vec3& scale) { m_transform.scale = scale; }
 
+		const glm::vec3& GetPosition() const { return m_transform.position; }
+		const glm::vec3& GetRotation() const { return m_transform.rotation; }
+		const glm::vec3& GetScale() const { return m_transform.scale; }
+
 		Transform m_transform;
 		MeshData m_meshData;
 	private:

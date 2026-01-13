@@ -25,6 +25,8 @@ namespace Zodiac {
 		void SetRotation(const glm::vec3& rotation) { m_transform.rotation = rotation; }
 		void SetScale(const glm::vec3& scale) { m_transform.scale = scale; }
 
+		void SetName(const std::string& modelName) { name = modelName; }
+
 		Transform m_transform;
 	private:
 		//void CreateModelMatrix();
@@ -33,5 +35,7 @@ namespace Zodiac {
 		//glm::mat4 m_modelMatrix = glm::mat4();
 		uint32_t m_totalVertexCount = 0;
 		uint32_t m_totalIndexCount = 0;
+
+		std::string name = "Unnamed";
 	};
 }
