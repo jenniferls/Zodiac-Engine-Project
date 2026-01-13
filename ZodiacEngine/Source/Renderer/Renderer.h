@@ -126,7 +126,7 @@ namespace Zodiac {
 		VkPipelineLayout m_pipelineLayout;
 		VkDescriptorPool m_descriptorPool;
 		std::vector<VkDescriptorSetLayout> m_descriptorSetLayouts;
-		/*std::vector<*/std::vector<VkDescriptorSet>/*>*/ m_descriptorSets; //Per swapchain image
+		std::vector<std::vector<VkDescriptorSet>> m_descriptorSets; //Per swapchain image
 		std::vector<VkFramebuffer> m_framebuffers;
 
 		std::vector<VkCommandBuffer> m_drawCmdBuffers;

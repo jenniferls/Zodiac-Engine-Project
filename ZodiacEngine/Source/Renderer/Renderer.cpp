@@ -171,7 +171,7 @@ void Zodiac::Renderer::InitInternal() {
 	CreateMetaDataBuffer();
 	CreatePerInstanceBuffer();
 	CreateIndirectBuffer();
-	SetupDescriptorPool(m_swapchain->GetImageCount(), 4, m_swapchain->GetImageCount() + 1);
+	SetupDescriptorPool(m_swapchain->GetImageCount(), 4 * m_swapchain->GetImageCount(), m_swapchain->GetImageCount() * 2);
 	SetupDescriptorSets();
 	PrepareDescriptorSet();
 	SetupPipeline();
@@ -672,63 +672,62 @@ void Zodiac::Renderer::SetupDescriptorPool(uint32_t uniformBufferCount, uint32_t
 }
 
 void Zodiac::Renderer::PrepareDescriptorSet() {
-	//for (uint32_t i = 0; i < m_swapchain->GetImageCount(); i++) {
+	m_descriptorSets.resize(m_swapchain->GetImageCount());
+	for (uint32_t i = 0; i < m_swapchain->GetImageCount(); i++) {
+		m_descriptorSets[i].resize(m_descriptorSetLayouts.size());
 
-	//}
+		// Binding 0 : Uniform buffer
+		VkDescriptorSetAllocateInfo descriptorSetAllocInfo = Initializers::DescriptorSetAllocateInfo(&m_descriptorPool, 1, &m_descriptorSetLayouts[0]);
+		ErrorCheck(vkAllocateDescriptorSets(*m_device->GetDevice(), &descriptorSetAllocInfo, &m_descriptorSets[i][0]));
 
-	m_descriptorSets.resize(m_descriptorSetLayouts.size());
+		// Binding 1 : Vertex and index storage buffers
+		VkDescriptorSetAllocateInfo descriptorSetAllocInfoGeometry = Initializers::DescriptorSetAllocateInfo(&m_descriptorPool, 1, &m_descriptorSetLayouts[1]);
+		ErrorCheck(vkAllocateDescriptorSets(*m_device->GetDevice(), &descriptorSetAllocInfoGeometry, &m_descriptorSets[i][1]));
 
-	// Binding 0 : Uniform buffer
-	VkDescriptorSetAllocateInfo descriptorSetAllocInfo = Initializers::DescriptorSetAllocateInfo(&m_descriptorPool, 1, &m_descriptorSetLayouts[0]);
-	ErrorCheck(vkAllocateDescriptorSets(*m_device->GetDevice(), &descriptorSetAllocInfo, &m_descriptorSets[0]));
+		std::vector<VkWriteDescriptorSet> writeDescriptorSets(5);
 
-	// Binding 1 : Vertex and index storage buffers
-	VkDescriptorSetAllocateInfo descriptorSetAllocInfoGeometry = Initializers::DescriptorSetAllocateInfo(&m_descriptorPool, 1, &m_descriptorSetLayouts[1]);
-	ErrorCheck(vkAllocateDescriptorSets(*m_device->GetDevice(), &descriptorSetAllocInfoGeometry, &m_descriptorSets[1]));
+		writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSets[0].dstSet = m_descriptorSets[i][0];
+		writeDescriptorSets[0].descriptorCount = 1;
+		writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		writeDescriptorSets[0].pBufferInfo = &m_uniformBuffer->p_descriptor;
+		// Binds this uniform buffer to binding point 0
+		writeDescriptorSets[0].dstBinding = 0;
 
-	std::vector<VkWriteDescriptorSet> writeDescriptorSets(5);
+		writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSets[1].dstSet = m_descriptorSets[i][1];
+		writeDescriptorSets[1].descriptorCount = 1;
+		writeDescriptorSets[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		writeDescriptorSets[1].pBufferInfo = &m_vertexBuffer->p_descriptor;
+		// Binds this buffer to binding point 0
+		writeDescriptorSets[1].dstBinding = 0;
 
-	writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	writeDescriptorSets[0].dstSet = m_descriptorSets[0];
-	writeDescriptorSets[0].descriptorCount = 1;
-	writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	writeDescriptorSets[0].pBufferInfo = &m_uniformBuffer->p_descriptor;
-	// Binds this uniform buffer to binding point 0
-	writeDescriptorSets[0].dstBinding = 0;
+		writeDescriptorSets[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSets[2].dstSet = m_descriptorSets[i][1];
+		writeDescriptorSets[2].descriptorCount = 1;
+		writeDescriptorSets[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		writeDescriptorSets[2].pBufferInfo = &m_indexBuffer->p_descriptor;
+		// Binds this buffer to binding point 1
+		writeDescriptorSets[2].dstBinding = 1;
 
-	writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	writeDescriptorSets[1].dstSet = m_descriptorSets[1];
-	writeDescriptorSets[1].descriptorCount = 1;
-	writeDescriptorSets[1].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-	writeDescriptorSets[1].pBufferInfo = &m_vertexBuffer->p_descriptor;
-	// Binds this buffer to binding point 0
-	writeDescriptorSets[1].dstBinding = 0;
+		writeDescriptorSets[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSets[3].dstSet = m_descriptorSets[i][1];
+		writeDescriptorSets[3].descriptorCount = 1;
+		writeDescriptorSets[3].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		writeDescriptorSets[3].pBufferInfo = &m_metaDataBuffer->p_descriptor;
+		// Binds this buffer to binding point 2
+		writeDescriptorSets[3].dstBinding = 2;
 
-	writeDescriptorSets[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	writeDescriptorSets[2].dstSet = m_descriptorSets[1];
-	writeDescriptorSets[2].descriptorCount = 1;
-	writeDescriptorSets[2].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-	writeDescriptorSets[2].pBufferInfo = &m_indexBuffer->p_descriptor;
-	// Binds this buffer to binding point 1
-	writeDescriptorSets[2].dstBinding = 1;
+		writeDescriptorSets[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSets[4].dstSet = m_descriptorSets[i][1];
+		writeDescriptorSets[4].descriptorCount = 1;
+		writeDescriptorSets[4].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+		writeDescriptorSets[4].pBufferInfo = &m_perInstanceBuffer->p_descriptor;
+		// Binds this buffer to binding point 3
+		writeDescriptorSets[4].dstBinding = 3;
 
-	writeDescriptorSets[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	writeDescriptorSets[3].dstSet = m_descriptorSets[1];
-	writeDescriptorSets[3].descriptorCount = 1;
-	writeDescriptorSets[3].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-	writeDescriptorSets[3].pBufferInfo = &m_metaDataBuffer->p_descriptor;
-	// Binds this buffer to binding point 2
-	writeDescriptorSets[3].dstBinding = 2;
-
-	writeDescriptorSets[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	writeDescriptorSets[4].dstSet = m_descriptorSets[1];
-	writeDescriptorSets[4].descriptorCount = 1;
-	writeDescriptorSets[4].descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-	writeDescriptorSets[4].pBufferInfo = &m_perInstanceBuffer->p_descriptor;
-	// Binds this buffer to binding point 3
-	writeDescriptorSets[4].dstBinding = 3;
-
-	vkUpdateDescriptorSets(*m_device->GetDevice(), writeDescriptorSets.size(), writeDescriptorSets.data(), 0, nullptr);
+		vkUpdateDescriptorSets(*m_device->GetDevice(), writeDescriptorSets.size(), writeDescriptorSets.data(), 0, nullptr);
+	}
 }
 
 void Zodiac::Renderer::AllocateCommandBuffers() {
@@ -778,7 +777,7 @@ void Zodiac::Renderer::RecordCommandBuffer(int32_t index, bool secondBarrier) {
 	vkCmdSetScissor(m_drawCmdBuffers[index], 0, 1, &scissor);
 
 	// Bind descriptor sets describing shader binding points
-	vkCmdBindDescriptorSets(m_drawCmdBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, m_descriptorSets.size(), m_descriptorSets/*[index]*/.data(), 0, nullptr);
+	vkCmdBindDescriptorSets(m_drawCmdBuffers[index], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, m_descriptorSets[index].size(), m_descriptorSets[index].data(), 0, nullptr);
 
 	//vkCmdBindIndexBuffer(m_drawCmdBuffers[index], m_indexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
