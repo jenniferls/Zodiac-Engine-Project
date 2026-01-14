@@ -5,6 +5,8 @@
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_vulkan.h>
 
+#include <Scene.h> // Have to put this here to fix the compile order (entt and imgui do not play well together)
+
 #include "Defines.h"
 #include "Validation.h"
 #include "Renderer.h"

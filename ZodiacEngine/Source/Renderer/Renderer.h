@@ -1,6 +1,8 @@
 #pragma once
 #include "vulkan/vulkan.h"
 
+#include "Scene.h"
+
 #include "ImGuiLayer.h"
 
 #include "VulkanSurface.h"
@@ -13,7 +15,6 @@
 #include "FileWatcher.h"
 #include "ShaderCompiler.h"
 #include "MeshImporter.h" //TODO: Move to manager. Added for testing purposes
-#include "Scene.h"
 
 namespace Zodiac {
 	struct PerFrameUniformData {
@@ -59,9 +60,9 @@ namespace Zodiac {
 
 		void BeginDynamicRendering(VkCommandBuffer commandBuffer, int imageIndex, VkClearValue* pClearColor, VkClearValue* pDepthValue);
 
-		void BeginScene();
-		void Submit();
-		void EndScene();
+		//void BeginScene();
+		//void Submit();
+		//void EndScene();
 		void Flush();
 		void Shutdown();
 
@@ -93,7 +94,7 @@ namespace Zodiac {
 
 		bool SetupPipeline();
 		bool RecreatePipeline();
-		void TraverseShaderVariableLayout(slang::VariableLayoutReflection* variableLayoutReflection);
+		//void TraverseShaderVariableLayout(slang::VariableLayoutReflection* variableLayoutReflection);
 		void SetupVertexBuffers();
 		void PrepareUniformBuffers();
 		void UpdateMeshAlignment();

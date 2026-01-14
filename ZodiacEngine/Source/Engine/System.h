@@ -10,6 +10,8 @@
 #include "VulkanBuffer.h"
 #include "VulkanSurface.h"
 
+#include <entt/entt.hpp>
+
 #include "Renderer.h"
 #include "Camera.h"
 #include "InputHandler.h"

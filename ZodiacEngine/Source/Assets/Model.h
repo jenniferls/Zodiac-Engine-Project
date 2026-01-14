@@ -9,7 +9,7 @@ namespace Zodiac {
 		~Model();
 		//Model(const Model&) = delete;
 
-		void AddMesh();
+		//void AddMesh();
 		void AddMesh(Mesh mesh);
 		
 		const std::vector<Mesh>& GetMeshes() const { return m_meshes; }

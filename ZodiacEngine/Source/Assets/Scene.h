@@ -1,6 +1,6 @@
 #pragma once
 #include "Model.h"
-//#include <entt/entt.hpp>
+#include <entt/entt.hpp>
 
 namespace Zodiac {
 	class Scene {
@@ -28,7 +28,7 @@ namespace Zodiac {
 		std::vector<Mesh> m_flattenedMeshes;
 
 		std::vector<Model> m_models;
-		//entt::registry m_registry;
+		entt::registry m_registry;
 		uint32_t m_totalMeshCount = 0;
 		uint32_t m_totalTriangleCount = 0;
 		uint32_t m_totalVertexCount = 0;
