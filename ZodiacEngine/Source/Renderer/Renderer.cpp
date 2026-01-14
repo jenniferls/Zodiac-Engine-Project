@@ -437,16 +437,15 @@ void Zodiac::Renderer::SetupVertexBuffers() {
 	std::vector<SimpleVertex> vertArr;
 	std::vector<uint32_t> indices;
 
-	//uint32_t testMultiplier = 10;
 	std::vector<Model> testModels;
 	std::vector<std::string> modelNames = { "/dragon.obj", "/bunny.obj", "/cube.obj" };
-	testModels.resize(modelNames.size()/* * testMultiplier*/);
+	testModels.resize(modelNames.size() /** testMultiplier*/);
 	for (int i = 0; i < modelNames.size(); i++) {
 		if (m_meshImporter.LoadModel((std::string(IMPORT_MODELS_DIR) + modelNames[i]).c_str(), testModels[i])) {
 			//for (uint32_t j = 0; j < testMultiplier; j++) {
 				testModels[i].SetName("TestModel_" + modelNames[i]);
 				m_scene.AddModel(testModels[i]);
-				std::vector<Mesh> meshes = m_scene.GetModel(m_scene.GetModelCount() - 1).GetMeshes();
+				auto& meshes = m_scene.GetModel(m_scene.GetModelCount() - 1).GetMeshes();
 				for (uint32_t k = 0; k < meshes.size(); k++) {
 					vertArr.insert(vertArr.end(), meshes[k].GetVertexBuffer().begin(), meshes[k].GetVertexBuffer().end());
 					indices.insert(indices.end(), meshes[k].GetIndexBuffer().begin(), meshes[k].GetIndexBuffer().end());
@@ -459,9 +458,10 @@ void Zodiac::Renderer::SetupVertexBuffers() {
 			Model triangleModel;
 			triangleModel.AddMesh(triangleMesh);
 			m_scene.AddModel(triangleModel);
+			auto& mesh = m_scene.GetModel(m_scene.GetModelCount() - 1).GetMeshes()[0];
 
-			vertArr.insert(vertArr.end(), triangleModel.GetMesh(0).GetVertexBuffer().begin(), triangleModel.GetMesh(0).GetVertexBuffer().end());
-			indices.insert(indices.end(), triangleModel.GetMesh(0).GetIndexBuffer().begin(), triangleModel.GetMesh(0).GetIndexBuffer().end());
+			vertArr.insert(vertArr.end(), mesh.GetVertexBuffer().begin(), mesh.GetVertexBuffer().end());
+			indices.insert(indices.end(), mesh.GetIndexBuffer().begin(), mesh.GetIndexBuffer().end());
 		}
 	}
 	m_scene.GetModel(1).GetMesh(0).SetScale(glm::vec3(0.4f));

@@ -16,6 +16,7 @@ namespace Zodiac {
 	public:
 		Mesh();
 		~Mesh();
+		//Mesh(const Mesh&) = delete;
 
 		void PerFrameUpdate();
 
@@ -23,8 +24,10 @@ namespace Zodiac {
 		void SetIndexBuffer(const std::vector<uint32_t>& indices) { m_indices = indices; }
 		void SetModelMatrix(const glm::mat4& modelMatrix) { m_modelMatrix = modelMatrix; }
 
-		std::vector<SimpleVertex>& GetVertexBuffer() { return m_vertexBuffer; }
-		std::vector<uint32_t>& GetIndexBuffer() { return m_indices; }
+		//std::vector<SimpleVertex>& GetVertexBuffer() { return m_vertexBuffer; }
+		//std::vector<uint32_t>& GetIndexBuffer() { return m_indices; }
+		const std::vector<SimpleVertex>& GetVertexBuffer() const { return m_vertexBuffer; }
+		const std::vector<uint32_t>& GetIndexBuffer() const { return m_indices; }
 
 		uint32_t GetVertexCount() const { return static_cast<uint32_t>(m_vertexBuffer.size()); }
 		uint32_t GetIndexCount() const { return static_cast<uint32_t>(m_indices.size()); }

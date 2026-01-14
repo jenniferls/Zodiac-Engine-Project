@@ -391,7 +391,7 @@ void Zodiac::ImGuiLayer::SetupRenderPass()
 void Zodiac::ImGuiLayer::SetupDescriptorPool()
 {
 	//Allocating space for quite a lot of stuff, but we could still theoretically run out (although we shouldn't!)
-	int32_t descriptorCount = 1000;
+	uint32_t descriptorCount = 1000;
 	VkDescriptorPoolSize poolSizes[] =
 	{
 		{ VK_DESCRIPTOR_TYPE_SAMPLER, descriptorCount },
