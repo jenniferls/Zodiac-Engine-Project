@@ -10,12 +10,12 @@
 #include "VulkanBuffer.h"
 #include "VulkanSurface.h"
 
-#include <entt/entt.hpp>
-
+#include "RenderContext.h"
 #include "Renderer.h"
 #include "Camera.h"
 #include "InputHandler.h"
 #include "FileWatcher.h"
+#include "Scene.h"
 
 //This class acts more or less as a testbed for now
 namespace Zodiac {
@@ -37,6 +37,8 @@ namespace Zodiac {
 		Clock m_clock;
 		FileWatcher m_fileWatcher;
 		Camera* m_mainCamera;
+		Scene m_scene;
+		RenderContext m_renderContext;
 
 		VulkanConfiguration m_vulkanConfig;
 		VulkanInstance* m_instance;

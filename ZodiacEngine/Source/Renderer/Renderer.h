@@ -11,10 +11,11 @@
 #include "VulkanFence.h"
 #include "VulkanBuffer.h"
 
+#include "RenderContext.h"
+
 #include "Camera.h"
 #include "FileWatcher.h"
 #include "ShaderCompiler.h"
-#include "MeshImporter.h" //TODO: Move to manager. Added for testing purposes
 
 namespace Zodiac {
 	struct PerFrameUniformData {
@@ -56,7 +57,7 @@ namespace Zodiac {
 		void Init(VulkanDevice* device, Settings settings, VulkanSurface* surface, VulkanInstance* instance, Window* window, FileWatcher& filewatcher);
 		static Renderer& Get();
 
-		void Draw(float dt, Camera* mainCamera); //Delta time and camera for test purposes
+		void Draw(float dt, RenderContext& renderContext); //Delta time and camera for test purposes
 
 		void BeginDynamicRendering(VkCommandBuffer commandBuffer, int imageIndex, VkClearValue* pClearColor, VkClearValue* pDepthValue);
 
@@ -71,6 +72,8 @@ namespace Zodiac {
 		void SetFramebufferResized(bool resized);
 		void SetSwapchainDirty();
 
+		void PrepareForScene(Scene& scene); //TODO: refactor later
+
 		Settings& GetSettings();
 
 		void SetClearColor(const glm::vec4 color);
@@ -82,11 +85,8 @@ namespace Zodiac {
 		bool m_prepared = false;
 		bool m_showGui = true;
 
-		Scene m_scene; //Should be moved out later
-
 	private:
 		Renderer() = default;
-		void InitInternal();
 		void SetupRenderPass();
 		void SetupPipelineCache();
 		void SetupFramebuffers();
@@ -95,28 +95,29 @@ namespace Zodiac {
 		bool SetupPipeline();
 		bool RecreatePipeline();
 		//void TraverseShaderVariableLayout(slang::VariableLayoutReflection* variableLayoutReflection);
-		void SetupVertexBuffers();
 		void PrepareUniformBuffers();
-		void UpdateMeshAlignment();
-		void CreateMetaDataBuffer();
-		void CreateIndirectBuffer();
-		void CreatePerInstanceBuffer();
+
+		void PrepareBuffersFromScene(Scene& scene);
+		void SetupVertexBuffers(Scene& scene);
+		void UpdateMeshAlignment(Scene& scene);
+		void CreateMetaDataBuffer(Scene& scene);
+		void CreateIndirectBuffer(Scene& scene);
+		void CreatePerInstanceBuffer(const Scene& scene);
+
 		void SetupDescriptorSets();
 		void SetupDescriptorPool(uint32_t uniformBufferCount, uint32_t storageBufferCount, uint32_t maxSets);
 		void PrepareDescriptorSet();
 		void AllocateCommandBuffers();
-		void RecordCommandBuffer(uint32_t currentframe, int32_t index, bool secondBarrier = false);
+		void RecordCommandBuffer(std::vector<VkCommandBuffer>& commandBuffers, uint32_t currentframe, int32_t index, RenderContext& renderContext, bool secondBarrier = false);
 		void RecreateSwapChain();
 		void CleanupFramebuffers();
 		void CleanupSyncObjects();
 
 		void UpdateUniformBuffers(uint32_t currentImage, float dt, Camera* mainCamera);
-		void UpdatePerFrameData(uint32_t currentImage, float dt, Camera* mainCamera); //Delta time for test purposes
+		void UpdatePerFrameData(uint32_t currentImage, float dt, RenderContext& renderContext); //Delta time for test purposes
 
 		Window* m_window = nullptr;
 		FileWatcher* m_fileWatcher = nullptr;
-
-		MeshImporter m_meshImporter; //For testing purposes. Should be moved later
 
 		VulkanDevice* m_device = nullptr;
 		VulkanSurface* m_surface = nullptr;

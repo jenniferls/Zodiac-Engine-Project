@@ -30,7 +30,7 @@ void Zodiac::Renderer::Init(VulkanDevice* device, Settings settings, VulkanSurfa
 
 	m_fileWatcher->WatchFile(std::string(SHADERS_DIR) + "/test.slang"); //Currently done in renderer as a test
 
-	InitInternal();
+	m_swapchain = new Zodiac::VulkanSwapchain(m_device, m_surface->GetSurfaceDetails(), m_surface->GetSurface(), m_settings);
 
 	if (m_showGui) {
 		m_imgui = std::unique_ptr<ImGuiLayer>(ImGuiLayer::Create());
@@ -43,7 +43,7 @@ Zodiac::Renderer& Zodiac::Renderer::Get() {
 	return instance;
 }
 
-void Zodiac::Renderer::Draw(float dt, Camera* mainCamera) {
+void Zodiac::Renderer::Draw(float dt, RenderContext& renderContext) {
 	if (m_fileWatcher->HasFileChanged((std::string(SHADERS_DIR) + "/test.slang").c_str())) {
 		vkDeviceWaitIdle(*m_device->GetDevice()); //Causes small stall but is fine since it's for shader development purposes
 		if (RecreatePipeline()) {
@@ -61,9 +61,10 @@ void Zodiac::Renderer::Draw(float dt, Camera* mainCamera) {
 	VkResult res = vkAcquireNextImageKHR(*m_device->GetDevice(), *m_swapchain->GetSwapchain(), UINT64_MAX, m_presentSemaphores[m_currentFrame]->GetSemaphore(), VK_NULL_HANDLE, &imageIndex);
 
 	//Temporarily update scene here
-	m_scene.Update(dt);
+	renderContext.scene->Update(dt);
+	//m_scene.Update(dt);
 
-	UpdatePerFrameData(m_currentFrame, dt, mainCamera);
+	UpdatePerFrameData(m_currentFrame, dt, renderContext);
 
 	if (res == VK_ERROR_OUT_OF_DATE_KHR) {
 		RecreateSwapChain();
@@ -78,8 +79,8 @@ void Zodiac::Renderer::Draw(float dt, Camera* mainCamera) {
 
 	//This part is messy right now. Should try async instead and also make helper functions
 	if (m_showGui) {
-		RecordCommandBuffer(m_currentFrame, imageIndex);
-		m_imgui->UpdateGUI(mainCamera);
+		RecordCommandBuffer(m_drawCmdBuffers, m_currentFrame, imageIndex, renderContext);
+		m_imgui->UpdateGUI(renderContext);
 		VkCommandBuffer imguiCommandBuffer = m_imgui->PrepareCommandBuffer(m_currentFrame, imageIndex);
 		VkCommandBuffer commandBuffers[] = { m_drawCmdBuffers[m_currentFrame], imguiCommandBuffer };
 
@@ -88,7 +89,7 @@ void Zodiac::Renderer::Draw(float dt, Camera* mainCamera) {
 		ErrorCheck(vkQueueSubmit(*m_device->GetGraphicsQueue(), 1, &submitInfo, m_imagesInFlightFences[m_currentFrame]->p_fence));
 	}
 	else {
-		RecordCommandBuffer(m_currentFrame, imageIndex, true);
+		RecordCommandBuffer(m_drawCmdBuffers, m_currentFrame, imageIndex, renderContext, true);
 		//Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
 		VkSubmitInfo submitInfo = Initializers::SubmitInfo(m_presentSemaphores[m_currentFrame]->GetSemaphore(), m_renderCompleteSemaphores[imageIndex]->GetSemaphore(), &m_drawCmdBuffers[m_currentFrame], 1, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 		ErrorCheck(vkQueueSubmit(*m_device->GetGraphicsQueue(), 1, &submitInfo, m_imagesInFlightFences[m_currentFrame]->p_fence));
@@ -151,23 +152,20 @@ void Zodiac::Renderer::BeginDynamicRendering(VkCommandBuffer commandBuffer, int 
 	vkCmdBeginRendering(commandBuffer, &RenderingInfo);
 }
 
-void Zodiac::Renderer::InitInternal() {
-	m_swapchain = new Zodiac::VulkanSwapchain(m_device, m_surface->GetSurfaceDetails(), m_surface->GetSurface(), m_settings);
+void Zodiac::Renderer::PrepareForScene(Scene& scene) {
 	SetupRenderPass();
 	SetupPipelineCache();
 	SetupFramebuffers();
 	CreateSyncObjects();
 
-	SetupVertexBuffers();
-	m_scene.FlattenMeshes(); //Since we need a flat list of meshes for rendering, manually call this after all models/meshes have been set up correctly
 	PrepareUniformBuffers();
-	UpdateMeshAlignment();
-	CreateMetaDataBuffer();
-	CreatePerInstanceBuffer();
-	CreateIndirectBuffer();
+
+	PrepareBuffersFromScene(scene);
+
 	SetupDescriptorPool(MAX_FRAMES_IN_FLIGHT, 4 * MAX_FRAMES_IN_FLIGHT, MAX_FRAMES_IN_FLIGHT * 2);
 	SetupDescriptorSets();
 	PrepareDescriptorSet();
+
 	SetupPipeline();
 	AllocateCommandBuffers();
 	m_prepared = true;
@@ -432,44 +430,15 @@ bool Zodiac::Renderer::RecreatePipeline()
 	return res;
 }
 
-void Zodiac::Renderer::SetupVertexBuffers() {
+void Zodiac::Renderer::SetupVertexBuffers(Scene& scene) {
 	//This part is temporary written like this for testing purposes
 	std::vector<SimpleVertex> vertArr;
 	std::vector<uint32_t> indices;
-
-	std::vector<Model> testModels;
-	std::vector<std::string> modelNames = { "/dragon.obj", "/bunny.obj", "/cube.obj" };
-	testModels.resize(modelNames.size() /** testMultiplier*/);
-	for (int i = 0; i < modelNames.size(); i++) {
-		if (m_meshImporter.LoadModel((std::string(IMPORT_MODELS_DIR) + modelNames[i]).c_str(), testModels[i])) {
-			//for (uint32_t j = 0; j < testMultiplier; j++) {
-				testModels[i].SetName("TestModel_" + modelNames[i]);
-				m_scene.AddModel(testModels[i]);
-				auto& meshes = m_scene.GetModel(m_scene.GetModelCount() - 1).GetMeshes();
-				for (uint32_t k = 0; k < meshes.size(); k++) {
-					vertArr.insert(vertArr.end(), meshes[k].GetVertexBuffer().begin(), meshes[k].GetVertexBuffer().end());
-					indices.insert(indices.end(), meshes[k].GetIndexBuffer().begin(), meshes[k].GetIndexBuffer().end());
-				}
-			//}
-		}
-		else {
-			Mesh triangleMesh;
-			triangleMesh.SetToTriangleMesh();
-			Model triangleModel;
-			triangleModel.AddMesh(triangleMesh);
-			m_scene.AddModel(triangleModel);
-			auto& mesh = m_scene.GetModel(m_scene.GetModelCount() - 1).GetMeshes()[0];
-
-			vertArr.insert(vertArr.end(), mesh.GetVertexBuffer().begin(), mesh.GetVertexBuffer().end());
-			indices.insert(indices.end(), mesh.GetIndexBuffer().begin(), mesh.GetIndexBuffer().end());
-		}
-	}
-	m_scene.GetModel(1).GetMesh(0).SetScale(glm::vec3(0.4f));
-	m_scene.GetModel(1).GetMesh(0).SetPosition(glm::vec3(0.0f, -0.4f, 0.f));
-	for (uint32_t i = 0; i < m_scene.GetModelCount(); i++) {
-		for (uint32_t j = 0; j < m_scene.GetModels()[i].GetMeshCount(); j++) {
-			m_scene.GetModels()[i].GetMesh(j).SetPosition(m_scene.GetModels()[i].GetMesh(j).GetPosition() + glm::vec3(i * 1.5f, 0.0f, 0.0f));
-		}
+	
+	for (uint32_t i = 0; i < scene.GetSceneMeshCount(); i++) {
+		auto& meshes = scene.GetAllMeshesInScene();
+		vertArr.insert(vertArr.end(), meshes[i].GetVertexBuffer().begin(), meshes[i].GetVertexBuffer().end());
+		indices.insert(indices.end(), meshes[i].GetIndexBuffer().begin(), meshes[i].GetIndexBuffer().end());
 	}
 
 	//Staging buffer
@@ -520,10 +489,10 @@ void Zodiac::Renderer::PrepareUniformBuffers() {
 	}
 }
 
-void Zodiac::Renderer::UpdateMeshAlignment() {
+void Zodiac::Renderer::UpdateMeshAlignment(Scene& scene) {
 	//VkDeviceSize Alignment = m_device->GetPhysicalDevice()->GetDeviceProperties().limits.minStorageBufferOffsetAlignment;
 
-	size_t NumSubmeshes = m_scene.GetSceneMeshCount();
+	size_t NumSubmeshes = scene.GetSceneMeshCount();
 
 	m_meshAlignmentData.resize(NumSubmeshes);
 
@@ -532,25 +501,25 @@ void Zodiac::Renderer::UpdateMeshAlignment() {
 
 	for (int i = 0; i < NumSubmeshes; i++) {
 		m_meshAlignmentData[i].VertexBufferOffset = BaseVertexOffset;
-		m_meshAlignmentData[i].VertexBufferRange = m_scene.GetAllMeshesInScene()[i].GetVertexCount();
+		m_meshAlignmentData[i].VertexBufferRange = scene.GetAllMeshesInScene()[i].GetVertexCount();
 
 		BaseVertexOffset += m_meshAlignmentData[i].VertexBufferRange;
 
 		m_meshAlignmentData[i].IndexBufferOffset = BaseIndexOffset;
-		m_meshAlignmentData[i].IndexBufferRange = m_scene.GetAllMeshesInScene()[i].GetIndexCount();
+		m_meshAlignmentData[i].IndexBufferRange = scene.GetAllMeshesInScene()[i].GetIndexCount();
 
 		BaseIndexOffset += m_meshAlignmentData[i].IndexBufferRange;
 	}
 }
 
-void Zodiac::Renderer::CreateMetaDataBuffer() {
-	uint32_t meshCount = m_scene.GetSceneMeshCount();
+void Zodiac::Renderer::CreateMetaDataBuffer(Scene& scene) {
+	uint32_t meshCount = scene.GetSceneMeshCount();
 
 	std::vector<MeshMetaData> MetaData(meshCount);
 
 	for (uint32_t i = 0; i < meshCount; i++) {
 		MetaData[i].BaseIndex = m_meshAlignmentData[i].IndexBufferOffset;
-		MetaData[i].IndexCount = m_scene.GetAllMeshesInScene()[i].GetIndexCount();
+		MetaData[i].IndexCount = scene.GetAllMeshesInScene()[i].GetIndexCount();
 		MetaData[i].BaseVertex = m_meshAlignmentData[i].VertexBufferOffset;
 	}
 
@@ -565,13 +534,13 @@ void Zodiac::Renderer::CreateMetaDataBuffer() {
 	m_metaDataBuffer->UnmapMemory();
 }
 
-void Zodiac::Renderer::CreateIndirectBuffer() {
-	uint32_t meshCount = m_scene.GetSceneMeshCount();
+void Zodiac::Renderer::CreateIndirectBuffer(Scene& scene) {
+	uint32_t meshCount = scene.GetSceneMeshCount();
 	std::vector<VkDrawIndirectCommand> drawCommands(meshCount);
 
 	for (uint32_t i = 0; i < meshCount; i++) {
 		VkDrawIndirectCommand cmd = {
-		.vertexCount = m_scene.GetAllMeshesInScene()[i].GetIndexCount(),
+		.vertexCount = scene.GetAllMeshesInScene()[i].GetIndexCount(),
 		.instanceCount = 1,
 		.firstVertex = 0,
 		.firstInstance = i
@@ -587,8 +556,8 @@ void Zodiac::Renderer::CreateIndirectBuffer() {
 	m_indirectBuffer->UnmapMemory();
 }
 
-void Zodiac::Renderer::CreatePerInstanceBuffer() {
-	uint32_t meshCount = m_scene.GetSceneMeshCount();
+void Zodiac::Renderer::CreatePerInstanceBuffer(const Scene& scene) {
+	uint32_t meshCount = scene.GetSceneMeshCount();
 
 	m_perInstanceBuffer.resize(MAX_FRAMES_IN_FLIGHT);
 	for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
@@ -745,14 +714,14 @@ void Zodiac::Renderer::AllocateCommandBuffers() {
 	m_device->GetGraphicsCommand(m_drawCmdBuffers.data(), MAX_FRAMES_IN_FLIGHT); //Allocates buffers
 }
 
-void Zodiac::Renderer::RecordCommandBuffer(uint32_t currentframe, int32_t index, bool secondBarrier) {
-	vkResetCommandBuffer(m_drawCmdBuffers[currentframe], 0);
+void Zodiac::Renderer::RecordCommandBuffer(std::vector<VkCommandBuffer>& commandBuffers, uint32_t currentframe, int32_t index, RenderContext& renderContext, bool secondBarrier) {
+	vkResetCommandBuffer(commandBuffers[currentframe], 0);
 
 	VkCommandBufferBeginInfo commandBufferBeginInfo = Initializers::CommandBufferBeginInfo(VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT); //Valid for re-recording the command buffer every frame
 	VkRenderPassBeginInfo renderPassBeginInfo = Initializers::RenderPassBeginInfo(m_renderPass, m_swapchain->GetExtent2D(), m_clearValues, 2);
 
 	renderPassBeginInfo.framebuffer = m_framebuffers[index];
-	ErrorCheck(vkBeginCommandBuffer(m_drawCmdBuffers[currentframe], &commandBufferBeginInfo));
+	ErrorCheck(vkBeginCommandBuffer(commandBuffers[currentframe], &commandBufferBeginInfo));
 
 	VkImageMemoryBarrier barrier{};
 	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -769,9 +738,9 @@ void Zodiac::Renderer::RecordCommandBuffer(uint32_t currentframe, int32_t index,
 	barrier.srcAccessMask = 0;
 	barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-	vkCmdPipelineBarrier(m_drawCmdBuffers[currentframe], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+	vkCmdPipelineBarrier(commandBuffers[currentframe], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
-	vkCmdBeginRenderPass(m_drawCmdBuffers[currentframe], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+	vkCmdBeginRenderPass(commandBuffers[currentframe], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
 	// Update dynamic viewport state
 	VkViewport viewport = {};
@@ -779,23 +748,23 @@ void Zodiac::Renderer::RecordCommandBuffer(uint32_t currentframe, int32_t index,
 	viewport.height = (float)m_swapchain->GetExtent2D().height;
 	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
-	vkCmdSetViewport(m_drawCmdBuffers[currentframe], 0, 1, &viewport);
+	vkCmdSetViewport(commandBuffers[currentframe], 0, 1, &viewport);
 	// Update dynamic scissor state
 	VkRect2D scissor = {};
 	scissor.extent = m_swapchain->GetExtent2D();
 	scissor.offset.x = 0;
 	scissor.offset.y = 0;
-	vkCmdSetScissor(m_drawCmdBuffers[currentframe], 0, 1, &scissor);
+	vkCmdSetScissor(commandBuffers[currentframe], 0, 1, &scissor);
 
 	// Bind descriptor sets describing shader binding points
-	vkCmdBindDescriptorSets(m_drawCmdBuffers[currentframe], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, m_descriptorSets[currentframe].size(), m_descriptorSets[currentframe].data(), 0, nullptr);
+	vkCmdBindDescriptorSets(commandBuffers[currentframe], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipelineLayout, 0, m_descriptorSets[currentframe].size(), m_descriptorSets[currentframe].data(), 0, nullptr);
 
 	//vkCmdBindIndexBuffer(m_drawCmdBuffers[index], m_indexBuffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
 
-	vkCmdBindPipeline(m_drawCmdBuffers[currentframe], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
-	vkCmdDrawIndirect(m_drawCmdBuffers[currentframe], m_indirectBuffer->GetBuffer(), 0, m_scene.GetSceneMeshCount(), sizeof(VkDrawIndirectCommand));
+	vkCmdBindPipeline(commandBuffers[currentframe], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
+	vkCmdDrawIndirect(commandBuffers[currentframe], m_indirectBuffer->GetBuffer(), 0, renderContext.scene->GetSceneMeshCount(), sizeof(VkDrawIndirectCommand));
 
-	vkCmdEndRenderPass(m_drawCmdBuffers[currentframe]);
+	vkCmdEndRenderPass(commandBuffers[currentframe]);
 
 	//This barrier should only be used without imgui, so it's disabled for now
 	if (secondBarrier) {
@@ -814,10 +783,10 @@ void Zodiac::Renderer::RecordCommandBuffer(uint32_t currentframe, int32_t index,
 		barrier.srcAccessMask = 0;
 		barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-		vkCmdPipelineBarrier(m_drawCmdBuffers[currentframe], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+		vkCmdPipelineBarrier(commandBuffers[currentframe], VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 	}
 
-	ErrorCheck(vkEndCommandBuffer(m_drawCmdBuffers[currentframe]));
+	ErrorCheck(vkEndCommandBuffer(commandBuffers[currentframe]));
 }
 
 void Zodiac::Renderer::RecreateSwapChain()
@@ -896,16 +865,16 @@ void Zodiac::Renderer::UpdateUniformBuffers(uint32_t currentImage, float dt, Cam
 	m_uniformBuffer[currentImage]->UnmapMemory();
 }
 
-void Zodiac::Renderer::UpdatePerFrameData(uint32_t currentImage, float dt, Camera* mainCamera)
+void Zodiac::Renderer::UpdatePerFrameData(uint32_t currentImage, float dt, RenderContext& renderContext)
 {
-	UpdateUniformBuffers(currentImage, dt, mainCamera);
+	UpdateUniformBuffers(currentImage, dt, renderContext.camera);
 
-	uint32_t meshCount = m_scene.GetSceneMeshCount();
+	uint32_t meshCount = renderContext.scene->GetSceneMeshCount();
 	std::vector<PerInstanceData> perInstanceData(meshCount);
 
 	for (uint32_t i = 0; i < meshCount; i++) {
-		perInstanceData[i].modelMatrix = m_scene.GetAllMeshesInScene()[i].GetModelMatrix();
-		perInstanceData[i].normalMatrix = m_scene.GetAllMeshesInScene()[i].GetNormalMatrix();
+		perInstanceData[i].modelMatrix = renderContext.scene->GetAllMeshesInScene()[i].GetModelMatrix();
+		perInstanceData[i].normalMatrix = renderContext.scene->GetAllMeshesInScene()[i].GetNormalMatrix();
 	}
 
 	m_perInstanceBuffer[currentImage]->p_descriptor.buffer = m_perInstanceBuffer[currentImage]->GetBuffer();
@@ -972,4 +941,12 @@ void Zodiac::Renderer::SetClearColor(const glm::vec4 color) {
 void Zodiac::Renderer::SetSwapchainDirty()
 {
 	m_swapchainDirty = true;
+}
+
+void Zodiac::Renderer::PrepareBuffersFromScene(Scene& scene) {
+	SetupVertexBuffers(scene);
+	UpdateMeshAlignment(scene);
+	CreateMetaDataBuffer(scene);
+	CreateIndirectBuffer(scene);
+	CreatePerInstanceBuffer(scene);
 }

@@ -38,7 +38,7 @@ void Zodiac::ImGuiLayer::Shutdown()
 	vkDestroyDescriptorPool(*s_device->GetDevice(), s_descriptorPool, NULL);
 }
 
-void Zodiac::ImGuiLayer::UpdateGUI(Camera* camera) {
+void Zodiac::ImGuiLayer::UpdateGUI(RenderContext& renderContext) {
 	ImGuiIO& io = ImGui::GetIO();
 
 	// Start the Dear ImGui frame
@@ -48,7 +48,7 @@ void Zodiac::ImGuiLayer::UpdateGUI(Camera* camera) {
 
 	Renderer& renderer = Renderer::Get();
 	Settings& settings = renderer.GetSettings();
-	PerspectiveCamera* cam = static_cast<PerspectiveCamera*>(camera);
+	PerspectiveCamera* cam = static_cast<PerspectiveCamera*>(renderContext.camera);
 
 	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
 	if (m_showDemoWindow) {
@@ -87,10 +87,10 @@ void Zodiac::ImGuiLayer::UpdateGUI(Camera* camera) {
 		ImGui::Text("counter = %d", counter);
 
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-		ImGui::Text("Models: %d", renderer.m_scene.GetModelCount());
-		ImGui::Text("Meshes: %d", renderer.m_scene.GetSceneMeshCount());
-		ImGui::Text("Triangles: %d", renderer.m_scene.GetSceneTriangleCount());
-		ImGui::Text("Vertices: %d", renderer.m_scene.GetSceneVertexCount());
+		ImGui::Text("Models: %d", renderContext.scene->GetModelCount());
+		ImGui::Text("Meshes: %d", renderContext.scene->GetSceneMeshCount());
+		ImGui::Text("Triangles: %d", renderContext.scene->GetSceneTriangleCount());
+		ImGui::Text("Vertices: %d", renderContext.scene->GetSceneVertexCount());
 
 		ImGui::End();
 	}

@@ -1,6 +1,7 @@
 #pragma once
 #include "Model.h"
 #include <entt/entt.hpp>
+#include "MeshImporter.h"
 
 namespace Zodiac {
 	class Scene {
@@ -8,6 +9,7 @@ namespace Zodiac {
 		Scene();
 		~Scene();
 
+		void Init();
 		void Update(float dt);
 
 		void FlattenMeshes(); //TODO: Find an improved solution later
@@ -26,6 +28,8 @@ namespace Zodiac {
 
 	private:
 		std::vector<Mesh> m_flattenedMeshes;
+
+		MeshImporter m_meshImporter; //For testing purposes. Should be moved later
 
 		std::vector<Model> m_models;
 		entt::registry m_registry;

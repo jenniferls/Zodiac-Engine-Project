@@ -7,6 +7,7 @@
 
 #include "Window.h"
 #include "Camera.h"
+#include "RenderContext.h"
 
 namespace Zodiac {
 	class ImGuiLayer {
@@ -18,7 +19,7 @@ namespace Zodiac {
 		static void Shutdown();
 
 		bool Init(GLFWwindow* window, VulkanDevice* device, VulkanInstance* instance);
-		void UpdateGUI(Camera* camera);
+		void UpdateGUI(RenderContext& renderContext);
 		VkCommandBuffer PrepareCommandBuffer(uint32_t currentFrame, int image);
 
 		bool HasBeenInitialized() const { return m_initialized; }

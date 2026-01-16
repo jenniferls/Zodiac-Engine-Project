@@ -34,12 +34,20 @@ Zodiac::System::~System() {
 bool Zodiac::System::Init() {
 	InitVulkan();
 
+	Renderer::Get().Init(m_device, m_settings, m_surface, m_instance, m_window.get(), m_fileWatcher);
+
+	m_mainCamera = new PerspectiveCamera(60.0f, (float)m_window->GetWidth() / (float)m_window->GetHeight(), 0.1f, 100.0f);
+	m_scene.Init();
+	//Set up render context, should be refactored later
+	m_renderContext.scene = &m_scene;
+	m_renderContext.camera = m_mainCamera;
+
+	Renderer::Get().PrepareForScene(m_scene);
+
 	m_window->SetRenderer(&Renderer::Get());
 	m_window->SetInputHandler(m_inputHandler.get());
 
 	std::cout << "Selected physical device: " << m_physical_device->GetDeviceProperties().deviceName << std::endl;
-
-	m_mainCamera = new PerspectiveCamera(60.0f, (float)m_window->GetWidth() / (float)m_window->GetHeight(), 0.1f, 100.0f);
 
 	/////// Tests ///////
 	//VkCommandBuffer* commands = new VkCommandBuffer[3]; //Command buffers test
@@ -73,11 +81,11 @@ void Zodiac::System::Run() {
 		if (!renderer.m_prepared) {
 			return;
 		}
-		renderer.Draw(m_clock.GetDeltaTime(), m_mainCamera);
+		renderer.Draw(m_clock.GetDeltaTime(), m_renderContext);
 	}
 	vkDeviceWaitIdle(*m_device->GetDevice()); //Test
 
-	Renderer::Get().Shutdown();
+	renderer.Shutdown();
 	m_window->Shutdown();
 }
 
@@ -96,8 +104,6 @@ bool Zodiac::System::InitVulkan() {
 	m_physical_device = Zodiac::VulkanPhysicalDevice::GetPhysicalDevice(m_instance);
 	m_device = new Zodiac::VulkanDevice(m_instance, m_physical_device);
 	m_surface = new Zodiac::VulkanSurface(m_instance, m_physical_device, m_window->GetNativeWindow());
-
-	Zodiac::Renderer::Get().Init(m_device, m_settings, m_surface, m_instance, m_window.get(), m_fileWatcher);
 
 	return true;
 }
