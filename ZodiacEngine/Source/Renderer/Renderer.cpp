@@ -60,10 +60,6 @@ void Zodiac::Renderer::Draw(float dt, RenderContext& renderContext) {
 	uint32_t imageIndex;
 	VkResult res = vkAcquireNextImageKHR(*m_device->GetDevice(), *m_swapchain->GetSwapchain(), UINT64_MAX, m_presentSemaphores[m_currentFrame]->GetSemaphore(), VK_NULL_HANDLE, &imageIndex);
 
-	//Temporarily update scene here
-	renderContext.scene->Update(dt);
-	//m_scene.Update(dt);
-
 	UpdatePerFrameData(m_currentFrame, dt, renderContext);
 
 	if (res == VK_ERROR_OUT_OF_DATE_KHR) {

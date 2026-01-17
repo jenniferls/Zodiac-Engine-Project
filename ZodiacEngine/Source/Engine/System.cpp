@@ -76,6 +76,7 @@ void Zodiac::System::Run() {
 	while (!m_window->WindowShouldClose()) {
 		m_clock.Tick();
 		m_mainCamera->Update(m_clock.GetDeltaTime(), m_inputHandler->GetCameraMovement(), m_inputHandler->GetMouseState());
+		m_scene.Update(m_clock.GetDeltaTime());
 		m_fileWatcher.Poll();
 		m_window->PollWindowEvents();
 		if (!renderer.m_prepared) {
