@@ -116,6 +116,7 @@ Zodiac::ShaderCompiler::ShaderCompiler() {
 	SlangCreateGlobalSession();
 	AddDefaultTarget();
 	AddDefaultOptions();
+	m_searchPaths.push_back(SHADERS_DIR);
 }
 
 bool Zodiac::ShaderCompiler::CompileShader() {

@@ -1,8 +1,7 @@
 #include "Zodiacpch.h"
 #include "FileWatcher.h"
 
-void Zodiac::FileWatcher::WatchFile(const std::string& filePath)
-{
+void Zodiac::FileWatcher::WatchFile(const std::string& filePath) {
 	if (!std::filesystem::exists(filePath) ) {
 	std::cout << "FileWatcher: File does not exist: " << filePath << std::endl;
 		return;
@@ -15,8 +14,7 @@ void Zodiac::FileWatcher::WatchFile(const std::string& filePath)
 	std::cout << "FileWatcher: Now watching file: " << filePath << std::endl;
 }
 
-bool Zodiac::FileWatcher::Poll()
-{
+bool Zodiac::FileWatcher::Poll() {
 	bool filesChanged = false;
 
 	for (auto& it : m_files) {
@@ -38,14 +36,17 @@ bool Zodiac::FileWatcher::Poll()
 	return filesChanged;
 }
 
-bool Zodiac::FileWatcher::HasFileChanged(const std::string& filePath)
-{
+bool Zodiac::FileWatcher::HasFileChanged(const std::string& filePath) {
 	auto it = m_files.find(filePath);
 	return it != m_files.end() && it->second.changed;
 }
 
-void Zodiac::FileWatcher::ResetFlags()
-{
+bool Zodiac::FileWatcher::HasFilesChanged() {
+	//TODO: Implement
+	return false;
+}
+
+void Zodiac::FileWatcher::ResetFlags() {
 	for (auto& keyValue : m_files) {
 		keyValue.second.changed = false;
 	}

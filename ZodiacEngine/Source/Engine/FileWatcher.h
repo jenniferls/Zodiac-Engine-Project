@@ -11,6 +11,7 @@ namespace Zodiac {
 		void WatchFile(const std::string& filePath);
 		bool Poll();
 		bool HasFileChanged(const std::string& filePath);
+		bool HasFilesChanged();
 		void ResetFlags();
 
 	private:
