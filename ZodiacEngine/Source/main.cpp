@@ -8,7 +8,9 @@
 Zodiac::System sys("Sandbox");
 
 int main(int argc, char **argv) {
+#ifdef _WIN32
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF); //Debug memory leaks
+#endif
 	std::cout << ">>>> Initializing Zodiac Engine <<<<" << std::endl;
 	if (sys.Init()) {
 		std::cout << "Zodiac Initialization successful!" << std::endl;

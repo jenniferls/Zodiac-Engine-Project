@@ -1,7 +1,9 @@
 #pragma once
 
 #define NOMINMAX
-#include <windows.h>
+#ifdef _WIN32
+    #include <windows.h>
+#endif
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO

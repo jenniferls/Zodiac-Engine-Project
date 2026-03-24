@@ -2,9 +2,9 @@ project(ZodiacEngine LANGUAGES CXX)
 
 # Get any stray source files
 file(GLOB_RECURSE ENGINE_SOURCES
-	"${CMAKE_CURRENT_SOURCE_DIR}/*.cpp"
-	"${CMAKE_CURRENT_SOURCE_DIR}/*.h"
-	"${CMAKE_CURRENT_SOURCE_DIR}/*.hpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Source/*.cpp"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Source/*.h"
+	"${CMAKE_CURRENT_SOURCE_DIR}/Source/*.hpp"
 )
 
 # Automatically create Visual Studio filters based on folder + file type
@@ -31,7 +31,7 @@ endforeach()
 add_executable(${PROJECT_NAME} ${ENGINE_SOURCES})
 
 # Precompiled header
-target_precompile_headers(ZodiacEngine
+target_precompile_headers(${PROJECT_NAME}
 	PRIVATE
 		"${CMAKE_CURRENT_SOURCE_DIR}/Source/Engine/Zodiacpch.h"
 )
@@ -60,30 +60,64 @@ target_include_directories(${PROJECT_NAME}
 		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/entt
 		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/SPIRV-Reflect
 		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/slang/include
-		"$ENV{VULKAN_SDK}/Include"
 	PRIVATE
-		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/GLFW/lib-vc2015
 		${Vulkan_INCLUDE_DIRS}
 )
 
-# Set GLFW path
-set(GLFW_LIB ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/GLFW/lib-vc2015/glfw3.lib)
+# GLFW
+add_library(glfw UNKNOWN IMPORTED)
 
-target_link_directories(${PROJECT_NAME}
-	PRIVATE
-		${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/slang/lib
-)
+if(WIN32)
+    set_target_properties(glfw PROPERTIES
+        IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/GLFW/lib-vc2015/glfw3.lib"
+        INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/GLFW/include"
+    )
+elseif(APPLE)
+    set_target_properties(glfw PROPERTIES
+        IMPORTED_LOCATION "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/GLFW/lib-universal/libglfw.3.dylib"
+        INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/GLFW/include"
+    )
+endif()
+
+if(WIN32)
+    target_link_directories(${PROJECT_NAME}
+        PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/slang/lib
+    )
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/slang/lib/slang.lib"
+    )
+elseif(APPLE)
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/slang/lib/libslang-compiler.0.2026.4.2.dylib"
+    )
+endif()
 
 # Assimp
-add_library(assimp SHARED IMPORTED)
-
-set_target_properties(assimp PROPERTIES
-	IMPORTED_IMPLIB
-		"${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/lib/x64/assimp-vc143-mt.lib"
-	IMPORTED_LOCATION
-		"${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/lib/x64/assimp-vc143-mt.dll"
-	INTERFACE_INCLUDE_DIRECTORIES
-		"${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/include"
+    add_library(assimp SHARED IMPORTED)
+if(WIN32)
+    set_target_properties(assimp PROPERTIES
+        IMPORTED_IMPLIB
+            "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/lib/x64/assimp-vc143-mt.lib"
+        IMPORTED_LOCATION
+            "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/lib/x64/assimp-vc143-mt.dll"
+        INTERFACE_INCLUDE_DIRECTORIES
+            "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/include"
+    )
+elseif(APPLE)
+    set_target_properties(assimp PROPERTIES
+        IMPORTED_IMPLIB
+            "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/lib/arm64/libassimp.6.dylib"
+        IMPORTED_LOCATION
+            "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/lib/arm64/libassimp.6.dylib"
+        INTERFACE_INCLUDE_DIRECTORIES
+            "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/include"
+    )
+endif()
+    
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+        assimp
 )
 
 target_compile_definitions(${PROJECT_NAME}
@@ -94,11 +128,17 @@ target_compile_definitions(${PROJECT_NAME}
 # Link libraries
 target_link_libraries(${PROJECT_NAME}
 		PRIVATE
-			${Vulkan_LIBRARIES}
-			${GLFW_LIB}
-			slang.lib
-			assimp
+            glfw
+			Vulkan::Vulkan
 )
+
+if(APPLE)
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        "-framework Cocoa"
+        "-framework Metal"
+        "-framework QuartzCore"
+    )
+endif()
 
 # ImGui
 set(IMGUI_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/imgui)
@@ -109,37 +149,43 @@ add_library(ImGui STATIC ${IMGUI_SOURCES})
 target_include_directories(ImGui PUBLIC
 	${IMGUI_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/GLFW/include
-	"$ENV{VULKAN_SDK}/Include"
+)
+target_link_libraries(ImGui PRIVATE Vulkan::Vulkan)
+target_sources(ImGui PRIVATE
+    ${IMGUI_DIR}/imgui_impl_vulkan.cpp
+    ${IMGUI_DIR}/imgui_impl_glfw.cpp
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE ImGui)
 
 # Post-build, copy shaders and resources
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different
-		"${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/Slang/bin/slang.dll"
-		"$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different
-		"${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/Slang/bin/slang-compiler.dll"
-		"$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different
-		"${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/Slang/bin/slangc.pdb"
-		"$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different
-		"${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/Slang/bin/slang-compiler.pdb"
-		"$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-)
+if(WIN32)
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/Slang/bin/slang.dll"
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/Slang/bin/slang-compiler.dll"
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/Slang/bin/slangc.pdb"
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/Slang/bin/slang-compiler.pdb"
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+    )
 
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_directory
-		"${CMAKE_SOURCE_DIR}/ZodiacEngine/Shaders"
-		"$<TARGET_FILE_DIR:${PROJECT_NAME}>/Shaders"
-	COMMAND ${CMAKE_COMMAND} -E copy_directory
-		"${CMAKE_SOURCE_DIR}/ZodiacEngine/Resources"
-		"$<TARGET_FILE_DIR:${PROJECT_NAME}>/Resources"
-)
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/ZodiacEngine/Shaders"
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>/Shaders"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_SOURCE_DIR}/ZodiacEngine/Resources"
+            "$<TARGET_FILE_DIR:${PROJECT_NAME}>/Resources"
+    )
 
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-	COMMAND ${CMAKE_COMMAND} -E copy_if_different
-	"${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/lib/x64/assimp-vc143-mt.dll"
-	"$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-)
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/lib/x64/assimp-vc143-mt.dll"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+    )
+endif()

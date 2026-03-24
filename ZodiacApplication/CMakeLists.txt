@@ -7,30 +7,46 @@ file(GLOB_RECURSE APP_SOURCES
 
 add_executable(${PROJECT_NAME} ${APP_SOURCES})
 
+# Find vulkan package
+find_package(Vulkan REQUIRED)
+
 # Include the engine headers
 target_include_directories(${PROJECT_NAME} PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/Zodiac/include
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE
-	${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/Zodiac/lib/ZodiacEngine.lib
-)
+# Eventually build for mac as well
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/Zodiac/lib/ZodiacEngine.lib
+    )
+endif()
 
 # For now since the engine is build as an executable
 target_include_directories(${PROJECT_NAME}
 	PRIVATE
 		${CMAKE_CURRENT_SOURCE_DIR}/../ZodiacEngine/Dependencies/GLFW/include
 		${CMAKE_CURRENT_SOURCE_DIR}/../ZodiacEngine/Dependencies/glm
-		$ENV{VULKAN_SDK}/Include
 )
 
 link_directories(${CMAKE_CURRENT_SOURCE_DIR}/../ZodiacEngine/Dependencies/GLFW/lib-vc2015)
 
 target_link_libraries(${PROJECT_NAME}
-	PRIVATE
-		${CMAKE_CURRENT_SOURCE_DIR}/../ZodiacEngine/Dependencies/GLFW/lib-vc2015/glfw3.lib
-		${Vulkan_LIBRARIES}
+    PRIVATE
+        Vulkan::Vulkan
 )
+
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME}
+        PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/../ZodiacEngine/Dependencies/GLFW/lib-vc2015/glfw3.lib
+    )
+elseif(APPLE)
+    set(GLFW_LIB ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/GLFW/lib-universal/libglfw.3.dylib)
+    target_include_directories(${PROJECT_NAME} PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/GLFW/include
+    )
+endif()
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 	COMMAND ${CMAKE_COMMAND} -E copy_directory
