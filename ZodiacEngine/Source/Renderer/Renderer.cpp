@@ -81,13 +81,15 @@ void Zodiac::Renderer::Draw(float dt, RenderContext& renderContext) {
 		VkCommandBuffer commandBuffers[] = { m_drawCmdBuffers[m_currentFrame], imguiCommandBuffer };
 
 		// Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
-		VkSubmitInfo submitInfo = Initializers::SubmitInfo(m_presentSemaphores[m_currentFrame]->GetSemaphore(), m_renderCompleteSemaphores[imageIndex]->GetSemaphore(), &commandBuffers[0], 2, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+        VkPipelineStageFlags flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		VkSubmitInfo submitInfo = Initializers::SubmitInfo(m_presentSemaphores[m_currentFrame]->GetSemaphore(), m_renderCompleteSemaphores[imageIndex]->GetSemaphore(), &commandBuffers[0], 2, &flags);
 		ErrorCheck(vkQueueSubmit(*m_device->GetGraphicsQueue(), 1, &submitInfo, m_imagesInFlightFences[m_currentFrame]->p_fence));
 	}
 	else {
 		RecordCommandBuffer(m_drawCmdBuffers, m_currentFrame, imageIndex, renderContext, true);
 		//Pipeline stage at which the queue submission will wait (via pWaitSemaphores)
-		VkSubmitInfo submitInfo = Initializers::SubmitInfo(m_presentSemaphores[m_currentFrame]->GetSemaphore(), m_renderCompleteSemaphores[imageIndex]->GetSemaphore(), &m_drawCmdBuffers[m_currentFrame], 1, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+        VkPipelineStageFlags flags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		VkSubmitInfo submitInfo = Initializers::SubmitInfo(m_presentSemaphores[m_currentFrame]->GetSemaphore(), m_renderCompleteSemaphores[imageIndex]->GetSemaphore(), &m_drawCmdBuffers[m_currentFrame], 1, &flags);
 		ErrorCheck(vkQueueSubmit(*m_device->GetGraphicsQueue(), 1, &submitInfo, m_imagesInFlightFences[m_currentFrame]->p_fence));
 	}
 
