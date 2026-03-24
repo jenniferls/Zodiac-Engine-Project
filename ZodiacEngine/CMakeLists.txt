@@ -95,7 +95,7 @@ endif()
 
 # Assimp
     add_library(assimp SHARED IMPORTED)
-if(WIN_32)
+if(WIN32)
     set_target_properties(assimp PROPERTIES
         IMPORTED_IMPLIB
             "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/lib/x64/assimp-vc143-mt.lib"
@@ -158,7 +158,7 @@ target_sources(ImGui PRIVATE
 target_link_libraries(${PROJECT_NAME} PRIVATE ImGui)
 
 # Post-build, copy shaders and resources
-if(WIN_32)
+if(WIN32)
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/Slang/bin/slang.dll"
