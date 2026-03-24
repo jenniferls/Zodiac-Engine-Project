@@ -8,7 +8,9 @@ Zodiac::VulkanInstance::VulkanInstance(VulkanConfiguration& config, const char**
 	//m_layers.push_back("VK_LAYER_RENDERDOC_Capture");
 	//m_layers.push_back("VK_LAYER_LUNARG_assistant_layer");
 	//m_layers.push_back("VK_LAYER_LUNARG_api_dump"); //Detailed information about API calls, their parameters and values
+#ifdef _WIN32 //TODO: Enumerate and query compatible layers
 	m_layers.push_back("VK_LAYER_LUNARG_monitor"); //For printing fps to window title bar
+#endif
 	m_extensions.push_back("VK_EXT_debug_utils");
 	//m_extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME); //Already in glfwExtensions
 
