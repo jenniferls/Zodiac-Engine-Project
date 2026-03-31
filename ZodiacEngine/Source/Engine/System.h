@@ -26,6 +26,7 @@ namespace Zodiac {
 
 		bool Init();
 		void Run();
+        void Shutdown();
 
 		void SetVSync(bool vsync);
 		void SetFullscreen(bool fullscreen);

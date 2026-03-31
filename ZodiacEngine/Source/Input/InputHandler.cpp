@@ -1,5 +1,5 @@
-#include "InputHandler.h"
 #pragma once
+#include "InputHandler.h"
 
 namespace Zodiac {
 	Zodiac::InputHandler::InputHandler() {

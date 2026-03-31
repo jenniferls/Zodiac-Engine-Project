@@ -19,17 +19,7 @@ Zodiac::System::System(const char* applicationName) {
 }
 
 Zodiac::System::~System() {
-	delete m_mainCamera;
 
-	delete m_buffer;
-	delete m_device;
-
-	delete m_surface; //Has to be deleted after swapchains associated to it
-
-	delete m_physical_device;
-	delete m_instance;
-
-	//system("pause"); //Debug
 }
 
 bool Zodiac::System::Init() {
@@ -89,6 +79,21 @@ void Zodiac::System::Run() {
 
 	renderer.Shutdown();
 	m_window->Shutdown();
+    Shutdown();
+}
+
+void Zodiac::System::Shutdown(){
+    delete m_mainCamera;
+
+    delete m_buffer;
+    delete m_device;
+    
+    delete m_surface; //Has to be deleted after swapchains associated to it
+
+    delete m_physical_device;
+    delete m_instance;
+
+    //system("pause"); //Debug
 }
 
 void Zodiac::System::SetVSync(bool vsync)
