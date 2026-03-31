@@ -136,7 +136,7 @@ namespace Zodiac {
 		std::vector<VulkanSemaphore*> m_presentSemaphores;
 		std::vector<VulkanSemaphore*> m_renderCompleteSemaphores;
 		std::vector<VulkanFence*> m_imagesInFlightFences;
-		size_t m_currentFrame = 0;
+		uint32_t m_currentFrame = 0;
 
 		//Global buffers
 		VulkanBuffer* m_vertexBuffer = nullptr;
