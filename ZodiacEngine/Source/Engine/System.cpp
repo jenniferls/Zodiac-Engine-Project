@@ -19,12 +19,13 @@ Zodiac::System::System(const char* applicationName) {
 }
 
 Zodiac::System::~System() {
-	delete m_surface; //Has to be deleted after swapchains associated to it
-
 	delete m_mainCamera;
 
 	delete m_buffer;
 	delete m_device;
+
+	delete m_surface; //Has to be deleted after swapchains associated to it
+
 	delete m_physical_device;
 	delete m_instance;
 
