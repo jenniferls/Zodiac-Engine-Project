@@ -29,9 +29,8 @@ Zodiac::ImGuiLayer* Zodiac::ImGuiLayer::Create() {
 	return new ImGuiLayer();
 }
 
-void Zodiac::ImGuiLayer::Shutdown()
-{
-	s_device->FreeCommandBuffers(s_command_buffers.size(), s_command_buffers.data());
+void Zodiac::ImGuiLayer::Shutdown(){
+	s_device->FreeCommandBuffers(static_cast<uint32_t>(s_command_buffers.size()), s_command_buffers.data());
 	ImGui_ImplVulkan_Shutdown();
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
