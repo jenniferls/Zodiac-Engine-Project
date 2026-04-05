@@ -2,6 +2,7 @@
 #include "Model.h"
 #include <entt/entt.hpp>
 #include "MeshImporter.h"
+#include "TextureImporter.h"
 
 namespace Zodiac {
 	class Scene {
@@ -30,6 +31,7 @@ namespace Zodiac {
 		std::vector<Mesh> m_flattenedMeshes;
 
 		MeshImporter m_meshImporter; //For testing purposes. Should be moved later
+		TextureImporter m_textureImporter; //For testing purposes. Should be moved later
 
 		std::vector<Model> m_models;
 		entt::registry m_registry;

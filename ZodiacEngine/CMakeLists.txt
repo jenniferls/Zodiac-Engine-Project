@@ -125,11 +125,25 @@ target_compile_definitions(${PROJECT_NAME}
 		ASSIMP_BUILD_NO_EXPORT
 )
 
+# KTX
+add_library(ktx UNKNOWN IMPORTED)
+
+if(WIN32)
+    set_target_properties(ktx PROPERTIES
+            IMPORTED_LOCATION
+                "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/libktx/lib/ktx.lib"
+            INTERFACE_INCLUDE_DIRECTORIES
+                "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/libktx/include"
+    )
+#elseif(APPLE)
+endif()
+
 # Link libraries
 target_link_libraries(${PROJECT_NAME}
 		PRIVATE
             glfw
 			Vulkan::Vulkan
+            ktx
 )
 
 if(APPLE)
@@ -186,6 +200,10 @@ if(WIN32)
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/assimp/lib/x64/assimp-vc143-mt.dll"
+        "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/libktx/bin/ktx.dll"
         "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
     )
 endif()

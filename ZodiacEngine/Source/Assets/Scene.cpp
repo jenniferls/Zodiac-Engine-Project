@@ -38,6 +38,8 @@ void Zodiac::Scene::Init() {
 	}
 
 	FlattenMeshes();
+
+	m_textureImporter.LoadTexture((std::string(TEXTURE_DIR) + "/default.ktx2").c_str()); //Test
 }
 
 void Zodiac::Scene::Update(float dt) {

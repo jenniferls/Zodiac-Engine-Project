@@ -19,7 +19,9 @@ endif()
 target_compile_definitions(${PROJECT_NAME}
 	PRIVATE
 		$<$<CONFIG:Debug>:SHADERS_DIR="${CMAKE_SOURCE_DIR}/ZodiacEngine/Shaders">
+		$<$<CONFIG:Debug>:TEXTURE_DIR="${CMAKE_SOURCE_DIR}/ZodiacEngine/Resources/Textures">
 		$<$<NOT:$<CONFIG:Debug>>:SHADERS_DIR="$<TARGET_FILE_DIR:${PROJECT_NAME}>/Shaders">
+		$<$<NOT:$<CONFIG:Debug>>:TEXTURE_DIR="$<TARGET_FILE_DIR:${PROJECT_NAME}>/Resources/Textures">
 		IMPORT_MODELS_DIR="${CMAKE_SOURCE_DIR}/ZodiacEngine/Resources/Models/Import"
 )
 
