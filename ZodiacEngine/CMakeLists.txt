@@ -135,7 +135,13 @@ if(WIN32)
             INTERFACE_INCLUDE_DIRECTORIES
                 "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/libktx/include"
     )
-#elseif(APPLE)
+elseif(APPLE)
+    set_target_properties(ktx PROPERTIES
+            IMPORTED_LOCATION
+                "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/libktx/lib/libktx.4.4.2.dylib"
+            INTERFACE_INCLUDE_DIRECTORIES
+                "${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/libktx/include"
+    )
 endif()
 
 # Link libraries
