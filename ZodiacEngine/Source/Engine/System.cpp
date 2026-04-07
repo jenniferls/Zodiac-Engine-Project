@@ -75,7 +75,7 @@ void Zodiac::System::Run() {
 		}
 		renderer.Draw(m_clock.GetDeltaTime(), m_renderContext);
 	}
-	vkDeviceWaitIdle(*m_device->GetDevice()); //Test
+	vkDeviceWaitIdle(*m_device->GetDevice()); //System should not technically access vulkan directly, but we need to wait before we initialize shutdown.
 
 	renderer.Shutdown();
 	m_window->Shutdown();
@@ -92,8 +92,6 @@ void Zodiac::System::Shutdown(){
 
     delete m_physical_device;
     delete m_instance;
-
-    //system("pause"); //Debug
 }
 
 void Zodiac::System::SetVSync(bool vsync)

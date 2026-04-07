@@ -57,7 +57,7 @@ namespace Zodiac {
 		void Init(VulkanDevice* device, Settings settings, VulkanSurface* surface, VulkanInstance* instance, Window* window, FileWatcher& filewatcher);
 		static Renderer& Get();
 
-		void Draw(float dt, RenderContext& renderContext); //Delta time and camera for test purposes
+		void Draw(float dt, RenderContext& renderContext);
 
 		void BeginDynamicRendering(VkCommandBuffer commandBuffer, int imageIndex, VkClearValue* pClearColor, VkClearValue* pDepthValue);
 
