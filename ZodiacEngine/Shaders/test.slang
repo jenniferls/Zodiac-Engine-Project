@@ -14,6 +14,7 @@ struct GeometryData
     uint32_t IndexOffset;
     uint32_t IndexCount;
     uint32_t VertexOffset;
+    uint32_t MaterialOffset;
 };
 
 struct PerInstanceData
@@ -36,7 +37,7 @@ StructuredBuffer<AssembledVertex> VertexBuffer;
 [[vk::binding(1, 1)]]
 StructuredBuffer<uint32_t> IndexBuffer;
 [[vk::binding(2, 1)]]
-StructuredBuffer<GeometryData> geometryData;
+StructuredBuffer<GeometryData> geometryData; //Metadata
 [[vk::binding(3, 1)]]
 StructuredBuffer<PerInstanceData> perInstanceData;
 
@@ -47,6 +48,7 @@ struct OutVertex
     float3 color;
     float2 uv;
     float3 normal;
+    uint materialIndex;
 };
 
 struct VertexStageOutput
@@ -70,6 +72,8 @@ VertexStageOutput vertexMain(uint vertexID: SV_VertexID, uint instanceID: SV_Sta
     uint baseIndex = metaData.IndexOffset;
     uint32_t index = IndexBuffer[baseIndex + vertexID];
 
+    uint materialIndex = metaData.MaterialOffset;
+
     uint baseVertex = metaData.VertexOffset;
     AssembledVertex assembledVertex = VertexBuffer[baseVertex + index];
 
@@ -88,6 +92,7 @@ VertexStageOutput vertexMain(uint vertexID: SV_VertexID, uint instanceID: SV_Sta
     output.outVertex.normal = normalize(mul(matrices.normalMatrix, normal));
     output.outVertex.color = color;
     output.outVertex.uv = uv;
+    output.outVertex.materialIndex = materialIndex;
 
     return output;
 }

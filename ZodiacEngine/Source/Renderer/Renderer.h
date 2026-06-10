@@ -29,6 +29,7 @@ namespace Zodiac {
 		uint32_t BaseIndex;
 		uint32_t IndexCount;
 		uint32_t BaseVertex;
+		uint32_t MaterialIndex;
 	};
 
 	struct PerInstanceData {

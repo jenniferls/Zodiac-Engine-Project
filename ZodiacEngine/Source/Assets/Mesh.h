@@ -31,6 +31,7 @@ namespace Zodiac {
 
 		uint32_t GetVertexCount() const { return static_cast<uint32_t>(m_vertexBuffer.size()); }
 		uint32_t GetIndexCount() const { return static_cast<uint32_t>(m_indices.size()); }
+		uint32_t GetMaterialIndex() const { return m_materialIndex; }
 		const glm::mat4& GetModelMatrix() const { return m_modelMatrix; }
 		const glm::mat3& GetNormalMatrix() const { return m_normalMatrix; }
 
@@ -59,6 +60,7 @@ namespace Zodiac {
 
 		std::vector<SimpleVertex> m_vertexBuffer;
 		std::vector<uint32_t> m_indices;
+		uint32_t m_materialIndex = -1;
 
 		glm::mat4 m_modelMatrix = glm::mat4(1.0f);
 		glm::mat3 m_normalMatrix = glm::mat3(1.0f);

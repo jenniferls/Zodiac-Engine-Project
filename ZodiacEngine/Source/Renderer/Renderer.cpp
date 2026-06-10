@@ -519,6 +519,7 @@ void Zodiac::Renderer::CreateMetaDataBuffer(Scene& scene) {
 		MetaData[i].BaseIndex = m_meshAlignmentData[i].IndexBufferOffset;
 		MetaData[i].IndexCount = scene.GetAllMeshesInScene()[i].GetIndexCount();
 		MetaData[i].BaseVertex = m_meshAlignmentData[i].VertexBufferOffset;
+		MetaData[i].MaterialIndex = scene.GetAllMeshesInScene()[i].GetMaterialIndex();
 	}
 
 	m_metaDataBuffer = new VulkanBuffer(m_device, sizeof(MeshMetaData), meshCount, VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
