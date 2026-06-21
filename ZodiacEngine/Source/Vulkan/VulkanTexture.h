@@ -14,5 +14,6 @@ namespace Zodiac {
         VkDeviceMemory m_deviceMemory = VK_NULL_HANDLE;
         VkImageView m_imageView = VK_NULL_HANDLE;
         VkSampler m_sampler = VK_NULL_HANDLE;
+        VkImageLayout m_imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	};
 }
