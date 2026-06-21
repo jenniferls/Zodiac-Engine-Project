@@ -1,12 +1,15 @@
 #pragma once
+#include "VulkanTexture.h"
 
-class TextureImporter {
-	public:
-	TextureImporter() = default;
-	~TextureImporter() = default;
+namespace Zodiac {
+    class TextureImporter {
+        public:
+        TextureImporter() = default;
+        ~TextureImporter() = default;
 
-	bool LoadTexture(const char* filePath);
+        bool LoadTexture(const char* filePath, VulkanTexture& texture, VulkanDevice* device);
 
-	private:
+        private:
 
-};
+    };
+}

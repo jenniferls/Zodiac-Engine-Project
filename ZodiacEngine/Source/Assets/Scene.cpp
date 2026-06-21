@@ -29,17 +29,17 @@ void Zodiac::Scene::Init() {
 			AddModel(triangleModel);
 		}
 	}
+    
 	GetModel(1).GetMesh(0).SetScale(glm::vec3(0.4f));
 	GetModel(1).GetMesh(0).SetPosition(glm::vec3(0.0f, -0.4f, 0.f));
 	for (uint32_t i = 0; i < GetModelCount(); i++) {
 		for (uint32_t j = 0; j < GetModels()[i].GetMeshCount(); j++) {
 			GetModels()[i].GetMesh(j).SetPosition(GetModels()[i].GetMesh(j).GetPosition() + glm::vec3(i * 1.5f, 0.0f, 0.0f));
+            GetModels()[i].GetMesh(j).SetMaterialIndex(0); //For now index 0 per default for all meshes
 		}
 	}
 
 	FlattenMeshes();
-
-	m_textureImporter.LoadTexture((std::string(TEXTURE_DIR) + "/default.ktx2").c_str()); //Test
 }
 
 void Zodiac::Scene::Update(float dt) {
