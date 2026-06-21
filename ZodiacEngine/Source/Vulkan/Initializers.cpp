@@ -89,21 +89,22 @@ VkImageViewCreateInfo Zodiac::Initializers::ImageViewCreateInfo(VkFormat colorFo
 	return info;
 }
 
-VkImageCreateInfo Zodiac::Initializers::ImageCreateInfo(VkFormat format, VkExtent3D extent, VkImageUsageFlags usageFlags, VkImageType imageType) {
-	VkImageCreateInfo info = {};
+VkImageCreateInfo Zodiac::Initializers::ImageCreateInfo(VkFormat format, VkExtent3D extent, VkImageUsageFlags usageFlags, VkImageType imageType, VkImageCreateFlags flags, uint arrayLayers) {
+    VkImageCreateInfo info = {};
 
-	info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-	info.imageType = imageType;
-	info.format = format;
-	info.extent = extent;
-	info.mipLevels = 1;
-	info.arrayLayers = 1;
-	info.samples = VK_SAMPLE_COUNT_1_BIT;
-	info.tiling = VK_IMAGE_TILING_OPTIMAL;
-	info.usage = usageFlags;
-	info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    info.flags = flags;
+    info.imageType = imageType;
+    info.format = format;
+    info.extent = extent;
+    info.mipLevels = 1;
+    info.arrayLayers = arrayLayers;
+    info.samples = VK_SAMPLE_COUNT_1_BIT;
+    info.tiling = VK_IMAGE_TILING_OPTIMAL;
+    info.usage = usageFlags;
+    info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
-	return info;
+    return info;
 }
 
 VkRenderPassCreateInfo Zodiac::Initializers::RenderPassCreateInfo(std::vector<VkAttachmentDescription>& attachDesc, std::vector<VkSubpassDescription>& subpassDesc, std::vector<VkSubpassDependency>& dependencies) {

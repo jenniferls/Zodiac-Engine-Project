@@ -8,6 +8,8 @@ namespace Zodiac {
 	public:
         VulkanTexture();
 		~VulkanTexture();
+        
+        void Create(const void* pPixels, uint32_t imageWidth, uint32_t imageHeight, bool isCubemap, VulkanDevice* device);
 
 	private:
         VkImage m_image = VK_NULL_HANDLE;
@@ -15,5 +17,7 @@ namespace Zodiac {
         VkImageView m_imageView = VK_NULL_HANDLE;
         VkSampler m_sampler = VK_NULL_HANDLE;
         VkImageLayout m_imageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        
+        bool m_isRGB = false;
 	};
 }
