@@ -6,6 +6,6 @@ namespace Zodiac {
 		Shader() = default;
 		~Shader() = default;
 	private:
-
+		std::string m_path = "";
 	};
 }
