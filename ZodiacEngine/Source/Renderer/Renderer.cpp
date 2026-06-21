@@ -160,7 +160,7 @@ void Zodiac::Renderer::PrepareForScene(Scene& scene) {
 
 	PrepareBuffersFromScene(scene);
 
-	SetupDescriptorPool(MAX_FRAMES_IN_FLIGHT, 4 * MAX_FRAMES_IN_FLIGHT, MAX_FRAMES_IN_FLIGHT * 2);
+	SetupDescriptorPool(MAX_FRAMES_IN_FLIGHT, 4 * MAX_FRAMES_IN_FLIGHT, 0, MAX_FRAMES_IN_FLIGHT * 2); //0 texture descriptors for now
 	SetupDescriptorSets();
 	PrepareDescriptorSet();
 
@@ -611,15 +611,26 @@ void Zodiac::Renderer::SetupDescriptorSets() {
 	geometryBindings[3].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 	geometryBindings[3].pImmutableSamplers = nullptr;
 	geometryBindings[3].binding = 3;
+    
+    VkDescriptorSetLayoutCreateInfo geometryLayoutCreateInfo = Initializers::DescriptorSetLayoutCreateInfo(static_cast<uint32_t>(geometryBindings.size()), geometryBindings.data());
+    ErrorCheck(vkCreateDescriptorSetLayout(*m_device->GetDevice(), &geometryLayoutCreateInfo, nullptr, &m_descriptorSetLayouts[1]));
+    
+    //Set 2 Binding 0: Textures
+    //VkDescriptorSetLayoutBinding texturesBinding = {};
+    //texturesBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    //texturesBinding.descriptorCount = 1;
+    //texturesBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    //texturesBinding.pImmutableSamplers = nullptr;
+    //texturesBinding.binding = 0;
 
-	VkDescriptorSetLayoutCreateInfo geometryLayoutCreateInfo = Initializers::DescriptorSetLayoutCreateInfo(static_cast<uint32_t>(geometryBindings.size()), geometryBindings.data());
-	ErrorCheck(vkCreateDescriptorSetLayout(*m_device->GetDevice(), &geometryLayoutCreateInfo, nullptr, &m_descriptorSetLayouts[1]));
+    //VkDescriptorSetLayoutCreateInfo texturesLayoutCreateInfo = Initializers::DescriptorSetLayoutCreateInfo(1, &texturesBinding);
+    //ErrorCheck(vkCreateDescriptorSetLayout(*m_device->GetDevice(), &texturesLayoutCreateInfo, nullptr, &m_descriptorSetLayouts[2]));
 
 	VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo = Initializers::PipelineLayoutCreateInfo(static_cast<uint32_t>(m_descriptorSetLayouts.size()), m_descriptorSetLayouts.data());
 	ErrorCheck(vkCreatePipelineLayout(*m_device->GetDevice(), &pipelineLayoutCreateInfo, nullptr, &m_pipelineLayout));
 }
 
-void Zodiac::Renderer::SetupDescriptorPool(uint32_t uniformBufferCount, uint32_t storageBufferCount, uint32_t maxSets) {
+void Zodiac::Renderer::SetupDescriptorPool(uint32_t uniformBufferCount, uint32_t storageBufferCount, uint32_t textureDescriptorCount, uint32_t maxSets) {
 	//VkDescriptorPoolSize typeCounts[2];
 	std::vector<VkDescriptorPoolSize> poolSizes;
 
@@ -640,6 +651,15 @@ void Zodiac::Renderer::SetupDescriptorPool(uint32_t uniformBufferCount, uint32_t
 
 		poolSizes.emplace_back(ssboPoolSize);
 	}
+    
+    if (textureDescriptorCount > 0) {
+        VkDescriptorPoolSize texturesPoolSize = {
+            .type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,
+            .descriptorCount = textureDescriptorCount
+        };
+        
+        poolSizes.emplace_back(texturesPoolSize);
+    }
 
 	// For additional types you need to add new entries in the type count list
 	// E.g. for two combined image samplers :
@@ -662,6 +682,10 @@ void Zodiac::Renderer::PrepareDescriptorSet() {
 		// Binding 1 : Vertex and index storage buffers
 		VkDescriptorSetAllocateInfo descriptorSetAllocInfoGeometry = Initializers::DescriptorSetAllocateInfo(&m_descriptorPool, 1, &m_descriptorSetLayouts[1]);
 		ErrorCheck(vkAllocateDescriptorSets(*m_device->GetDevice(), &descriptorSetAllocInfoGeometry, &m_descriptorSets[i][1]));
+        
+        // Binding 2 : Textures
+        //VkDescriptorSetAllocateInfo descriptorSetAllocInfoTextures = Initializers::DescriptorSetAllocateInfo(&m_descriptorPool, 1, &m_descriptorSetLayouts[2]);
+        //ErrorCheck(vkAllocateDescriptorSets(*m_device->GetDevice(), &descriptorSetAllocInfoTextures, &m_descriptorSets[i][2]));
 
 		std::vector<VkWriteDescriptorSet> writeDescriptorSets(5);
 
@@ -704,6 +728,22 @@ void Zodiac::Renderer::PrepareDescriptorSet() {
 		writeDescriptorSets[4].pBufferInfo = &m_perInstanceBuffer[i]->p_descriptor;
 		// Binds this buffer to binding point 3
 		writeDescriptorSets[4].dstBinding = 3;
+        
+        //std::vector<VkDescriptorImageInfo> imageInfos;
+        //imageInfos.resize(1); //Only 1 now as a test, should be based on actual value later
+        //for (uint32_t i = 0; i < 1; i++){
+        //    //imageInfos[i].sampler = sampler; //Sampler from model description
+        //    //imageInfos[i].imageView = imageView; //ImageView from model description
+        //    imageInfos[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        //}
+        
+        //writeDescriptorSets[5].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        //writeDescriptorSets[5].dstSet = m_descriptorSets[i][2];
+        //writeDescriptorSets[5].pImageInfo = imageInfos.data();
+        //writeDescriptorSets[5].descriptorCount = 1;
+        //writeDescriptorSets[5].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+        // Binds this buffer to binding point 0
+        //writeDescriptorSets[5].dstBinding = 0;
 
 		vkUpdateDescriptorSets(*m_device->GetDevice(), static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, nullptr);
 	}

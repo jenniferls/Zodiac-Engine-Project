@@ -44,6 +44,11 @@ namespace Zodiac {
 		uint32_t IndexBufferRange = 0;
 	};
 
+    struct TextureInfo {
+        VkSampler m_sampler;
+        VkImageView m_imageView;
+    };
+
 	struct PipelineState {
 
 	};
@@ -106,7 +111,7 @@ namespace Zodiac {
 		void CreatePerInstanceBuffer(const Scene& scene);
 
 		void SetupDescriptorSets();
-		void SetupDescriptorPool(uint32_t uniformBufferCount, uint32_t storageBufferCount, uint32_t maxSets);
+		void SetupDescriptorPool(uint32_t uniformBufferCount, uint32_t storageBufferCount, uint32_t textureDescriptorCount, uint32_t maxSets);
 		void PrepareDescriptorSet();
 		void AllocateCommandBuffers();
 		void RecordCommandBuffer(std::vector<VkCommandBuffer>& commandBuffers, uint32_t currentframe, int32_t index, RenderContext& renderContext, bool secondBarrier = false);
