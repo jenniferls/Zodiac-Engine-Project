@@ -89,7 +89,7 @@ VkImageViewCreateInfo Zodiac::Initializers::ImageViewCreateInfo(VkFormat colorFo
 	return info;
 }
 
-VkImageCreateInfo Zodiac::Initializers::ImageCreateInfo(VkFormat format, VkExtent3D extent, VkImageUsageFlags usageFlags, VkImageType imageType, VkImageCreateFlags flags, uint arrayLayers) {
+VkImageCreateInfo Zodiac::Initializers::ImageCreateInfo(VkFormat format, VkExtent3D extent, VkImageUsageFlags usageFlags, VkImageType imageType, VkImageCreateFlags flags, uint32_t arrayLayers) {
     VkImageCreateInfo info = {};
 
     info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;

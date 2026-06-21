@@ -20,7 +20,7 @@ void Zodiac::VulkanTexture::Create(const void* pPixels, uint32_t imageWidth, uin
     };
     
     VkImageCreateFlags imageCreateFlags = 0;
-    uint arrayLayers = 1u;
+    uint32_t arrayLayers = 1u;
     if(isCubemap){
         imageCreateFlags = VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT;
         arrayLayers = 6u;
