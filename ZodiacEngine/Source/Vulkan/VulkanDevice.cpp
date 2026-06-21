@@ -61,9 +61,10 @@ Zodiac::VulkanDevice::VulkanDevice(VulkanInstance* instance, VulkanPhysicalDevic
 		.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES,
 		.pNext = &scalarBlockLayoutFeature,
         .shaderSampledImageArrayNonUniformIndexing = VK_TRUE,
-        .runtimeDescriptorArray = VK_TRUE,
-        .descriptorBindingVariableDescriptorCount = VK_TRUE,
-        .descriptorBindingPartiallyBound = VK_TRUE
+		.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE,
+		.descriptorBindingPartiallyBound = VK_TRUE,
+		.descriptorBindingVariableDescriptorCount = VK_TRUE,
+        .runtimeDescriptorArray = VK_TRUE
 	};
 
 	VkDeviceCreateInfo device_info = Initializers::DeviceCreateInfo(queue_create_info, m_physical_device->GetDeviceFeatures(), m_extensions, &descriptorIndexingFeatures);
