@@ -39,6 +39,7 @@ namespace Zodiac {
 		void AssembleVertexFromMeshDataAtIndex(uint32_t index);
 
 		void AddIndex(uint32_t index) { m_indices.emplace_back(index); }
+        void SetMaterialIndex(uint32_t materialIndex) { m_materialIndex = materialIndex; }
 
 		void SetToTriangleMesh(); //Sets up the mesh as a simple triangle
 
