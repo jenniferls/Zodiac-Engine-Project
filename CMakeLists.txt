@@ -6,14 +6,14 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_VERBOSE_MAKEFILE OFF)
 
-if(WIN32)
-    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ZodiacEngine)
-endif()
-
 add_subdirectory(ZodiacEngine)
 # Haven't built the engine library on Mac yet so for now, don't build the application
 if (NOT APPLE)
     add_subdirectory(ZodiacApplication)
+endif()
+
+if(WIN32)
+    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ZodiacEngine)
 endif()
 
 target_compile_definitions(${PROJECT_NAME}
