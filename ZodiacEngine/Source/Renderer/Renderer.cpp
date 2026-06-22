@@ -29,6 +29,7 @@ void Zodiac::Renderer::Init(VulkanDevice* device, Settings settings, VulkanSurfa
 	m_prepared = false;
 
 	m_fileWatcher->WatchFile(std::string(SHADERS_DIR) + "/test.slang"); //Currently done in renderer as a test
+	m_fileWatcher->WatchFile(std::string(SHADERS_DIR) + "/lighting-diffuse.slang");
 
 	m_swapchain = new Zodiac::VulkanSwapchain(m_device, m_surface->GetSurfaceDetails(), m_surface->GetSurface(), m_settings);
 
@@ -44,7 +45,7 @@ Zodiac::Renderer& Zodiac::Renderer::Get() {
 }
 
 void Zodiac::Renderer::Draw(float dt, RenderContext& renderContext) {
-	if (m_fileWatcher->HasFileChanged((std::string(SHADERS_DIR) + "/test.slang").c_str())) {
+	if (m_fileWatcher->HasFilesChanged()) { //TODO: Don't do this with just any files
 		vkDeviceWaitIdle(*m_device->GetDevice()); //Causes small stall but is fine since it's for shader development purposes
 		if (RecreatePipeline()) {
 			m_fileWatcher->ResetFlags();
@@ -575,7 +576,7 @@ void Zodiac::Renderer::SetupDescriptorSets() {
 	VkDescriptorSetLayoutBinding uniformsBinding = {};
 	uniformsBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	uniformsBinding.descriptorCount = 1;
-	uniformsBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	uniformsBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 	uniformsBinding.pImmutableSamplers = nullptr;
 	uniformsBinding.binding = 0;
 
@@ -891,6 +892,7 @@ void Zodiac::Renderer::UpdateUniformBuffers(uint32_t currentImage, float dt, Cam
 
 	uboVS.projectionMatrix = mainCamera->GetProjection();
 	uboVS.viewMatrix = mainCamera->GetView();
+	uboVS.cameraPosition = mainCamera->GetPosition();
 
 	uboVS.modelMatrix = glm::mat4(1.0f);
 	uboVS.modelMatrix = glm::rotate(uboVS.modelMatrix, glm::vec3().x, glm::vec3(1.0f, 0.0f, 0.0f));

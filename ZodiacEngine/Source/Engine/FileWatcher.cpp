@@ -42,7 +42,11 @@ bool Zodiac::FileWatcher::HasFileChanged(const std::string& filePath) {
 }
 
 bool Zodiac::FileWatcher::HasFilesChanged() {
-	//TODO: Implement
+	for (const auto& [path, entry] : m_files) {
+		if (entry.changed) {
+			return true;
+		}
+	}
 	return false;
 }
 

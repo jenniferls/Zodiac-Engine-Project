@@ -23,6 +23,7 @@ namespace Zodiac {
 		glm::mat4 modelMatrix;
 		glm::mat4 viewMatrix;
 		glm::mat3 normalMatrix;
+		glm::vec3 cameraPosition;
 	};
 
 	struct MeshMetaData {

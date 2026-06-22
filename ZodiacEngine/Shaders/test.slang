@@ -30,6 +30,7 @@ cbuffer PerFrameUniforms
     float4x4 modelMatrix;
     float4x4 viewMatrix;
     float3x3 normalMatrix;
+    float3 cameraPos;
 };
 
 [[vk::binding(0, 1)]]
@@ -107,7 +108,7 @@ Fragment fragmentMain(OutVertex outVertex: OutVertex) : SV_Target
 
     static const float3 LIGHT_POS = float3(-6.0f, 5.0f, -4.0f);
 
-    color = CalculateDiffuseLighting(normal, LIGHT_POS, fragPos);
+    color = CalculateDiffuseLighting(normal, LIGHT_POS, fragPos, cameraPos);
 
     Fragment output;
     output.outFragColor = float4(color, 1.0);
