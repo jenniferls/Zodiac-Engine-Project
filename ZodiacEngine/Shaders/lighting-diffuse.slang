@@ -1,11 +1,8 @@
 implementing lighting;
 import math;
+import default_material_props;
 
 public float3 CalculateDiffuseLighting(float3 normal, float3 lightPos, float3 fragPos, float3 cameraPos) {
-    static const float3 LIGHT_COLOR = float3(1.0f);
-    static const float AMBIENT_STRENGTH = 0.2f;
-    static const float ROUGHNESS = 0.5f;
-
     float3 ambient = AMBIENT_STRENGTH * LIGHT_COLOR;
 
     float3 pointToLight = normalize(lightPos - fragPos);
